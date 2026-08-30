@@ -1,0 +1,200 @@
+// Watches tracked wallets over the Helius WebSocket and turns their confirmed
+// transactions into SwapEvents (buy/sell of some token against SOL/USDC/USDT).
+//
+// How detection works: for each transaction that mentions a tracked wallet,
+// we fetch the parsed transaction and compare the wallet's balances before vs
+// after. If exactly one "real" token changed hands while SOL (or a stablecoin)
+// moved the other way, that's a swap we can mirror.
+
+import { Connection, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
+import { QUOTE_MINTS, SOL_MINT, USDC_MINT, USDT_MINT } from './config';
+import { getSolPriceUsd } from './solPrice';
+import { sleep } from './rateLimiter';
+import { SwapEvent } from './types';
+
+const DUST_LAMPORTS = 1_000_000n; // 0.001 SOL — ignore fee-only SOL movement
+const DUST_USD = 0.01;
+const TX_FETCH_RETRIES = 4;
+const TX_FETCH_RETRY_DELAY_MS = 2_000;
+
+type SwapHandler = (event: SwapEvent) => Promise<void>;
+
+export class WalletWatcher {
+  private subscriptionIds: number[] = [];
+  private seenSignatures = new Set<string>();
+  private stopped = false;
+
+  constructor(
+    private readonly connection: Connection,
+    private readonly trackedWallets: PublicKey[],
+    private readonly onSwap: SwapHandler
+  ) {}
+
+  start(): void {
+    for (const wallet of this.trackedWallets) {
+      const walletAddress = wallet.toBase58();
+      const subscriptionId = this.connection.onLogs(
+        wallet,
+        (logs) => {
+          if (this.stopped) return;
+          if (logs.err) return; // failed transaction — nothing actually happened
+          if (this.seenSignatures.has(logs.signature)) return;
+          this.rememberSignature(logs.signature);
+          this.handleSignature(logs.signature, walletAddress).catch((error) => {
+            console.error(`   ⚠️ Error while processing tx ${logs.signature}: ${(error as Error).message}`);
+          });
+        },
+        'confirmed'
+      );
+      this.subscriptionIds.push(subscriptionId);
+      console.log(`👀 Watching wallet ${walletAddress}`);
+    }
+  }
+
+  // Stop reacting to new activity immediately (used at shutdown).
+  async stop(): Promise<void> {
+    this.stopped = true;
+    for (const id of this.subscriptionIds) {
+      try {
+        await this.connection.removeOnLogsListener(id);
+      } catch {
+        // The socket may already be closing; that's fine.
+      }
+    }
+    this.subscriptionIds = [];
+  }
+
+  private rememberSignature(signature: string): void {
+    this.seenSignatures.add(signature);
+    if (this.seenSignatures.size > 5_000) {
+      // Drop the oldest half so the set doesn't grow forever.
+      const keep = [...this.seenSignatures].slice(-2_500);
+      this.seenSignatures = new Set(keep);
+    }
+  }
+
+  private async handleSignature(signature: string, walletAddress: string): Promise<void> {
+    // The transaction may not be queryable the instant the log arrives — retry.
+    let tx: ParsedTransactionWithMeta | null = null;
+    for (let attempt = 1; attempt <= TX_FETCH_RETRIES; attempt++) {
+      tx = await this.connection.getParsedTransaction(signature, {
+        maxSupportedTransactionVersion: 0,
+        commitment: 'confirmed',
+      });
+      if (tx) break;
+      if (this.stopped) return;
+      await sleep(TX_FETCH_RETRY_DELAY_MS * attempt);
+    }
+    if (!tx || !tx.meta) return;
+    if (this.stopped) return;
+
+    const event = await analyzeSwap(tx, signature, walletAddress);
+    if (!event) return;
+
+    const uiAmount = Number(event.tokenDeltaRaw) / 10 ** event.decimals;
+    console.log(
+      `\n🔔 ${shortAddress(walletAddress)} ${event.side === 'buy' ? 'BOUGHT' : 'SOLD'} ` +
+        `${uiAmount.toLocaleString()} of ${shortAddress(event.mint)}` +
+        (event.quoteSolEquivalent !== null ? ` (~${event.quoteSolEquivalent.toFixed(4)} SOL)` : '') +
+        `\n   tx: ${signature}`
+    );
+    await this.onSwap(event);
+  }
+}
+
+export function shortAddress(address: string): string {
+  return `${address.slice(0, 4)}…${address.slice(-4)}`;
+}
+
+// Exported for testing.
+export async function analyzeSwap(
+  tx: ParsedTransactionWithMeta,
+  signature: string,
+  walletAddress: string
+): Promise<SwapEvent | null> {
+  const meta = tx.meta!;
+
+  // --- Token balance changes for accounts OWNED by the tracked wallet ---
+  const byMint = new Map<string, { pre: bigint; post: bigint; decimals: number }>();
+  for (const balance of meta.preTokenBalances ?? []) {
+    if (balance.owner !== walletAddress) continue;
+    const entry = byMint.get(balance.mint) ?? { pre: 0n, post: 0n, decimals: balance.uiTokenAmount.decimals };
+    entry.pre += BigInt(balance.uiTokenAmount.amount);
+    byMint.set(balance.mint, entry);
+  }
+  for (const balance of meta.postTokenBalances ?? []) {
+    if (balance.owner !== walletAddress) continue;
+    const entry = byMint.get(balance.mint) ?? { pre: 0n, post: 0n, decimals: balance.uiTokenAmount.decimals };
+    entry.post += BigInt(balance.uiTokenAmount.amount);
+    entry.decimals = balance.uiTokenAmount.decimals;
+    byMint.set(balance.mint, entry);
+  }
+
+  // --- Native SOL change for the wallet itself ---
+  let solLamportsDelta = 0n;
+  const accountKeys = tx.transaction.message.accountKeys;
+  for (let i = 0; i < accountKeys.length; i++) {
+    if (accountKeys[i].pubkey.toBase58() === walletAddress) {
+      solLamportsDelta = BigInt(meta.postBalances[i]) - BigInt(meta.preBalances[i]);
+      break;
+    }
+  }
+  // Wrapped SOL counts as SOL too (also 9 decimals, so raw units = lamports).
+  const wsol = byMint.get(SOL_MINT);
+  if (wsol) solLamportsDelta += wsol.post - wsol.pre;
+
+  // --- Stablecoin change (USDC/USDT, both 6 decimals) ---
+  let usdDelta = 0;
+  for (const stableMint of [USDC_MINT, USDT_MINT]) {
+    const entry = byMint.get(stableMint);
+    if (entry) usdDelta += Number(entry.post - entry.pre) / 1e6;
+  }
+
+  // --- The traded token: exactly one non-quote mint that changed ---
+  const changedTokens: { mint: string; delta: bigint; pre: bigint; decimals: number }[] = [];
+  for (const [mint, entry] of byMint) {
+    if (QUOTE_MINTS.has(mint)) continue;
+    const delta = entry.post - entry.pre;
+    if (delta !== 0n) changedTokens.push({ mint, delta, pre: entry.pre, decimals: entry.decimals });
+  }
+  if (changedTokens.length === 0) return null;
+  if (changedTokens.length > 1) {
+    console.log(`   (skipping tx ${signature}: multiple tokens changed at once — too complex to mirror)`);
+    return null;
+  }
+
+  const token = changedTokens[0];
+  const solMovedDown = solLamportsDelta < -DUST_LAMPORTS;
+  const solMovedUp = solLamportsDelta > DUST_LAMPORTS;
+  const usdMovedDown = usdDelta < -DUST_USD;
+  const usdMovedUp = usdDelta > DUST_USD;
+
+  let side: 'buy' | 'sell';
+  if (token.delta > 0n && (solMovedDown || usdMovedDown)) {
+    side = 'buy'; // gained token, paid SOL or stablecoin
+  } else if (token.delta < 0n && (solMovedUp || usdMovedUp)) {
+    side = 'sell'; // gave up token, received SOL or stablecoin
+  } else {
+    return null; // plain transfer, airdrop, LP action, etc. — not a swap we mirror
+  }
+
+  // Estimate the trade size in SOL for filtering/logging.
+  let quoteSolEquivalent: number | null = null;
+  if (solMovedDown || solMovedUp) {
+    quoteSolEquivalent = Math.abs(Number(solLamportsDelta)) / 1e9;
+  } else {
+    const solPrice = await getSolPriceUsd();
+    if (solPrice !== null) quoteSolEquivalent = Math.abs(usdDelta) / solPrice;
+  }
+
+  return {
+    signature,
+    sourceWallet: walletAddress,
+    side,
+    mint: token.mint,
+    decimals: token.decimals,
+    tokenDeltaRaw: token.delta < 0n ? -token.delta : token.delta,
+    ownerPreTokenRaw: token.pre,
+    quoteSolEquivalent,
+  };
+}

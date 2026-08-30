@@ -1,0 +1,12 @@
+# Secrets — NEVER commit your real .env
+.env
+
+# Bot state (positions, P&L history)
+data/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# macOS
+.DS_Store

@@ -1,0 +1,35 @@
+// Shared types used across the bot.
+
+// A swap we detected in a tracked wallet's confirmed transaction.
+export interface SwapEvent {
+  signature: string;
+  sourceWallet: string; // the tracked wallet that made the trade
+  side: 'buy' | 'sell';
+  mint: string; // the (non-SOL/stablecoin) token that was traded
+  decimals: number;
+  tokenDeltaRaw: bigint; // how many raw token units the wallet gained/lost (always positive)
+  ownerPreTokenRaw: bigint; // wallet's token balance BEFORE the trade (raw units)
+  // Roughly how much the tracked wallet spent/received, expressed in SOL.
+  // null when we couldn't estimate it (e.g. USDC-quoted trade and no USD price).
+  quoteSolEquivalent: number | null;
+}
+
+export type PositionStatus = 'open' | 'closed' | 'stuck';
+
+export interface Position {
+  id: string;
+  mint: string;
+  decimals: number;
+  sourceWallet: string; // whose trade we copied; we only mirror sells from this wallet
+  dryRun: boolean; // true = this position is simulated, no real tokens involved
+  status: PositionStatus;
+  openedAt: string; // ISO timestamp
+  closedAt?: string;
+  spentSol: number; // SOL we paid to open
+  tokenAmountRaw: string; // raw token units still held (stringified bigint)
+  initialTokenAmountRaw: string; // raw token units at open (for % display)
+  receivedSol: number; // SOL received back from sells so far
+  buyTx?: string; // real buy signature (absent in dry-run)
+  sellTxs: string[]; // real sell signatures
+  stuckReason?: string; // why a sell permanently failed — tokens still in wallet!
+}
