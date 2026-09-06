@@ -149,6 +149,19 @@ Print the P&L summary any time without starting the bot:
 npm run summary
 ```
 
+Open positions are **marked to market** here: each one is priced with a
+quote-only Jupiter order (no taker, so nothing is balance-checked), showing
+what it's worth right now rather than only what you paid. That lets you judge
+a wallet that buys and holds without waiting for it to sell — useful when you
+can't leave the bot running for days. Costs one Jupiter call per open position,
+about 1.1s each.
+
+A position Jupiter can't route is flagged `NO ROUTE — nothing will buy this
+right now` instead of being valued at cost. That's usually a dead token.
+
+The 15-minute summary printed *while the bot runs* is deliberately not marked
+to market — during a run, the 1 request/second budget belongs to trading.
+
 Check that the bot's logic is working (offline — no wallet, no network, no
 trades; uses a throwaway keypair and a temp folder):
 

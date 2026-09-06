@@ -262,6 +262,50 @@ async function testSummary() {
     assert(/\$\d/.test(output), 'shows USD alongside SOL when price is available');
     realLog('✅ P&L summary: sim/real split, stuck excluded, SOL and USD both shown');
   }
+
+  await testMarkToMarket(realLog);
+}
+
+// Open positions priced with quote-only orders: a live one shows its current
+// value, and one Jupiter cannot route is flagged rather than valued at cost.
+async function testMarkToMarket(realLog: (...args: unknown[]) => void) {
+  const DEAD_MINT = 'So11111111111111111111111111111111111111113';
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-mtm-')));
+  const base = { decimals: 5, sourceWallet: TRACKED, tokenAmountRaw: '1000', dryRun: true, spentSol: 0.01 };
+  store.openPosition({ ...base, mint: MEME_MINT });
+  store.openPosition({ ...base, mint: DEAD_MINT });
+
+  let sawTaker: unknown = 'never called';
+  const markJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      sawTaker = params.takerPubkey;
+      if (params.inputMint === DEAD_MINT) {
+        const err: any = new Error('could not find any route');
+        err.kind = 'no-route';
+        throw err;
+      }
+      // 1000 raw tokens are worth 0.015 SOL — a 50% gain on the 0.01 spent.
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: 15_000_000n };
+    },
+  };
+
+  const lines: string[] = [];
+  const realConsole = console.log;
+  console.log = (...args: unknown[]) => { lines.push(args.join(' ')); };
+  try {
+    await printSummary(store, markJupiter as any, 300);
+  } finally {
+    console.log = realConsole;
+  }
+  const out = lines.join('\n');
+
+  assert(sawTaker === null, 'mark-to-market must send quote-only orders (taker null)');
+  assert(/now worth 0\.0150 SOL/.test(out), 'priced position shows its current value');
+  assert(/\+50\.0%/.test(out), 'shows percentage gain against cost');
+  assert(/NO ROUTE/.test(out), 'unpriceable position flagged, not valued at cost');
+  assert(/1 of 2 open, marked to market/.test(out), 'reports how many could be priced');
+
+  realLog('✅ mark-to-market: prices open positions, flags unroutable ones, never sends a taker');
 }
 
 async function main() {

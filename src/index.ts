@@ -85,6 +85,9 @@ async function main(): Promise<void> {
   watcher.start();
   console.log('\nRunning. Press Ctrl+C once to stop and close positions gracefully.\n');
 
+  // Deliberately NOT marked to market: pricing open positions costs one Jupiter
+  // call each, and while the bot is running that budget belongs to trading.
+  // Use `npm run summary` (or shut down) for marked-to-market numbers.
   const summaryTimer = setInterval(() => {
     printSummary(store).catch(() => {});
   }, PERIODIC_SUMMARY_MS);
@@ -113,7 +116,9 @@ async function main(): Promise<void> {
       console.error(`Error while closing positions: ${(error as Error).message}`);
     }
 
-    await printSummary(store);
+    // Anything that could not be closed above is priced here, so the final
+    // report shows what the leftovers are actually worth.
+    await printSummary(store, jupiter, config.slippageBps);
     console.log('Goodbye. 👋');
     process.exit(0);
   };
