@@ -22,6 +22,7 @@ export interface Config {
   minTrackedBuySol: number;
   minSolReserve: number;
   slippageBps: number;
+  rpcRequestsPerSecond: number;
 }
 
 function fail(message: string): never {
@@ -87,8 +88,10 @@ export function loadConfig(): Config {
     minTrackedBuySol: numberEnv('MIN_TRACKED_BUY_SOL', 0.05),
     minSolReserve: numberEnv('MIN_SOL_RESERVE', 0.05),
     slippageBps: numberEnv('SLIPPAGE_BPS', 300),
+    rpcRequestsPerSecond: numberEnv('RPC_REQUESTS_PER_SECOND', 8),
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');
+  if (config.rpcRequestsPerSecond <= 0) fail('RPC_REQUESTS_PER_SECOND must be greater than 0.');
   return config;
 }

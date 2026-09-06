@@ -19,6 +19,26 @@ import { WalletWatcher } from './watcher';
 const JUPITER_MIN_GAP_MS = 1_100;
 const PERIODIC_SUMMARY_MS = 15 * 60_000;
 
+// @solana/web3.js prints one line per internal 429 retry. When the RPC plan is
+// saturated that floods the log and buries the actual trades. Count them
+// instead and report the total with each summary: the signal survives, the
+// noise does not. The regex is exact so nothing else is swallowed.
+let rpcRetries = 0;
+function quietenRpcRetryLogs(): void {
+  const isRetryLine = (args: unknown[]) =>
+    typeof args[0] === 'string' && /Server responded with 429 Too Many Requests/.test(args[0]);
+  for (const channel of ['log', 'error'] as const) {
+    const original = console[channel].bind(console);
+    console[channel] = (...args: unknown[]) => {
+      if (isRetryLine(args)) {
+        rpcRetries += 1;
+        return;
+      }
+      original(...args);
+    };
+  }
+}
+
 async function main(): Promise<void> {
   console.log('╔══════════════════════════════════════════╗');
   console.log('║   Solana Copy-Trading Bot                ║');
@@ -79,7 +99,15 @@ async function main(): Promise<void> {
   const limiter = new RateLimiter(JUPITER_MIN_GAP_MS);
   const jupiter = new JupiterClient(config.jupiterApiKey, limiter);
   const trader = new Trader(config, connection, keypair, jupiter, store);
-  const watcher = new WalletWatcher(connection, config.trackedWallets, (event) => trader.handleSwapEvent(event));
+  // Separate budget from Jupiter's: this one paces Helius RPC reads.
+  const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
+  const watcher = new WalletWatcher(
+    connection,
+    config.trackedWallets,
+    (event) => trader.handleSwapEvent(event),
+    rpcLimiter
+  );
+  quietenRpcRetryLogs();
 
   console.log('');
   watcher.start();
@@ -89,6 +117,7 @@ async function main(): Promise<void> {
   // call each, and while the bot is running that budget belongs to trading.
   // Use `npm run summary` (or shut down) for marked-to-market numbers.
   const summaryTimer = setInterval(() => {
+    reportWatcherHealth(watcher);
     printSummary(store).catch(() => {});
   }, PERIODIC_SUMMARY_MS);
 
@@ -107,6 +136,7 @@ async function main(): Promise<void> {
     console.log('   (Press Ctrl+C again to force-quit without waiting.)\n');
 
     clearInterval(summaryTimer);
+    reportWatcherHealth(watcher);
     trader.beginShutdown();
     await watcher.stop();
 
@@ -128,6 +158,16 @@ async function main(): Promise<void> {
   process.on('unhandledRejection', (reason) => {
     console.error(`⚠️  Unhandled error (bot keeps running): ${reason instanceof Error ? reason.message : String(reason)}`);
   });
+}
+
+function reportWatcherHealth(watcher: WalletWatcher): void {
+  const s = watcher.stats();
+  const lost = s.droppedStale + s.droppedOverflow;
+  console.log(
+    `\n📊 Watcher: ${s.processed} transactions examined, ${s.queued} waiting` +
+      (lost > 0 ? `, ${lost} skipped as stale (${s.droppedStale} timed out, ${s.droppedOverflow} overflowed)` : '') +
+      (rpcRetries > 0 ? `\n   ${rpcRetries} RPC rate-limit retries so far — lower RPC_REQUESTS_PER_SECOND or watch fewer wallets.` : '')
+  );
 }
 
 main().catch((error) => {

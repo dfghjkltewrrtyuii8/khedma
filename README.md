@@ -100,6 +100,7 @@ with **Cmd+S** and close TextEdit.
 | `MIN_TRACKED_BUY_SOL` | Ignore tracked buys smaller than this (dust filter). Default `0.05`. |
 | `MIN_SOL_RESERVE` | Real trades never spend below this balance. Default `0.05`. |
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
+| `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 
 > 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
 > will never upload it. Don't paste it anywhere else, and don't screenshot it.
@@ -218,5 +219,7 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | `Wallet error: …` | Private key/mnemonic is malformed — re-export from Phantom and paste carefully. |
 | `Could not reach Helius RPC` | Check `HELIUS_HTTPS_URL` (and that your Helius plan is active). |
 | Lots of `Jupiter 429` lines | Something else is using the same Jupiter key at the same time. The bot backs off automatically, but avoid running two bots on one free key. |
+| Summary reports `RPC rate-limit retries` | You're exceeding your Helius plan. Lower `RPC_REQUESTS_PER_SECOND` or watch fewer wallets — every retry is a delayed or dropped trade. |
+| Summary reports transactions `skipped as stale` | The watcher fell behind and discarded trades too old to copy (>45s). Same fix as above. |
 | `no route for …` when buying | Token too new/illiquid for Jupiter — the bot just skips it. |
 | Bot seems idle | Normal — it only acts when a tracked wallet trades. The 15-minute summaries confirm it's alive. |

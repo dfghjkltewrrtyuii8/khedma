@@ -5,29 +5,61 @@
 // we fetch the parsed transaction and compare the wallet's balances before vs
 // after. If exactly one "real" token changed hands while SOL (or a stablecoin)
 // moved the other way, that's a swap we can mirror.
+//
+// Incoming signatures are QUEUED and drained one at a time through an RPC rate
+// limiter. Busy wallets can emit several transactions per second, and firing an
+// unthrottled getParsedTransaction at each one exhausts a free-tier RPC plan in
+// seconds — every 429 is a trade silently lost. Anything that waits in the
+// queue longer than STALE_MS is dropped on purpose: a trade we notice a minute
+// late is far too old to copy, and fetching it only delays fresher ones.
 
 import { Connection, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
 import { QUOTE_MINTS, SOL_MINT, USDC_MINT, USDT_MINT } from './config';
+import { RateLimiter, sleep } from './rateLimiter';
 import { getSolPriceUsd } from './solPrice';
-import { sleep } from './rateLimiter';
 import { SwapEvent } from './types';
 
 const DUST_LAMPORTS = 1_000_000n; // 0.001 SOL — ignore fee-only SOL movement
 const DUST_USD = 0.01;
-const TX_FETCH_RETRIES = 4;
-const TX_FETCH_RETRY_DELAY_MS = 2_000;
+const TX_FETCH_RETRIES = 2;
+const TX_FETCH_RETRY_DELAY_MS = 1_500;
+const STALE_MS = 45_000; // older than this and the trade is not worth copying
+const MAX_QUEUE = 40;
 
 type SwapHandler = (event: SwapEvent) => Promise<void>;
+
+interface QueuedTx {
+  signature: string;
+  wallet: string;
+  receivedAt: number;
+}
+
+export interface WatcherStats {
+  processed: number;
+  droppedStale: number;
+  droppedOverflow: number;
+  queued: number;
+}
 
 export class WalletWatcher {
   private subscriptionIds: number[] = [];
   private seenSignatures = new Set<string>();
   private stopped = false;
+  private queue: QueuedTx[] = [];
+  private draining = false;
+  private processed = 0;
+  private droppedStale = 0;
+  private droppedOverflow = 0;
 
   constructor(
     private readonly connection: Connection,
     private readonly trackedWallets: PublicKey[],
-    private readonly onSwap: SwapHandler
+    private readonly onSwap: SwapHandler,
+    // Serializes getParsedTransaction so we stay inside the RPC plan's limits.
+    private readonly rpcLimiter: RateLimiter,
+    // Overridable so tests can exercise the drop paths without waiting.
+    private readonly staleMs: number = STALE_MS,
+    private readonly maxQueue: number = MAX_QUEUE
   ) {}
 
   start(): void {
@@ -40,9 +72,7 @@ export class WalletWatcher {
           if (logs.err) return; // failed transaction — nothing actually happened
           if (this.seenSignatures.has(logs.signature)) return;
           this.rememberSignature(logs.signature);
-          this.handleSignature(logs.signature, walletAddress).catch((error) => {
-            console.error(`   ⚠️ Error while processing tx ${logs.signature}: ${(error as Error).message}`);
-          });
+          this.enqueue(logs.signature, walletAddress);
         },
         'confirmed'
       );
@@ -54,6 +84,7 @@ export class WalletWatcher {
   // Stop reacting to new activity immediately (used at shutdown).
   async stop(): Promise<void> {
     this.stopped = true;
+    this.queue = [];
     for (const id of this.subscriptionIds) {
       try {
         await this.connection.removeOnLogsListener(id);
@@ -62,6 +93,15 @@ export class WalletWatcher {
       }
     }
     this.subscriptionIds = [];
+  }
+
+  stats(): WatcherStats {
+    return {
+      processed: this.processed,
+      droppedStale: this.droppedStale,
+      droppedOverflow: this.droppedOverflow,
+      queued: this.queue.length,
+    };
   }
 
   private rememberSignature(signature: string): void {
@@ -73,17 +113,52 @@ export class WalletWatcher {
     }
   }
 
+  private enqueue(signature: string, wallet: string): void {
+    this.queue.push({ signature, wallet, receivedAt: Date.now() });
+    if (this.queue.length > this.maxQueue) {
+      this.queue.shift(); // oldest is the least useful
+      this.droppedOverflow += 1;
+    }
+    void this.drain();
+  }
+
+  private async drain(): Promise<void> {
+    if (this.draining) return;
+    this.draining = true;
+    try {
+      while (this.queue.length > 0 && !this.stopped) {
+        const item = this.queue.shift()!;
+        const ageMs = Date.now() - item.receivedAt;
+        if (ageMs > this.staleMs) {
+          this.droppedStale += 1;
+          continue;
+        }
+        try {
+          await this.handleSignature(item.signature, item.wallet);
+          this.processed += 1;
+        } catch (error) {
+          console.error(`   ⚠️ Could not process tx ${item.signature.slice(0, 12)}…: ${(error as Error).message}`);
+        }
+      }
+    } finally {
+      this.draining = false;
+    }
+  }
+
   private async handleSignature(signature: string, walletAddress: string): Promise<void> {
-    // The transaction may not be queryable the instant the log arrives — retry.
+    // The transaction may not be queryable the instant the log arrives — retry
+    // a couple of times, but not for long: a stale trade is not worth copying.
     let tx: ParsedTransactionWithMeta | null = null;
     for (let attempt = 1; attempt <= TX_FETCH_RETRIES; attempt++) {
-      tx = await this.connection.getParsedTransaction(signature, {
-        maxSupportedTransactionVersion: 0,
-        commitment: 'confirmed',
-      });
+      tx = await this.rpcLimiter.schedule('getParsedTransaction', () =>
+        this.connection.getParsedTransaction(signature, {
+          maxSupportedTransactionVersion: 0,
+          commitment: 'confirmed',
+        })
+      );
       if (tx) break;
       if (this.stopped) return;
-      await sleep(TX_FETCH_RETRY_DELAY_MS * attempt);
+      if (attempt < TX_FETCH_RETRIES) await sleep(TX_FETCH_RETRY_DELAY_MS);
     }
     if (!tx || !tx.meta) return;
     if (this.stopped) return;

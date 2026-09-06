@@ -21,7 +21,7 @@ process.env.JUPITER_API_KEY = 'test';
 process.env.TRACKED_WALLETS = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
 process.env.DRY_RUN = 'true';
 
-import { analyzeSwap } from '../src/watcher';
+import { analyzeSwap, WalletWatcher } from '../src/watcher';
 import { RateLimiter } from '../src/rateLimiter';
 import { PositionStore } from '../src/positions';
 import { Trader } from '../src/trader';
@@ -308,7 +308,49 @@ async function testMarkToMarket(realLog: (...args: unknown[]) => void) {
   realLog('✅ mark-to-market: prices open positions, flags unroutable ones, never sends a taker');
 }
 
+// Busy wallets emit transactions faster than a free RPC plan can serve them.
+// The watcher must bound its backlog and drop what has gone stale, rather than
+// firing an unthrottled request per log line (which is what caused the 429
+// storms that silently lost trades).
+async function testWatcherQueue() {
+  let logCb: (l: { signature: string; err: unknown; logs: string[] }) => void = () => {};
+  const fetched: string[] = [];
+  const fakeConnection = {
+    onLogs(_pk: unknown, cb: typeof logCb) { logCb = cb; return 7; },
+    async removeOnLogsListener() {},
+    async getParsedTransaction(sig: string) { fetched.push(sig); return { meta: null }; },
+  };
+
+  const watcher = new WalletWatcher(
+    fakeConnection as any, [new PublicKey(TRACKED)], async () => {},
+    new RateLimiter(0), 60_000, 40 // staleMs, maxQueue
+  );
+  watcher.start();
+
+  const FIRED = 60;
+  for (let i = 0; i < FIRED; i++) logCb({ signature: 'sig' + i, err: null, logs: [] });
+
+  const overflowed = watcher.stats().droppedOverflow;
+  assert(overflowed > 0, 'a burst larger than the queue must shed the oldest entries');
+
+  while (watcher.stats().queued > 0) await new Promise((r) => setTimeout(r, 10));
+  const s = watcher.stats();
+  assert(s.processed + s.droppedOverflow + s.droppedStale === FIRED,
+    `every signature is accounted for (got ${s.processed}+${s.droppedOverflow}+${s.droppedStale} of ${FIRED})`);
+  assert(fetched.length === s.processed, 'one RPC fetch per processed signature, no unthrottled fan-out');
+
+  // A failed transaction is never a swap and must not cost an RPC call.
+  const before = fetched.length;
+  logCb({ signature: 'failed-tx', err: { InstructionError: [] }, logs: [] });
+  await new Promise((r) => setTimeout(r, 20));
+  assert(fetched.length === before, 'failed transactions are ignored without fetching');
+
+  await watcher.stop();
+  console.log(`✅ watcher queue: bounded backlog (${s.processed} processed, ${overflowed} shed), throttled RPC, skips failed txs`);
+}
+
 async function main() {
+  await testWatcherQueue();
   await testAnalyzeSwap();
   await testRateLimiter();
   await testTrader();
