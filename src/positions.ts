@@ -97,4 +97,17 @@ export class PositionStore {
       this.save();
     }
   }
+
+  // The wallet holds ZERO of this token even though our record says we
+  // should still have some. For a real position that almost always means it
+  // was sold outside the bot (manually, or by another tool) — there is
+  // nothing left to sell, so this frees the position slot. Deliberately NOT
+  // "closed": we don't know what it sold for, so no P&L is recorded either
+  // way, and it's reported separately so you can reconcile it yourself.
+  markAbandoned(position: Position, reason: string): void {
+    position.status = 'abandoned';
+    position.abandonedReason = reason;
+    position.tokenAmountRaw = '0';
+    this.save();
+  }
 }

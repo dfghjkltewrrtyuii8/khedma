@@ -399,7 +399,10 @@ async function testSellUsesOnChainBalance(realLog: (...a: unknown[]) => void) {
     });
     await trader.sellPosition(empty, 1, 'test');
     assert(orders.length === 0, 'no order is placed when the wallet holds nothing');
-    assert(empty.status === 'stuck', 'a zero balance is flagged stuck, not closed');
+    // Zero on-chain balance means nothing is left to retry, so it's 'abandoned'
+    // (frees the slot) rather than 'stuck' (implies a failure to keep retrying).
+    // See testAbandonedFreesSlot for the dedicated coverage of that behavior.
+    assert(empty.status === 'abandoned', `zero balance should be abandoned, not ${empty.status}`);
     assert(empty.receivedSol === 0, 'no fabricated proceeds');
   } finally {
     console.log = quiet; console.error = quietErr;
@@ -407,7 +410,64 @@ async function testSellUsesOnChainBalance(realLog: (...a: unknown[]) => void) {
   realLog('✅ real sells: sized from the on-chain balance, zero-balance flagged not faked');
 }
 
+// A position sold OUTSIDE the bot (manually, via jup.ag, etc.) must not sit
+// as "stuck" forever — stuck implies an in-bot failure needing a retry, but
+// there's nothing left to retry, and it kept occupying a position slot with
+// no way out. It should instead be freed as "abandoned": excluded from both
+// the position count and from P&L (we don't know what it actually sold for).
+async function testAbandonedFreesSlot(realLog: (...a: unknown[]) => void) {
+  const config = loadConfig();
+  config.maxOpenPositions = 1;
+  const keypair = Keypair.generate();
+  let onChain = 0n; // simulates: you already sold this token yourself
+  const fakeJupiter = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> {
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: p.amountRaw, outAmountRaw: 999n };
+    },
+    async execute() { throw new Error('must not execute'); },
+  };
+  const fakeConnection = {
+    async getBalance() { return 10e9; },
+    async getParsedTokenAccountsByOwner() {
+      return { value: onChain === 0n ? [] :
+        [{ account: { data: { parsed: { info: { tokenAmount: { amount: onChain.toString() } } } } } }] };
+    },
+  };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-abandoned-')));
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+
+  const quiet = console.log, quietErr = console.error;
+  console.log = () => {}; console.error = () => {};
+  try {
+    const pos = store.openPosition({
+      mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED,
+      dryRun: false, spentSol: 0.1, tokenAmountRaw: '500000',
+    });
+    await trader.sellPosition(pos, 1, 'test');
+
+    assert(pos.status === 'abandoned', `expected abandoned, got ${pos.status}`);
+    assert(store.atRiskCount() === 0, 'abandoned positions must not occupy a slot');
+    assert(store.byStatus('stuck').length === 0, 'must not be left as stuck');
+    assert(pos.receivedSol === 0, 'no proceeds invented for an externally-sold position');
+
+    // The freed slot must actually accept a new buy.
+    onChain = 500n; // the new buy delivers something
+    const orderSpy: OrderParams[] = [];
+    const fj2 = {
+      async getOrder(p: OrderParams): Promise<JupiterOrder> { orderSpy.push(p); return { requestId: 'r', transactionBase64: 'AA==', inAmountRaw: p.amountRaw, outAmountRaw: 500n }; },
+      async execute() { return { signature: 'sig' }; },
+    };
+    // Reuse a trader whose signAndExecute would need a real tx; simplest check is
+    // that maybeCopyBuy no longer sees atRiskCount blocking it.
+    assert(store.atRiskCount() < config.maxOpenPositions, 'slot is free for the next buy');
+  } finally {
+    console.log = quiet; console.error = quietErr;
+  }
+  realLog('✅ abandoned: externally-sold positions free their slot and record no P&L');
+}
+
 async function main() {
+  await testAbandonedFreesSlot(console.log);
   await testSellUsesOnChainBalance(console.log);
   await testWatcherQueue();
   await testAnalyzeSwap();

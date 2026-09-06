@@ -19,6 +19,12 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
   first, for as long as you need.
 - **One shared rate limiter** in front of *every* Jupiter call — max 1 request in
   flight, ~1.1 s between calls — because the free Jupiter tier is 1 request/second.
+- **A position sold outside the bot frees its slot instead of blocking forever.**
+  If you sell manually (Phantom, jup.ag) and the bot later finds the wallet
+  holds zero of that token, it's marked **abandoned** — not stuck, since
+  there's nothing left to retry — and stops counting toward
+  `MAX_OPEN_POSITIONS`. No P&L is recorded for it either way, since the bot
+  doesn't know what it actually sold for.
 - **Real sells are sized from the wallet, not from the quote.** A fill delivers
   slightly less than quoted (that's what slippage is), so selling the quoted
   figure gets rejected as "Insufficient funds" and strands the position. The bot

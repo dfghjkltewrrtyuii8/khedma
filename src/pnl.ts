@@ -80,6 +80,7 @@ function printGroup(
   const open = positions.filter((p) => p.status === 'open');
   const closed = positions.filter((p) => p.status === 'closed');
   const stuck = positions.filter((p) => p.status === 'stuck');
+  const abandoned = positions.filter((p) => p.status === 'abandoned');
 
   console.log(`\n── ${label} ──`);
 
@@ -125,6 +126,13 @@ function printGroup(
     for (const p of stuck) {
       console.log(`    • ${shortAddress(p.mint)} (${heldPercent(p)}% of bag remaining) — last error: ${p.stuckReason ?? 'unknown'}`);
       console.log(`      full mint: ${p.mint}`);
+    }
+  }
+
+  if (abandoned.length > 0) {
+    console.log(`  ⚪ ABANDONED (${abandoned.length}) — wallet held none of the token, likely sold outside the bot. Spent is shown but NOT counted as a loss, since we don't know what it actually sold for:`);
+    for (const p of abandoned) {
+      console.log(`    • ${shortAddress(p.mint)}: spent ${p.spentSol.toFixed(4)} SOL — ${p.abandonedReason ?? 'unknown'}`);
     }
   }
 }

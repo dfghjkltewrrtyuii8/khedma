@@ -14,7 +14,7 @@ export interface SwapEvent {
   quoteSolEquivalent: number | null;
 }
 
-export type PositionStatus = 'open' | 'closed' | 'stuck';
+export type PositionStatus = 'open' | 'closed' | 'stuck' | 'abandoned';
 
 export interface Position {
   id: string;
@@ -32,4 +32,5 @@ export interface Position {
   buyTx?: string; // real buy signature (absent in dry-run)
   sellTxs: string[]; // real sell signatures
   stuckReason?: string; // why a sell permanently failed — tokens still in wallet!
+  abandonedReason?: string; // why we stopped tracking it — wallet holds none of this token, so it was almost certainly sold outside the bot
 }

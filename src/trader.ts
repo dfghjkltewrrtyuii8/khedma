@@ -238,12 +238,18 @@ export class Trader {
       if (onChain === null) {
         console.log('   ↳ could not read the wallet balance; using the recorded amount');
       } else if (onChain === 0n) {
-        this.store.markStuck(position, 'wallet holds none of this token — sold elsewhere, or the buy never delivered');
-        console.error(
-          `\n   🔴 Position ${position.id} holds ZERO ${shortAddress(position.mint)} on-chain.\n` +
-            '      Nothing to sell. Flagged for you to check rather than recorded as a trade.\n'
+        // Nothing left to sell — most likely you sold it yourself outside the
+        // bot. Not stuck (nothing is failing) and not closed (we don't know
+        // what it sold for, so no P&L is recorded). Freed from the position
+        // count either way, so it stops occupying a slot forever.
+        this.store.markAbandoned(position, 'wallet holds none of this token — likely sold outside the bot');
+        console.log(
+          `\n   ℹ️  Position ${position.id} (${shortAddress(position.mint)}) holds ZERO tokens on-chain.\n` +
+            '      Marked as abandoned (not stuck) — the slot is now free. If you sold this\n' +
+            '      yourself, that\'s expected; P&L for it is not tracked since we don\'t know\n' +
+            '      what it sold for.\n'
         );
-        return false;
+        return true;
       } else {
         if (onChain !== held) {
           console.log(`   ↳ wallet holds ${onChain} raw units (record said ${held}) — trusting the chain`);
