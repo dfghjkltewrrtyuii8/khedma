@@ -34,6 +34,13 @@ export class Trader {
     this.shuttingDown = true;
   }
 
+  // Simulated trades ask Jupiter for a price-only quote (no taker), so the
+  // wallet is never balance-checked for a swap it will not make. Real trades
+  // pass the taker so Jupiter builds a transaction we can sign.
+  private orderTaker(simulated: boolean): string | null {
+    return simulated ? null : this.keypair.publicKey.toBase58();
+  }
+
   handleSwapEvent(event: SwapEvent): Promise<void> {
     this.queue = this.queue.then(() => this.processEvent(event)).catch(() => {});
     return this.queue;
@@ -92,7 +99,7 @@ export class Trader {
         inputMint: SOL_MINT,
         outputMint: event.mint,
         amountRaw: spendLamports,
-        takerPubkey: this.keypair.publicKey.toBase58(),
+        takerPubkey: this.orderTaker(this.config.dryRun),
         slippageBps: this.config.slippageBps,
       });
     } catch (error) {
@@ -191,7 +198,7 @@ export class Trader {
           inputMint: position.mint,
           outputMint: SOL_MINT,
           amountRaw: sellRaw,
-          takerPubkey: this.keypair.publicKey.toBase58(),
+          takerPubkey: this.orderTaker(position.dryRun),
           slippageBps: this.config.slippageBps,
         });
         const receivedSol = Number(order.outAmountRaw) / 1e9;

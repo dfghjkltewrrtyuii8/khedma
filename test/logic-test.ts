@@ -201,7 +201,22 @@ async function testTrader() {
   await trader.closeAllPositions('second ctrl+c');
   assert(orders.length === ordersBefore, 'second closeAll did nothing (double Ctrl+C safe)');
 
+  // Dry-run must never send a taker. Sending one makes Jupiter balance-check a
+  // wallet for a swap it will never make, which failed every simulated trade on
+  // an unfunded wallet with "Insufficient funds".
+  assert(orders.length > 0, 'orders were recorded');
+  assert(orders.every((o) => o.takerPubkey === null), 'dry-run orders must be quote-only (taker omitted)');
+
+  // Real mode must pass the taker, so Jupiter builds a transaction to sign.
+  const realStore = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-real-')));
+  const realTrader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, realStore);
+  orders.length = 0;
+  await realTrader.handleSwapEvent({ ...buyEvent, signature: 'r1' });
+  assert(orders.length === 1, 'real mode requested one order');
+  assert(orders[0].takerPubkey === keypair.publicKey.toBase58(), 'real orders must carry the taker');
+
   console.log('✅ trader: buy/dup-skip/dust-skip/partial-sell/full-exit/stuck/shutdown-guard all correct');
+  console.log('✅ taker: omitted for simulated orders, present for real ones');
 }
 
 // The summary must never invent USD figures when the price feed is down,

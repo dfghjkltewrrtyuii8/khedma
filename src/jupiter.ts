@@ -29,7 +29,11 @@ export interface OrderParams {
   inputMint: string;
   outputMint: string;
   amountRaw: bigint; // raw units of inputMint
-  takerPubkey: string;
+  // The wallet that will sign. Pass null for a price-only quote: Jupiter then
+  // returns no transaction and does NOT check the wallet's balance, which is
+  // what dry-run needs (simulated positions hold no real tokens, and the
+  // wallet needn't be funded to price a swap).
+  takerPubkey: string | null;
   slippageBps: number;
 }
 
@@ -85,9 +89,11 @@ export class JupiterClient {
       inputMint: params.inputMint,
       outputMint: params.outputMint,
       amount: params.amountRaw.toString(),
-      taker: params.takerPubkey,
       slippageBps: params.slippageBps.toString(),
     });
+    // Omitted for dry-run: without a taker Jupiter prices the route but skips
+    // the balance check and returns no transaction to sign.
+    if (params.takerPubkey) query.set('taker', params.takerPubkey);
     const body = (await this.request('order', `${BASE_URL}/order?${query}`, { method: 'GET' })) as Record<
       string,
       unknown
