@@ -4,9 +4,10 @@
 // COPY_BUY_AMOUNT_SOL, regardless of how big the tracked wallet's trade was.
 // Sells mirror the tracked wallet proportionally (they sold 50% -> we sell 50%).
 
-import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { Config, SOL_MINT } from './config';
 import { JupiterClient, JupiterError } from './jupiter';
+import { notify } from './notify';
 import { PositionStore } from './positions';
 import { sleep } from './rateLimiter';
 import { Position, SwapEvent } from './types';
@@ -14,6 +15,8 @@ import { shortAddress } from './watcher';
 
 const SELL_ATTEMPTS = 3; // thin tokens can lose their route in seconds — retry, but don't loop forever
 const SELL_RETRY_DELAY_MS = 2_000;
+const BALANCE_SETTLE_ATTEMPTS = 4;
+const BALANCE_SETTLE_DELAY_MS = 1_500;
 
 export class Trader {
   private shuttingDown = false;
@@ -39,6 +42,39 @@ export class Trader {
   // pass the taker so Jupiter builds a transaction we can sign.
   private orderTaker(simulated: boolean): string | null {
     return simulated ? null : this.keypair.publicKey.toBase58();
+  }
+
+  // What the wallet ACTUALLY holds of a mint, summed across its token accounts.
+  // Returns null if the chain could not be read (never treat that as zero).
+  private async tokenBalanceRaw(mint: string): Promise<bigint | null> {
+    try {
+      const accounts = await this.connection.getParsedTokenAccountsByOwner(this.keypair.publicKey, {
+        mint: new PublicKey(mint),
+      });
+      let total = 0n;
+      for (const account of accounts.value) {
+        total += BigInt(account.account.data.parsed.info.tokenAmount.amount);
+      }
+      return total;
+    } catch {
+      return null;
+    }
+  }
+
+  // A filled swap delivers slightly less than the quote promised (that is what
+  // slippage IS), and tokens take a moment to appear. Recording the quoted
+  // figure made every later sell ask for more than the wallet held, which
+  // Jupiter rejects as "Insufficient funds" — stranding the position. So we
+  // measure the real delta instead, and only fall back to the quote if the
+  // chain cannot be read.
+  private async settledDeltaRaw(mint: string, before: bigint, quoted: bigint): Promise<bigint> {
+    for (let attempt = 1; attempt <= BALANCE_SETTLE_ATTEMPTS; attempt++) {
+      const after = await this.tokenBalanceRaw(mint);
+      if (after !== null && after > before) return after - before;
+      await sleep(BALANCE_SETTLE_DELAY_MS);
+    }
+    console.log('   ⚠️ Could not read the delivered token amount; falling back to the quoted figure.');
+    return quoted;
   }
 
   handleSwapEvent(event: SwapEvent): Promise<void> {
@@ -127,6 +163,7 @@ export class Trader {
         `   ✅ [DRY RUN] SIMULATED buy: ${expectedTokens.toLocaleString()} ${shortAddress(event.mint)} ` +
           `for ${this.config.copyBuyAmountSol} SOL (position ${position.id})`
       );
+      notify('Simulated buy', `${this.config.copyBuyAmountSol} SOL of ${shortAddress(event.mint)} (dry run)`);
       return;
     }
 
@@ -134,21 +171,32 @@ export class Trader {
       console.error('   ↳ buy failed: Jupiter order came back without a transaction to sign');
       return;
     }
+    // Read the balance BEFORE signing so the delta is unambiguous even if the
+    // wallet already held some of this mint.
+    const balanceBefore = (await this.tokenBalanceRaw(event.mint)) ?? 0n;
     try {
       const signature = await this.signAndExecute(order.transactionBase64, order.requestId);
+      const receivedRaw = await this.settledDeltaRaw(event.mint, balanceBefore, order.outAmountRaw);
+      const receivedTokens = Number(receivedRaw) / 10 ** event.decimals;
       const position = this.store.openPosition({
         mint: event.mint,
         decimals: event.decimals,
         sourceWallet: event.sourceWallet,
         dryRun: false,
         spentSol: this.config.copyBuyAmountSol,
-        tokenAmountRaw: order.outAmountRaw.toString(),
+        tokenAmountRaw: receivedRaw.toString(),
         buyTx: signature,
       });
+      const slippedPct = ((Number(receivedRaw) / Number(order.outAmountRaw) - 1) * 100).toFixed(2);
       console.log(
-        `   ✅ REAL buy confirmed: ~${expectedTokens.toLocaleString()} ${shortAddress(event.mint)} ` +
-          `for ${this.config.copyBuyAmountSol} SOL (position ${position.id})\n` +
+        `   ✅ REAL buy confirmed: ${receivedTokens.toLocaleString()} ${shortAddress(event.mint)} ` +
+          `for ${this.config.copyBuyAmountSol} SOL (quoted ${expectedTokens.toLocaleString()}, ${slippedPct}%)\n` +
+          `      position ${position.id}\n` +
           `      https://solscan.io/tx/${signature}`
+      );
+      notify(
+        '🟢 BOUGHT',
+        `${this.config.copyBuyAmountSol} SOL of ${shortAddress(event.mint)} — copied from ${shortAddress(event.sourceWallet)}`
       );
     } catch (error) {
       console.error(`   ↳ REAL buy failed (no position opened): ${(error as Error).message}`);
@@ -180,7 +228,31 @@ export class Trader {
   async sellPosition(position: Position, fraction: number, reason: string): Promise<boolean> {
     if (position.status === 'stuck') this.store.reopenStuck(position);
 
-    const held = BigInt(position.tokenAmountRaw);
+    let held = BigInt(position.tokenAmountRaw);
+
+    // For real positions the chain is the authority, not our record. Asking to
+    // sell more than the wallet holds is rejected as "Insufficient funds" and
+    // would strand a perfectly sellable position.
+    if (!position.dryRun) {
+      const onChain = await this.tokenBalanceRaw(position.mint);
+      if (onChain === null) {
+        console.log('   ↳ could not read the wallet balance; using the recorded amount');
+      } else if (onChain === 0n) {
+        this.store.markStuck(position, 'wallet holds none of this token — sold elsewhere, or the buy never delivered');
+        console.error(
+          `\n   🔴 Position ${position.id} holds ZERO ${shortAddress(position.mint)} on-chain.\n` +
+            '      Nothing to sell. Flagged for you to check rather than recorded as a trade.\n'
+        );
+        return false;
+      } else {
+        if (onChain !== held) {
+          console.log(`   ↳ wallet holds ${onChain} raw units (record said ${held}) — trusting the chain`);
+        }
+        held = onChain;
+        position.tokenAmountRaw = held.toString();
+      }
+    }
+
     const sellRaw = fraction >= 1 ? held : (held * BigInt(Math.round(fraction * 1_000_000))) / 1_000_000n;
     if (sellRaw <= 0n) return true;
 
@@ -209,6 +281,7 @@ export class Trader {
             `   ✅ [DRY RUN] SIMULATED sell: received ~${receivedSol.toFixed(4)} SOL` +
               (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open')
           );
+          notify('Simulated sell', `${shortAddress(position.mint)} for ~${receivedSol.toFixed(4)} SOL (dry run)`);
           return true;
         }
 
@@ -219,6 +292,11 @@ export class Trader {
           `   ✅ REAL sell confirmed: ~${receivedSol.toFixed(4)} SOL` +
             (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open') +
             `\n      https://solscan.io/tx/${signature}`
+        );
+        const pnl = receivedSol - position.spentSol;
+        notify(
+          pnl >= 0 ? '🟢 SOLD (profit)' : '🔴 SOLD (loss)',
+          `${shortAddress(position.mint)}: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(4)} SOL`
         );
         return true;
       } catch (error) {
@@ -231,6 +309,7 @@ export class Trader {
     // IMPORTANT: a failed sell is NOT a closed position. The tokens are still
     // in the wallet (or, in dry-run, would be). Track it as stuck and say so.
     this.store.markStuck(position, lastError);
+    notify('⚠️ SELL FAILED — position stuck', `${shortAddress(position.mint)} — tokens still in your wallet`);
     console.error(
       `\n   🔴 SELL FAILED after ${SELL_ATTEMPTS} attempts — position ${position.id} is now STUCK.\n` +
         `      Token ${position.mint}\n` +

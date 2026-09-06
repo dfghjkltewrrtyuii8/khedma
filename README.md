@@ -19,6 +19,10 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
   first, for as long as you need.
 - **One shared rate limiter** in front of *every* Jupiter call — max 1 request in
   flight, ~1.1 s between calls — because the free Jupiter tier is 1 request/second.
+- **Real sells are sized from the wallet, not from the quote.** A fill delivers
+  slightly less than quoted (that's what slippage is), so selling the quoted
+  figure gets rejected as "Insufficient funds" and strands the position. The bot
+  reads the actual on-chain balance before every real sell.
 - **Failed sells are never faked as closed.** If a real sell fails after retries,
   the position is marked **STUCK** ("tokens still in your wallet"), flagged loudly,
   and excluded from realized P&L.
@@ -101,6 +105,7 @@ with **Cmd+S** and close TextEdit.
 | `MIN_SOL_RESERVE` | Real trades never spend below this balance. Default `0.05`. |
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
+| `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
 
 > 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
 > will never upload it. Don't paste it anywhere else, and don't screenshot it.

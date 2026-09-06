@@ -349,7 +349,66 @@ async function testWatcherQueue() {
   console.log(`✅ watcher queue: bounded backlog (${s.processed} processed, ${overflowed} shed), throttled RPC, skips failed txs`);
 }
 
+// The bug that stranded a real position: the buy quote promised more tokens
+// than the fill delivered, so every sell asked for more than the wallet held
+// and Jupiter rejected it as "Insufficient funds". A real sell must size from
+// the chain, never from our record of the quote.
+async function testSellUsesOnChainBalance(realLog: (...a: unknown[]) => void) {
+  const config = loadConfig();
+  const keypair = Keypair.generate();
+  const orders: OrderParams[] = [];
+  const fakeJupiter = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> {
+      orders.push(p);
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: p.amountRaw, outAmountRaw: 1_000n };
+    },
+    async execute() { throw new Error('must not execute'); },
+  };
+  const QUOTED = 5_000_000n;   // what the buy quote promised
+  const DELIVERED = 4_900_000n; // what the wallet actually received
+  let onChain = DELIVERED;
+  const fakeConnection = {
+    async getBalance() { return 10e9; },
+    async getParsedTokenAccountsByOwner() {
+      return { value: onChain === 0n ? [] :
+        [{ account: { data: { parsed: { info: { tokenAmount: { amount: onChain.toString() } } } } } }] };
+    },
+  };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-onchain-')));
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+
+  const quiet = console.log, quietErr = console.error;
+  console.log = () => {}; console.error = () => {};
+  try {
+    const pos = store.openPosition({
+      mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED,
+      dryRun: false, spentSol: 0.1, tokenAmountRaw: QUOTED.toString(),
+    });
+    await trader.sellPosition(pos, 1, 'test');
+
+    assert(orders.length > 0, 'a sell order was requested');
+    assert(orders[0].amountRaw === DELIVERED,
+      `sell must size from the chain (${DELIVERED}), not the quote (${QUOTED}); asked for ${orders[0].amountRaw}`);
+
+    // Holding none of the token is flagged, never recorded as a completed trade.
+    onChain = 0n;
+    orders.length = 0;
+    const empty = store.openPosition({
+      mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', decimals: 5, sourceWallet: TRACKED,
+      dryRun: false, spentSol: 0.1, tokenAmountRaw: QUOTED.toString(),
+    });
+    await trader.sellPosition(empty, 1, 'test');
+    assert(orders.length === 0, 'no order is placed when the wallet holds nothing');
+    assert(empty.status === 'stuck', 'a zero balance is flagged stuck, not closed');
+    assert(empty.receivedSol === 0, 'no fabricated proceeds');
+  } finally {
+    console.log = quiet; console.error = quietErr;
+  }
+  realLog('✅ real sells: sized from the on-chain balance, zero-balance flagged not faked');
+}
+
 async function main() {
+  await testSellUsesOnChainBalance(console.log);
   await testWatcherQueue();
   await testAnalyzeSwap();
   await testRateLimiter();
