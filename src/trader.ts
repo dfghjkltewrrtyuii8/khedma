@@ -17,6 +17,8 @@ const SELL_ATTEMPTS = 3; // thin tokens can lose their route in seconds — retr
 const SELL_RETRY_DELAY_MS = 2_000;
 const BALANCE_SETTLE_ATTEMPTS = 4;
 const BALANCE_SETTLE_DELAY_MS = 1_500;
+const BALANCE_CHECK_ATTEMPTS = 3;
+const BALANCE_CHECK_RETRY_DELAY_MS = 1_500;
 
 export class Trader {
   private shuttingDown = false;
@@ -232,11 +234,19 @@ export class Trader {
 
     // For real positions the chain is the authority, not our record. Asking to
     // sell more than the wallet holds is rejected as "Insufficient funds" and
-    // would strand a perfectly sellable position.
+    // would strand a perfectly sellable position. A single RPC hiccup here
+    // (network blip, rate limit) must not silently fall back to a stale
+    // recorded amount — that reproduces the exact failure this check exists
+    // to prevent — so retry a few times before giving up on reading it.
     if (!position.dryRun) {
-      const onChain = await this.tokenBalanceRaw(position.mint);
+      let onChain: bigint | null = null;
+      for (let attempt = 1; attempt <= BALANCE_CHECK_ATTEMPTS; attempt++) {
+        onChain = await this.tokenBalanceRaw(position.mint);
+        if (onChain !== null) break;
+        if (attempt < BALANCE_CHECK_ATTEMPTS) await sleep(BALANCE_CHECK_RETRY_DELAY_MS);
+      }
       if (onChain === null) {
-        console.log('   ↳ could not read the wallet balance; using the recorded amount');
+        console.log(`   ↳ could not read the wallet balance after ${BALANCE_CHECK_ATTEMPTS} attempts; using the recorded amount`);
       } else if (onChain === 0n) {
         // Nothing left to sell — most likely you sold it yourself outside the
         // bot. Not stuck (nothing is failing) and not closed (we don't know

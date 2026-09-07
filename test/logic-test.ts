@@ -496,7 +496,51 @@ async function testWriteoffFiltering(realLog: (...a: unknown[]) => void) {
   realLog('✅ writeoff: only lists real open/stuck positions, writing one off frees its slot');
 }
 
+// A single transient RPC failure reading the on-chain balance (network blip,
+// rate limit) must not fall back to the stale recorded amount and reproduce
+// "Insufficient funds" — this is exactly the bug that re-stuck a position the
+// user had already sold manually. The read must retry before giving up.
+async function testBalanceCheckRetriesTransientFailure(realLog: (...a: unknown[]) => void) {
+  const config = loadConfig();
+  const keypair = Keypair.generate();
+  let balanceCalls = 0;
+  const fakeConnection = {
+    async getBalance() { return 10e9; },
+    async getParsedTokenAccountsByOwner() {
+      balanceCalls++;
+      if (balanceCalls === 1) throw new Error('429 Too Many Requests'); // transient hiccup
+      return { value: [] }; // second attempt succeeds: wallet genuinely holds none
+    },
+  };
+  const orders: OrderParams[] = [];
+  const fakeJupiter = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> { orders.push(p); return { requestId: 'r', transactionBase64: null, inAmountRaw: p.amountRaw, outAmountRaw: 1n }; },
+    async execute() { throw new Error('must not execute'); },
+  };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-retry-')));
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+
+  const quiet = console.log, quietErr = console.error;
+  console.log = () => {}; console.error = () => {};
+  try {
+    const pos = store.openPosition({
+      mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED,
+      dryRun: false, spentSol: 0.1, tokenAmountRaw: '524785000',
+    });
+    await trader.sellPosition(pos, 1, 'test');
+
+    assert(balanceCalls >= 2, `expected a retry after the transient failure, only ${balanceCalls} call(s) made`);
+    assert(orders.length === 0, 'must not attempt to sell the stale amount after a transient read failure');
+    assert(pos.status === 'abandoned', `a retried read finding zero balance should abandon, not ${pos.status}`);
+    assert(!pos.stuckReason?.includes('Insufficient funds'), 'must never re-derive the stale Insufficient funds failure');
+  } finally {
+    console.log = quiet; console.error = quietErr;
+  }
+  realLog('✅ balance check: retries a transient RPC failure instead of trusting stale data');
+}
+
 async function main() {
+  await testBalanceCheckRetriesTransientFailure(console.log);
   await testWriteoffFiltering(console.log);
   await testAbandonedFreesSlot(console.log);
   await testSellUsesOnChainBalance(console.log);
