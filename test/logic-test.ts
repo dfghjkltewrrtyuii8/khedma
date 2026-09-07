@@ -466,7 +466,38 @@ async function testAbandonedFreesSlot(realLog: (...a: unknown[]) => void) {
   realLog('✅ abandoned: externally-sold positions free their slot and record no P&L');
 }
 
+// The writeoff CLI's own logic: which positions it's willing to touch (real,
+// open/stuck only — never dry-run, never already closed/abandoned), and that
+// writing one off frees its slot via the same markAbandoned path.
+async function testWriteoffFiltering(realLog: (...a: unknown[]) => void) {
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-writeoff-')));
+  const base = { decimals: 5, sourceWallet: TRACKED, tokenAmountRaw: '1000' };
+
+  const realStuck = store.openPosition({ ...base, mint: MEME_MINT, dryRun: false, spentSol: 0.1 });
+  store.markStuck(realStuck, 'no route found');
+  const realOpen = store.openPosition({ ...base, mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', dryRun: false, spentSol: 0.1 });
+  const simStuck = store.openPosition({ ...base, mint: 'So11111111111111111111111111111111111111111', dryRun: true, spentSol: 0.01 });
+  store.markStuck(simStuck, 'no route found');
+  const realClosed = store.openPosition({ ...base, mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', dryRun: false, spentSol: 0.1 });
+  store.recordSell(realClosed, 1000n, 0.11, 'sig');
+
+  // Mirrors the filter in writeoff.ts: real, and still occupying a slot.
+  const atRisk = store.all().filter((p) => !p.dryRun && (p.status === 'open' || p.status === 'stuck'));
+  assert(atRisk.length === 2, `expected 2 real at-risk positions, got ${atRisk.length}`);
+  assert(atRisk.some((p) => p.id === realStuck.id) && atRisk.some((p) => p.id === realOpen.id), 'lists exactly the real open+stuck ones');
+  assert(!atRisk.some((p) => p.id === simStuck.id), 'never lists a simulated position for write-off');
+  assert(!atRisk.some((p) => p.id === realClosed.id), 'never lists an already-closed position');
+
+  const before = store.atRiskCount();
+  store.markAbandoned(realStuck, 'written off manually — could not be sold (e.g. rugged / no liquidity)');
+  assert(store.atRiskCount() === before - 1, 'writing one off frees exactly one slot');
+  assert(realStuck.abandonedReason?.includes('written off manually'), 'records why it was written off');
+
+  realLog('✅ writeoff: only lists real open/stuck positions, writing one off frees its slot');
+}
+
 async function main() {
+  await testWriteoffFiltering(console.log);
   await testAbandonedFreesSlot(console.log);
   await testSellUsesOnChainBalance(console.log);
   await testWatcherQueue();

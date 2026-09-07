@@ -185,6 +185,28 @@ It should end with `All logic tests passed.` This verifies buy/sell detection,
 the Jupiter rate limiter spacing, stuck-position handling, the double-Ctrl+C
 guard, and that P&L never invents numbers.
 
+Write off a position that's genuinely stuck for good — e.g. a token that
+rugged (lost all liquidity) and will never find a route to sell. Unlike the
+automatic "abandoned" handling above (which only fires when your wallet
+balance for that token reads zero), this is for a token you're still
+*holding* but have decided is worthless. It stops the position occupying
+one of your `MAX_OPEN_POSITIONS` slots; no P&L is recorded either way,
+since you're declaring it unrecoverable rather than reporting a sale:
+
+```zsh
+npm run writeoff
+```
+
+Run with no arguments first — it lists every real position still occupying
+a slot, with its id, status, and mint. Then write off the specific one:
+
+```zsh
+npm run writeoff -- <position-id>
+```
+
+Only ever touches real positions that are still open or stuck. Simulated
+(dry-run) and already-closed positions are never listed or touchable by it.
+
 Start completely fresh (forgets all recorded positions — it does **not** sell
 anything, and any real tokens stay in your wallet):
 

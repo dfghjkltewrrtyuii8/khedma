@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "summary": "tsx src/summary.ts",
+    "writeoff": "tsx src/writeoff.ts",
     "test": "tsx test/logic-test.ts",
     "typecheck": "tsc --noEmit"
   },
