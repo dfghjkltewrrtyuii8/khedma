@@ -10,6 +10,7 @@ import { JupiterClient } from './jupiter';
 import { printSummary } from './pnl';
 import { PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
+import { decideShutdown } from './shutdownDebounce';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { WalletWatcher } from './watcher';
@@ -122,18 +123,31 @@ async function main(): Promise<void> {
   }, PERIODIC_SUMMARY_MS);
 
   // ---- graceful shutdown ----
-  let shutdownStarted = false;
+  // A second SIGINT arriving within FORCE_QUIT_DEBOUNCE_MS of the first is
+  // treated as an accidental double-tap (key-repeat, an impatient double
+  // press) and ignored, not a force-quit. Real positions only get one chance
+  // to close on shutdown — a stray extra keystroke cutting that off mid-sell
+  // leaves them stuck for nothing. A second press after the window has
+  // elapsed still force-quits, for when you genuinely mean it.
+  const FORCE_QUIT_DEBOUNCE_MS = 5_000;
+  let shutdownStartedAt: number | null = null;
   const shutdown = async (signal: string) => {
-    if (shutdownStarted) {
+    const decision = decideShutdown(shutdownStartedAt, Date.now(), FORCE_QUIT_DEBOUNCE_MS);
+    if (decision === 'already-quitting') {
+      const elapsed = Date.now() - shutdownStartedAt!;
+      console.log(`\n(Still closing positions — give it a few more seconds. Press Ctrl+C again after ${Math.ceil((FORCE_QUIT_DEBOUNCE_MS - elapsed) / 1000)}s to force-quit for real.)`);
+      return;
+    }
+    if (decision === 'force-quit') {
       console.log('\nForce quit. (Sells were not run twice — any position not closed is still recorded as open.)');
       process.exit(130);
     }
-    shutdownStarted = true;
+    shutdownStartedAt = Date.now();
 
     console.log(`\n\n🛑 ${signal} received — stopping now.`);
     console.log('   1) No new opportunities will be taken.');
     console.log('   2) Trying to close open positions…');
-    console.log('   (Press Ctrl+C again to force-quit without waiting.)\n');
+    console.log(`   (A second Ctrl+C only force-quits after ~${FORCE_QUIT_DEBOUNCE_MS / 1000}s — real positions get a fair chance to close first.)\n`);
 
     clearInterval(summaryTimer);
     reportWatcherHealth(watcher);

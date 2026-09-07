@@ -32,9 +32,12 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
 - **Failed sells are never faked as closed.** If a real sell fails after retries,
   the position is marked **STUCK** ("tokens still in your wallet"), flagged loudly,
   and excluded from realized P&L.
-- **Graceful shutdown.** First `Ctrl+C`: stop watching immediately, then try to
-  close all positions. Second `Ctrl+C`: force-quit — sells are guaranteed not to
-  run twice.
+- **Graceful shutdown that survives an accidental double Ctrl+C.** First
+  `Ctrl+C`: stop watching immediately, then try to close all positions. A
+  second `Ctrl+C` only force-quits if it arrives more than 5 seconds after the
+  first — an instant double-tap (key-repeat, an impatient second press) is
+  ignored rather than cutting the close short. Sells are guaranteed not to
+  run twice either way.
 - **P&L in SOL and USD** (live SOL price from CoinGecko, so it doesn't consume
   your Jupiter request budget), always split into SIMULATED vs REAL.
 - **Hard caps:** fixed SOL per buy, max simultaneous positions (stuck ones count),

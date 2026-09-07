@@ -29,6 +29,7 @@ import { loadConfig, SOL_MINT } from '../src/config';
 import { JupiterOrder, OrderParams } from '../src/jupiter';
 import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
+import { decideShutdown } from '../src/shutdownDebounce';
 
 const TRACKED = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -539,7 +540,21 @@ async function testBalanceCheckRetriesTransientFailure(realLog: (...a: unknown[]
   realLog('✅ balance check: retries a transient RPC failure instead of trusting stale data');
 }
 
+// The Ctrl+C debounce that stops an accidental double-tap (key-repeat, an
+// impatient second press) from force-quitting mid-shutdown and stranding
+// real positions that were only given one chance to close. A second signal
+// within the debounce window must NOT force-quit; one after it elapses must.
+function testShutdownDebounce() {
+  const DEBOUNCE = 5_000;
+  assert(decideShutdown(null, 0, DEBOUNCE) === 'begin', 'first Ctrl+C begins shutdown');
+  assert(decideShutdown(1_000, 1_050, DEBOUNCE) === 'already-quitting', 'an instant double-tap must not force-quit');
+  assert(decideShutdown(1_000, 4_999, DEBOUNCE) === 'already-quitting', 'still within the window, 1ms short');
+  assert(decideShutdown(1_000, 6_001, DEBOUNCE) === 'force-quit', 'a deliberate second press after the window force-quits');
+  console.log('✅ shutdown debounce: an accidental double Ctrl+C cannot force-quit mid-close');
+}
+
 async function main() {
+  testShutdownDebounce();
   await testBalanceCheckRetriesTransientFailure(console.log);
   await testWriteoffFiltering(console.log);
   await testAbandonedFreesSlot(console.log);
