@@ -18,7 +18,6 @@ import { WalletWatcher } from './watcher';
 // Free-tier Jupiter = 1 request/second shared across everything, so we keep
 // ~1.1s between calls to stay safely under it.
 const JUPITER_MIN_GAP_MS = 1_100;
-const PERIODIC_SUMMARY_MS = 15 * 60_000;
 
 // @solana/web3.js prints one line per internal 429 retry. When the RPC plan is
 // saturated that floods the log and buries the actual trades. Count them
@@ -114,13 +113,17 @@ async function main(): Promise<void> {
   watcher.start();
   console.log('\nRunning. Press Ctrl+C once to stop and close positions gracefully.\n');
 
-  // Deliberately NOT marked to market: pricing open positions costs one Jupiter
-  // call each, and while the bot is running that budget belongs to trading.
-  // Use `npm run summary` (or shut down) for marked-to-market numbers.
+  // Default 30s (SUMMARY_INTERVAL_SECONDS in .env). Cheap even at short
+  // intervals: deliberately NOT marked to market, since pricing open
+  // positions costs one Jupiter call each, and while the bot is running that
+  // budget belongs to trading. This is just a local read of the position
+  // store plus an occasional (60s-cached) CoinGecko price fetch — no RPC or
+  // Jupiter calls. Use `npm run summary` (or shut down) for marked-to-market
+  // numbers, in both DRY_RUN and real mode alike.
   const summaryTimer = setInterval(() => {
     reportWatcherHealth(watcher);
     printSummary(store).catch(() => {});
-  }, PERIODIC_SUMMARY_MS);
+  }, config.summaryIntervalSeconds * 1000);
 
   // ---- graceful shutdown ----
   // A second SIGINT arriving within FORCE_QUIT_DEBOUNCE_MS of the first is

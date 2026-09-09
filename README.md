@@ -115,6 +115,7 @@ with **Cmd+S** and close TextEdit.
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
+| `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
 
 > 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
 > will never upload it. Don't paste it anywhere else, and don't screenshot it.
