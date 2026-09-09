@@ -136,8 +136,9 @@ wallet trades, you'll see lines like:
    ✅ [DRY RUN] SIMULATED buy: 1,234 Ab3d…9kQz for 0.01 SOL (position pos-…)
 ```
 
-A P&L summary prints every 15 minutes and on shutdown. Positions survive
-restarts — they're saved in `data/positions.json`.
+A P&L summary prints every 30 seconds (`SUMMARY_INTERVAL_SECONDS` in `.env`)
+and on shutdown. Positions survive restarts — they're saved in
+`data/positions.json`.
 
 ### 5. Stopping the bot
 
