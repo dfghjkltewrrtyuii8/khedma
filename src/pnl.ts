@@ -11,6 +11,7 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { PositionStore } from './positions';
 import { getSolPriceUsd } from './solPrice';
 import { Position } from './types';
+import { WalletGateConfig, WalletMute, walletMute, walletRecords } from './walletGate';
 import { shortAddress } from './watcher';
 
 interface Mark {
@@ -73,7 +74,8 @@ function printGroup(
   label: string,
   positions: Position[],
   solPriceUsd: number | null,
-  marks: Map<string, Mark>
+  marks: Map<string, Mark>,
+  muteOf: (wallet: string) => WalletMute
 ): void {
   if (positions.length === 0) return;
 
@@ -92,6 +94,15 @@ function printGroup(
       console.log(
         `    • ${shortAddress(p.mint)}: spent ${p.spentSol.toFixed(4)}, got back ${p.receivedSol.toFixed(4)} → ${formatSol(p.receivedSol - p.spentSol, solPriceUsd)}`
       );
+    }
+
+    // Which wallets are actually worth copying — best to worst by net result.
+    const records = [...walletRecords(positions).values()].sort((a, b) => b.netSol - a.netSol);
+    console.log('  By wallet (closed positions only):');
+    for (const r of records) {
+      const streak = r.consecutiveLosses >= 2 ? `, ${r.consecutiveLosses} losses in a row` : '';
+      const muted = muteOf(r.wallet).muted ? ' — 🔇 MUTED' : '';
+      console.log(`    • ${shortAddress(r.wallet)}: ${r.closed} closed, ${r.wins}W/${r.losses}L, net ${formatSol(r.netSol, solPriceUsd)}${streak}${muted}`);
     }
   }
 
@@ -143,9 +154,14 @@ function printGroup(
 export async function printSummary(
   store: PositionStore,
   jupiter?: JupiterClient,
-  slippageBps = 300
+  slippageBps = 300,
+  walletGate?: WalletGateConfig
 ): Promise<void> {
   const positions = [...store.all()];
+  // Mute status is judged over ALL positions (simulated + real), exactly as
+  // the trader judges it, so the summary never disagrees with the bot.
+  const muteOf = (wallet: string): WalletMute =>
+    walletGate ? walletMute(positions, wallet, Date.now(), walletGate) : { muted: false };
 
   let marks = new Map<string, Mark>();
   if (jupiter) {
@@ -160,8 +176,8 @@ export async function printSummary(
   if (positions.length === 0) {
     console.log('No positions yet.');
   } else {
-    printGroup('SIMULATED (dry-run — no real money moved)', positions.filter((p) => p.dryRun), solPriceUsd, marks);
-    printGroup('REAL (actual on-chain trades)', positions.filter((p) => !p.dryRun), solPriceUsd, marks);
+    printGroup('SIMULATED (dry-run — no real money moved)', positions.filter((p) => p.dryRun), solPriceUsd, marks, muteOf);
+    printGroup('REAL (actual on-chain trades)', positions.filter((p) => !p.dryRun), solPriceUsd, marks, muteOf);
   }
   console.log('═════════════════════════════════════════════\n');
 }

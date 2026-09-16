@@ -24,6 +24,12 @@ export interface Config {
   slippageBps: number;
   rpcRequestsPerSecond: number;
   summaryIntervalSeconds: number;
+  // Quality gates — see tokenMarket.ts and walletGate.ts.
+  minTokenAgeMinutes: number;
+  minLiquidityUsd: number;
+  walletMaxConsecutiveLosses: number;
+  walletMuteHours: number;
+  maxTrackedWallets: number;
 }
 
 function fail(message: string): never {
@@ -46,7 +52,10 @@ function numberEnv(name: string, defaultValue: number): number {
   return parsed;
 }
 
-export function loadConfig(): Config {
+// `purpose` decides which checks apply: 'trade' (the bot) enforces the tracked-
+// wallet cap; 'report' (npm run summary) does not, so the per-wallet table can
+// still be read while trimming the list down to the cap.
+export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
   const privateKeyBase58 = (process.env.PRIVATE_KEY_BASE58 ?? '').trim() || null;
   const walletMnemonic = (process.env.WALLET_MNEMONIC ?? '').trim() || null;
   if (!privateKeyBase58 && !walletMnemonic) {
@@ -91,10 +100,25 @@ export function loadConfig(): Config {
     slippageBps: numberEnv('SLIPPAGE_BPS', 300),
     rpcRequestsPerSecond: numberEnv('RPC_REQUESTS_PER_SECOND', 8),
     summaryIntervalSeconds: numberEnv('SUMMARY_INTERVAL_SECONDS', 30),
+    minTokenAgeMinutes: numberEnv('MIN_TOKEN_AGE_MINUTES', 30),
+    minLiquidityUsd: numberEnv('MIN_LIQUIDITY_USD', 20_000),
+    walletMaxConsecutiveLosses: numberEnv('WALLET_MAX_CONSECUTIVE_LOSSES', 3),
+    walletMuteHours: numberEnv('WALLET_MUTE_HOURS', 24),
+    maxTrackedWallets: numberEnv('MAX_TRACKED_WALLETS', 6),
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');
   if (config.rpcRequestsPerSecond <= 0) fail('RPC_REQUESTS_PER_SECOND must be greater than 0.');
   if (config.summaryIntervalSeconds <= 0) fail('SUMMARY_INTERVAL_SECONDS must be greater than 0.');
+  if (config.maxTrackedWallets <= 0) fail('MAX_TRACKED_WALLETS must be greater than 0.');
+  if (purpose === 'trade' && trackedWallets.length > config.maxTrackedWallets) {
+    fail(
+      `TRACKED_WALLETS has ${trackedWallets.length} addresses, more than MAX_TRACKED_WALLETS (${config.maxTrackedWallets}).\n` +
+        '   On a free Helius plan the watcher drops trades past a handful of busy wallets (measured: 27% of\n' +
+        '   signals lost at 6), and dropped trades make every result meaningless.\n' +
+        `   Run \`npm run summary\` to see which wallets actually made money, keep at most ${config.maxTrackedWallets}\n` +
+        '   of them in TRACKED_WALLETS, and start again. (Raise MAX_TRACKED_WALLETS only on a paid Helius plan.)'
+    );
+  }
   return config;
 }

@@ -31,9 +31,16 @@ import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
 import { soundFor } from '../src/notify';
+import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
+import { Position } from '../src/types';
+import { walletMute, walletRecords } from '../src/walletGate';
 
 const TRACKED = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
+
+// The token gate's market source for tests that aren't about the gate: an
+// old, deep token that always passes. Never touches the network.
+const okMarket = async (): Promise<TokenMarket> => ({ ageMinutes: 6 * 60, liquidityUsd: 150_000, source: 'test' });
 
 function makeTx(opts: {
   solPre: number;
@@ -143,7 +150,7 @@ async function testTrader() {
   };
   const fakeConnection = { async getBalance() { return 10e9; } };
 
-  const trader = new Trader(config, fakeConnection as any, keypair, fakeJupiter as any, store);
+  const trader = new Trader(config, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
 
   const buyEvent = {
     signature: 's1', sourceWallet: TRACKED, side: 'buy' as const, mint: MEME_MINT,
@@ -211,7 +218,7 @@ async function testTrader() {
 
   // Real mode must pass the taker, so Jupiter builds a transaction to sign.
   const realStore = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-real-')));
-  const realTrader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, realStore);
+  const realTrader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, realStore, okMarket);
   orders.length = 0;
   await realTrader.handleSwapEvent({ ...buyEvent, signature: 'r1' });
   assert(orders.length === 1, 'real mode requested one order');
@@ -377,7 +384,7 @@ async function testSellUsesOnChainBalance(realLog: (...a: unknown[]) => void) {
     },
   };
   const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-onchain-')));
-  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
 
   const quiet = console.log, quietErr = console.error;
   console.log = () => {}; console.error = () => {};
@@ -436,7 +443,7 @@ async function testAbandonedFreesSlot(realLog: (...a: unknown[]) => void) {
     },
   };
   const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-abandoned-')));
-  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
 
   const quiet = console.log, quietErr = console.error;
   console.log = () => {}; console.error = () => {};
@@ -520,7 +527,7 @@ async function testBalanceCheckRetriesTransientFailure(realLog: (...a: unknown[]
     async execute() { throw new Error('must not execute'); },
   };
   const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-retry-')));
-  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store);
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
 
   const quiet = console.log, quietErr = console.error;
   console.log = () => {}; console.error = () => {};
@@ -573,7 +580,132 @@ function testNotifySounds() {
   console.log('✅ notify sounds: distinct buy/sell/fail sounds, overridable, never silently muted by a typo');
 }
 
+// Wallet gate: a wallet whose copies keep closing at a loss is muted for a
+// cooling-off window, derived purely from position history. Open positions
+// never count (no outcome yet), a win resets the streak, and both knobs have
+// an explicit "off" / "forever" setting.
+function testWalletGate() {
+  const gate = { walletMaxConsecutiveLosses: 3, walletMuteHours: 24 };
+  const T0 = Date.parse('2026-09-16T10:00:00Z');
+  const pos = (wallet: string, spent: number, got: number, minutesAgo: number, status: 'closed' | 'open' = 'closed'): Position => ({
+    id: `p-${wallet}-${minutesAgo}`, mint: MEME_MINT, decimals: 5, sourceWallet: wallet, dryRun: true, status,
+    openedAt: new Date(T0 - (minutesAgo + 5) * 60_000).toISOString(),
+    closedAt: status === 'closed' ? new Date(T0 - minutesAgo * 60_000).toISOString() : undefined,
+    spentSol: spent, tokenAmountRaw: status === 'closed' ? '0' : '100', initialTokenAmountRaw: '100', receivedSol: got, sellTxs: [],
+  });
+  const A = 'walletA';
+  const B = 'walletB';
+  const history: Position[] = [
+    pos(A, 0.05, 0.02, 300), pos(A, 0.05, 0.09, 200), // a win in the middle resets the streak
+    pos(A, 0.05, 0.04, 120), pos(A, 0.05, 0.01, 60), pos(A, 0.05, 0.03, 10),
+    pos(B, 0.05, 0.01, 90), pos(B, 0.05, 0.02, 30),
+    pos(B, 0.05, 0, 5, 'open'), // still open → no outcome → not counted
+  ];
+  const rec = walletRecords(history);
+  assert(rec.get(A)!.closed === 5 && rec.get(A)!.wins === 1 && rec.get(A)!.losses === 4, 'wallet A tally');
+  assert(rec.get(A)!.consecutiveLosses === 3, 'streak counts back from the latest close and stops at the win');
+  assert(rec.get(B)!.consecutiveLosses === 2 && rec.get(B)!.closed === 2, 'open positions are not counted');
+  assert(Math.abs(rec.get(A)!.netSol - (0.02 + 0.09 + 0.04 + 0.01 + 0.03 - 0.25)) < 1e-9, 'net P&L per wallet');
+
+  assert(walletMute(history, A, T0, gate).muted === true, 'A: 3 straight losses → muted');
+  assert(walletMute(history, B, T0, gate).muted === false, 'B: only 2 → not muted');
+  assert(walletMute(history, A, T0 + 25 * 3_600_000, gate).muted === false, 'the mute expires after WALLET_MUTE_HOURS');
+  assert(walletMute(history, A, T0 + 25 * 3_600_000, { ...gate, walletMuteHours: 0 }).muted === true, 'WALLET_MUTE_HOURS=0 never expires');
+  assert(walletMute(history, A, T0, { ...gate, walletMaxConsecutiveLosses: 0 }).muted === false, 'WALLET_MAX_CONSECUTIVE_LOSSES=0 turns the gate off');
+  assert(walletMute(history, 'nobody', T0, gate).muted === false, 'a wallet with no history is not muted');
+  console.log('✅ wallet gate: mutes after N straight copied losses, a win resets, expires, ignores open positions');
+}
+
+// Token gate: pure verdicts. Fail-closed on missing data, off when both
+// thresholds are 0, and the Dexscreener summary takes the OLDEST pool's age
+// and the DEEPEST pool's liquidity, Solana only.
+function testTokenGate() {
+  const cfg = { minTokenAgeMinutes: 30, minLiquidityUsd: 20_000 };
+  const ok = (m: TokenMarket | null) => evaluateToken(m, cfg).ok;
+  assert(ok(null) === false, 'lookup failure → skip (never buy blind)');
+  assert(ok({ ageMinutes: null, liquidityUsd: null, source: 't' }) === false, 'not listed anywhere → too new → skip');
+  assert(ok({ ageMinutes: 12, liquidityUsd: 90_000, source: 't' }) === false, '12 min old → skip');
+  assert(ok({ ageMinutes: 600, liquidityUsd: 4_000, source: 't' }) === false, '$4k liquidity → skip');
+  assert(ok({ ageMinutes: 600, liquidityUsd: null, source: 't' }) === false, 'liquidity unknown → skip');
+  assert(ok({ ageMinutes: 600, liquidityUsd: 90_000, source: 't' }) === true, 'old and deep → pass');
+  const verdict = evaluateToken({ ageMinutes: 12, liquidityUsd: 90_000, source: 't' }, cfg);
+  assert(!verdict.ok && /12 min/.test(verdict.reason) && /MIN_TOKEN_AGE_MINUTES/.test(verdict.reason), 'skip reason names the number and the setting');
+  assert(evaluateToken(null, { minTokenAgeMinutes: 0, minLiquidityUsd: 0 }).ok === true, 'both thresholds 0 → gate off');
+
+  const now = Date.parse('2026-09-16T10:00:00Z');
+  const m = summarizePairs(
+    [
+      { chainId: 'solana', pairCreatedAt: now - 3 * 3_600_000, liquidity: { usd: 12_000 } },
+      { chainId: 'solana', pairCreatedAt: now - 48 * 3_600_000, liquidity: { usd: 55_000 } },
+      { chainId: 'ethereum', pairCreatedAt: now - 900 * 3_600_000, liquidity: { usd: 9_999_999 } },
+    ],
+    MEME_MINT,
+    now
+  );
+  assert(Math.round(m.ageMinutes!) === 48 * 60, 'age = oldest Solana pool');
+  assert(m.liquidityUsd === 55_000, 'liquidity = deepest Solana pool; other chains ignored');
+  assert(summarizePairs([], MEME_MINT, now).ageMinutes === null, 'no pools → not listed');
+  console.log('✅ token gate: fail-closed on missing data, age/liquidity thresholds, off at 0, Solana-only summary');
+}
+
+// The gates inside the trader: a fresh or unknown token is refused BEFORE any
+// Jupiter call is spent on it; a muted wallet's new buys are skipped while its
+// existing position is still mirrored on sell.
+async function testGatesInTrader(realLog: typeof console.log) {
+  const config = loadConfig();
+  config.maxOpenPositions = 10;
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-gates-')));
+  const keypair = Keypair.generate();
+  let orders = 0;
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      orders++;
+      const isBuy = params.inputMint === SOL_MINT;
+      // every sell returns 0.001 SOL for a 0.01 SOL buy → every close is a loss
+      return { requestId: 'req', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: isBuy ? 5_000n : 1_000_000n };
+    },
+    async execute() { throw new Error('must not execute in dry run'); },
+  };
+  const fakeConnection = { async getBalance() { return 10e9; } };
+  let market: TokenMarket | null = { ageMinutes: 3, liquidityUsd: 2_000, source: 'test' };
+  const trader = new Trader(config, fakeConnection as any, keypair, fakeJupiter as any, store, async () => market);
+  const mints = [MEME_MINT, ...[1, 2, 3, 4].map(() => Keypair.generate().publicKey.toBase58())];
+  const buy = (mint: string, signature: string) =>
+    trader.handleSwapEvent({ signature, sourceWallet: TRACKED, side: 'buy', mint, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+  const sellAll = (mint: string, signature: string) =>
+    trader.handleSwapEvent({ signature, sourceWallet: TRACKED, side: 'sell', mint, decimals: 5, tokenDeltaRaw: 100n, ownerPreTokenRaw: 100n, quoteSolEquivalent: 0.2 });
+
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    await buy(mints[0], 'g1');
+    assert(store.all().length === 0 && orders === 0, 'a 3-minute-old token is refused before any Jupiter call');
+    market = null;
+    await buy(mints[0], 'g2');
+    assert(store.all().length === 0 && orders === 0, 'a failed lookup is refused, not guessed');
+
+    market = { ageMinutes: 600, liquidityUsd: 100_000, source: 'test' };
+    await buy(mints[4], 'early'); // opened BEFORE any losses
+    for (let i = 0; i < 3; i++) {
+      await buy(mints[i], `b${i}`);
+      await sellAll(mints[i], `s${i}`);
+    }
+    assert(store.byStatus('closed').length === 3 && store.byStatus('open').length === 1, 'three losing round-trips, one position still open');
+    const before = orders;
+    await buy(mints[3], 'muted-buy');
+    assert(store.byStatus('open').length === 1 && orders === before, 'muted wallet: new buy skipped without spending a Jupiter call');
+    await sellAll(mints[4], 'muted-sell');
+    assert(store.byStatus('open').length === 0 && store.byStatus('closed').length === 4, 'muted wallet: its existing position is still mirrored on sell');
+  } finally {
+    console.log = loud;
+  }
+  realLog('✅ gates in trader: fresh/unknown tokens refused before Jupiter; muted wallet skips buys but still mirrors sells');
+}
+
 async function main() {
+  testWalletGate();
+  testTokenGate();
+  await testGatesInTrader(console.log);
   testNotifySounds();
   testShutdownDebounce();
   await testBalanceCheckRetriesTransientFailure(console.log);

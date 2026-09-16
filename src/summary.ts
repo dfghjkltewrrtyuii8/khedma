@@ -14,19 +14,14 @@ import { RateLimiter } from './rateLimiter';
 const JUPITER_MIN_GAP_MS = 1_100;
 
 async function main(): Promise<void> {
+  const config = loadConfig('report');
   const store = new PositionStore();
   store.load();
 
+  // Only build a Jupiter client when there is something to price.
   const openCount = store.byStatus('open').length;
-  if (openCount === 0) {
-    // Nothing to price, so don't require Jupiter credentials at all.
-    await printSummary(store);
-    return;
-  }
-
-  const config = loadConfig();
-  const jupiter = new JupiterClient(config.jupiterApiKey, new RateLimiter(JUPITER_MIN_GAP_MS));
-  await printSummary(store, jupiter, config.slippageBps);
+  const jupiter = openCount > 0 ? new JupiterClient(config.jupiterApiKey, new RateLimiter(JUPITER_MIN_GAP_MS)) : undefined;
+  await printSummary(store, jupiter, config.slippageBps, config);
 }
 
 main().catch((error) => {

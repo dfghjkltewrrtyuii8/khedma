@@ -43,6 +43,9 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
 - **Hard caps:** fixed SOL per buy, max simultaneous positions (stuck ones count),
   a minimum SOL reserve that real trades will never dip below, and a dust filter
   that ignores tiny tracked buys.
+- **Quality gates** refuse the trades that lost before: tokens too new or too
+  thin to exit, and wallets on a losing streak. See
+  [What it refuses to copy](#what-it-refuses-to-copy-quality-gates).
 
 > ⚠️ **Risk note:** only trade with SOL you are fully prepared to lose. Very new
 > or thin tokens can lose their Jupiter route within seconds — the bot retries
@@ -113,6 +116,11 @@ with **Cmd+S** and close TextEdit.
 | `MIN_TRACKED_BUY_SOL` | Ignore tracked buys smaller than this (dust filter). Default `0.05`. |
 | `MIN_SOL_RESERVE` | Real trades never spend below this balance. Default `0.05`. |
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
+| `MIN_TOKEN_AGE_MINUTES` | Don't copy a token younger than this (checked on Dexscreener). Default `30`. Set this **and** `MIN_LIQUIDITY_USD` to `0` to turn the token check off. |
+| `MIN_LIQUIDITY_USD` | Don't copy a token with less than this much liquidity in its deepest pool. Default `20000`. |
+| `WALLET_MAX_CONSECUTIVE_LOSSES` | Mute a tracked wallet after this many copied losses in a row. Default `3`; `0` = never mute. |
+| `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
+| `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
 | `SOUNDS` | macOS sound on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
@@ -245,6 +253,30 @@ Extra rules, to keep things predictable:
 - If the tracked wallet sells more than 90% of their bag, the bot treats it as a
   full exit and sells 100% of yours.
 
+## What it refuses to copy (quality gates)
+
+The bot copies 5–15 seconds behind the tracked wallet — that is the free-tier
+reality (one Helius read at a time, one Jupiter request per second). Fresh,
+thin tokens move more than that in ten seconds, so copying them late means
+buying the top and selling into nothing. Every real loss in this bot's
+history was exactly that. Two gates refuse those trades before any money
+moves:
+
+- **Token gate.** Before copying a buy, the token is looked up on Dexscreener
+  (free, no key, doesn't touch the Jupiter budget). It must be at least
+  `MIN_TOKEN_AGE_MINUTES` old and have at least `MIN_LIQUIDITY_USD` in its
+  deepest pool. A token with no listing yet is treated as too new; a lookup
+  that fails is treated as unknown. Both are **skipped, never guessed**, and
+  the log says exactly why (`↳ skip: token is 4 min old, need 30 min`).
+- **Wallet gate.** A tracked wallet whose copied positions close at a loss
+  `WALLET_MAX_CONSECUTIVE_LOSSES` times in a row is **muted** for
+  `WALLET_MUTE_HOURS`: its new buys are skipped, its open positions are still
+  mirrored on sell. Muted wallets show as 🔇 in the summary's per-wallet
+  table — which is also where you see which wallets actually make money.
+
+Both gates make the bot slower and pickier. That is the point: the trades
+they refuse are the ones that lost.
+
 ## What "STUCK" means
 
 If a **real** sell fails 3 times in a row (for example the token lost its
@@ -267,5 +299,8 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | Summary reports `RPC rate-limit retries` | You're exceeding your Helius plan. Lower `RPC_REQUESTS_PER_SECOND` or watch fewer wallets — every retry is a delayed or dropped trade. |
 | Summary reports transactions `skipped as stale` | The watcher fell behind and discarded trades too old to copy (>45s). Same fix as above. |
 | `no route for …` when buying | Token too new/illiquid for Jupiter — the bot just skips it. |
+| `Config error: TRACKED_WALLETS has N addresses` | More wallets than `MAX_TRACKED_WALLETS` (default 6). Keep your best few — past that the watcher drops trades and nothing can be judged. |
+| Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
+| `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
 | Bot seems idle | Normal — it only acts when a tracked wallet trades. The periodic summaries confirm it's alive. |
 | No sound on buys/sells | `SOUNDS` must not be `false` in `.env`, and the Mac can't be muted. Test a sound directly: `afplay /System/Library/Sounds/Glass.aiff`. Your own file needs a full path starting with `/`. |

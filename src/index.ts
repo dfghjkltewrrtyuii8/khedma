@@ -11,9 +11,11 @@ import { printSummary } from './pnl';
 import { PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
 import { decideShutdown } from './shutdownDebounce';
+import { tokenGateEnabled } from './tokenMarket';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
-import { WalletWatcher } from './watcher';
+import { walletMute } from './walletGate';
+import { shortAddress, WalletWatcher } from './watcher';
 
 // Free-tier Jupiter = 1 request/second shared across everything, so we keep
 // ~1.1s between calls to stay safely under it.
@@ -63,6 +65,15 @@ async function main(): Promise<void> {
     console.log('\n🔴 MODE: REAL TRADING — this bot will spend REAL SOL from your wallet.');
     console.log(`   Each copied buy spends ${config.copyBuyAmountSol} SOL, max ${config.maxOpenPositions} positions.\n`);
   }
+  const tokenGate = tokenGateEnabled(config)
+    ? `token must be ≥ ${config.minTokenAgeMinutes} min old with ≥ $${config.minLiquidityUsd.toLocaleString('en-US')} liquidity`
+    : 'token check OFF';
+  const walletGate =
+    config.walletMaxConsecutiveLosses > 0
+      ? `wallet muted after ${config.walletMaxConsecutiveLosses} straight copied losses` +
+        (config.walletMuteHours > 0 ? ` (for ${config.walletMuteHours}h)` : ' (until removed)')
+      : 'wallet muting OFF';
+  console.log(`Filters: ${tokenGate}; ${walletGate}.\n`);
 
   const connection = new Connection(config.heliusHttpsUrl, {
     wsEndpoint: config.heliusWssUrl,
@@ -95,6 +106,10 @@ async function main(): Promise<void> {
   }
   const openCount = store.byStatus('open').length;
   if (openCount > 0) console.log(`ℹ️  ${openCount} open position(s) carried over from last run.`);
+  for (const wallet of config.trackedWallets) {
+    const mute = walletMute(store.all(), wallet.toBase58(), Date.now(), config);
+    if (mute.muted) console.log(`🔇 ${shortAddress(wallet.toBase58())} is muted — ${mute.reason}`);
+  }
 
   const limiter = new RateLimiter(JUPITER_MIN_GAP_MS);
   const jupiter = new JupiterClient(config.jupiterApiKey, limiter);
@@ -122,7 +137,7 @@ async function main(): Promise<void> {
   // numbers, in both DRY_RUN and real mode alike.
   const summaryTimer = setInterval(() => {
     reportWatcherHealth(watcher);
-    printSummary(store).catch(() => {});
+    printSummary(store, undefined, config.slippageBps, config).catch(() => {});
   }, config.summaryIntervalSeconds * 1000);
 
   // ---- graceful shutdown ----
@@ -165,7 +180,7 @@ async function main(): Promise<void> {
 
     // Anything that could not be closed above is priced here, so the final
     // report shows what the leftovers are actually worth.
-    await printSummary(store, jupiter, config.slippageBps);
+    await printSummary(store, jupiter, config.slippageBps, config);
     console.log('Goodbye. 👋');
     process.exit(0);
   };

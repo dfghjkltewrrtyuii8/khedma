@@ -10,7 +10,9 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { notify } from './notify';
 import { PositionStore } from './positions';
 import { sleep } from './rateLimiter';
+import { evaluateToken, fetchDexscreenerMarket, MarketSource, tokenGateEnabled } from './tokenMarket';
 import { Position, SwapEvent } from './types';
+import { walletMute } from './walletGate';
 import { shortAddress } from './watcher';
 
 const SELL_ATTEMPTS = 3; // thin tokens can lose their route in seconds — retry, but don't loop forever
@@ -32,7 +34,10 @@ export class Trader {
     private readonly connection: Connection,
     private readonly keypair: Keypair,
     private readonly jupiter: JupiterClient,
-    private readonly store: PositionStore
+    private readonly store: PositionStore,
+    // Where the token gate gets age/liquidity from. Injectable so tests never
+    // touch the network.
+    private readonly marketSource: MarketSource = fetchDexscreenerMarket
   ) {}
 
   beginShutdown(): void {
@@ -113,6 +118,21 @@ export class Trader {
         `   ↳ skip: tracked buy (~${event.quoteSolEquivalent.toFixed(4)} SOL) is below MIN_TRACKED_BUY_SOL (${this.config.minTrackedBuySol})`
       );
       return;
+    }
+
+    // ---- quality gates: the cheap refusals happen BEFORE any Jupiter call ----
+    const mute = walletMute(this.store.all(), event.sourceWallet, Date.now(), this.config);
+    if (mute.muted) {
+      console.log(`   ↳ skip: 🔇 ${shortAddress(event.sourceWallet)} is muted — ${mute.reason}`);
+      return;
+    }
+    if (tokenGateEnabled(this.config)) {
+      const verdict = evaluateToken(await this.marketSource(event.mint), this.config);
+      if (!verdict.ok) {
+        console.log(`   ↳ skip: ${verdict.reason}`);
+        return;
+      }
+      console.log(`   ↳ token check passed: ${verdict.note}`);
     }
 
     const spendLamports = BigInt(Math.round(this.config.copyBuyAmountSol * 1e9));
@@ -294,6 +314,7 @@ export class Trader {
 
         if (position.dryRun) {
           this.store.recordSell(position, sellRaw, receivedSol);
+          this.announceMuteIfTriggered(position);
           console.log(
             `   ✅ [DRY RUN] SIMULATED sell: received ~${receivedSol.toFixed(4)} SOL` +
               (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open')
@@ -305,6 +326,7 @@ export class Trader {
         if (!order.transactionBase64) throw new Error('Jupiter order came back without a transaction to sign');
         const signature = await this.signAndExecute(order.transactionBase64, order.requestId);
         this.store.recordSell(position, sellRaw, receivedSol, signature);
+        this.announceMuteIfTriggered(position);
         console.log(
           `   ✅ REAL sell confirmed: ~${receivedSol.toFixed(4)} SOL` +
             (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open') +
@@ -338,6 +360,19 @@ export class Trader {
             '      or sell manually in Phantom/Jupiter.\n')
     );
     return false;
+  }
+
+  // After a position closes at a loss: if that loss completed a losing streak,
+  // say so once, right here where the user is looking.
+  private announceMuteIfTriggered(position: Position): void {
+    if (position.status !== 'closed' || position.receivedSol >= position.spentSol) return;
+    const mute = walletMute(this.store.all(), position.sourceWallet, Date.now(), this.config);
+    if (mute.muted) {
+      console.log(
+        `   🔇 ${shortAddress(position.sourceWallet)}: ${mute.reason}.\n` +
+          '      Its open positions are still mirrored; new buys from it are skipped.'
+      );
+    }
   }
 
   // Called on shutdown: try once to exit everything (open first, then stuck).
