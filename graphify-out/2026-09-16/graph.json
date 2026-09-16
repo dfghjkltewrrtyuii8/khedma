@@ -1,54 +1,7 @@
 {
   "directed": false,
   "multigraph": false,
-  "graph": {
-    "hyperedges": [
-      {
-        "id": "external_services",
-        "label": "External Services",
-        "nodes": [
-          "readme_helius_rpc",
-          "readme_jupiter_swap_api_v2",
-          "readme_coingecko_sol_price",
-          "readme_phantom_wallet"
-        ],
-        "relation": "participate_in",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "README.md"
-      },
-      {
-        "id": "failed_sell_safety_net",
-        "label": "Failed-Sell Safety Net",
-        "nodes": [
-          "readme_stuck_position",
-          "readme_abandoned_position",
-          "readme_manual_writeoff",
-          "readme_sell_sizing_from_wallet",
-          "readme_graceful_shutdown",
-          "readme_thin_token_route_loss"
-        ],
-        "relation": "form",
-        "confidence": "INFERRED",
-        "confidence_score": 0.85,
-        "source_file": "README.md"
-      },
-      {
-        "id": "jupiter_budget_discipline",
-        "label": "Jupiter Request Budget Discipline",
-        "nodes": [
-          "readme_shared_jupiter_rate_limiter",
-          "readme_mark_to_market",
-          "readme_coingecko_sol_price",
-          "readme_pnl_reporting"
-        ],
-        "relation": "form",
-        "confidence": "INFERRED",
-        "confidence_score": 0.85,
-        "source_file": "README.md"
-      }
-    ]
-  },
+  "graph": {},
   "nodes": [
     {
       "id": "src_jupiter_jupiterclient",
@@ -57,7 +10,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "jupiterclient",
       "source_file": "src/jupiter.ts",
@@ -70,7 +23,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "jupitererror",
       "source_file": "src/jupiter.ts",
@@ -83,7 +36,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "jupitererrorkind",
       "source_file": "src/jupiter.ts",
@@ -96,7 +49,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "jupiterorder",
       "source_file": "src/jupiter.ts",
@@ -109,24 +62,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "orderparams",
       "source_file": "src/jupiter.ts",
       "source_location": "L28"
-    },
-    {
-      "id": "src_pnl_mark",
-      "label": "Mark",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "mark",
-      "source_file": "src/pnl.ts",
-      "source_location": "L16"
     },
     {
       "id": "src_config_config",
@@ -135,24 +75,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "config",
       "source_file": "src/config.ts",
       "source_location": "L12"
-    },
-    {
-      "id": "src_types_positionstatus",
-      "label": "PositionStatus",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "Config, Types & Module Wiring",
-      "file_type": "code",
-      "norm_label": "positionstatus",
-      "source_file": "src/types.ts",
-      "source_location": "L17"
     },
     {
       "id": "src_watcher_queuedtx",
@@ -161,7 +88,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "queuedtx",
       "source_file": "src/watcher.ts",
@@ -174,7 +101,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "swaphandler",
       "source_file": "src/watcher.ts",
@@ -187,7 +114,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "watcherstats",
       "source_file": "src/watcher.ts",
@@ -200,7 +127,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "ratelimiter",
       "source_file": "src/rateLimiter.ts",
@@ -213,7 +140,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "shutdowndecision",
       "source_file": "src/shutdownDebounce.ts",
@@ -226,7 +153,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "walletwatcher",
       "source_file": "src/watcher.ts",
@@ -239,7 +166,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "positionstore",
       "source_file": "src/positions.ts",
@@ -252,7 +179,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "position",
       "source_file": "src/types.ts",
@@ -265,7 +192,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": "trader",
       "source_file": "src/trader.ts",
@@ -278,11 +205,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": "swapevent",
       "source_file": "src/types.ts",
       "source_location": "L4"
+    },
+    {
+      "id": "src_notify_notifykind",
+      "label": "NotifyKind",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "notifykind",
+      "source_file": "src/notify.ts",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_pnl_mark",
+      "label": "Mark",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "mark",
+      "source_file": "src/pnl.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_types_positionstatus",
+      "label": "PositionStatus",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "positionstatus",
+      "source_file": "src/types.ts",
+      "source_location": "L17"
     },
     {
       "id": "src_jupiter_jupiterclient_execute",
@@ -290,7 +256,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": ".execute()",
       "source_file": "src/jupiter.ts",
@@ -302,7 +268,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": ".getorder()",
       "source_file": "src/jupiter.ts",
@@ -314,7 +280,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": ".request()",
       "source_file": "src/jupiter.ts",
@@ -326,7 +292,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/jupiter.ts",
@@ -338,95 +304,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "lookslikenoroute()",
       "source_file": "src/jupiter.ts",
       "source_location": "L40"
-    },
-    {
-      "id": "src_pnl_formatsol",
-      "label": "formatSol()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "formatsol()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L21"
-    },
-    {
-      "id": "src_pnl_heldpercent",
-      "label": "heldPercent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "heldpercent()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L29"
-    },
-    {
-      "id": "src_pnl_marktomarket",
-      "label": "markToMarket()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "marktomarket()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_pnl_printgroup",
-      "label": "printGroup()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "printgroup()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L72"
-    },
-    {
-      "id": "src_pnl_printsummary",
-      "label": "printSummary()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "printsummary()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L143"
-    },
-    {
-      "id": "src_solprice_getsolpriceusd",
-      "label": "getSolPriceUsd()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "getsolpriceusd()",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_summary_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "src/summary.ts",
-      "source_location": "L16"
     },
     {
       "id": "src_trader_trader_constructor",
@@ -434,23 +316,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/trader.ts",
       "source_location": "L30"
-    },
-    {
-      "id": "src_watcher_shortaddress",
-      "label": "shortAddress()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "shortaddress()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L180"
     },
     {
       "id": "src_config_fail",
@@ -458,7 +328,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "fail()",
       "source_file": "src/config.ts",
@@ -470,7 +340,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "loadconfig()",
       "source_file": "src/config.ts",
@@ -482,7 +352,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "numberenv()",
       "source_file": "src/config.ts",
@@ -494,7 +364,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "requireenv()",
       "source_file": "src/config.ts",
@@ -506,7 +376,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "sleep()",
       "source_file": "src/rateLimiter.ts",
@@ -518,7 +388,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "loadkeypair()",
       "source_file": "src/wallet.ts",
@@ -530,7 +400,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "reportwatcherhealth()",
       "source_file": "src/index.ts",
@@ -542,7 +412,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/jupiter.ts",
@@ -554,7 +424,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/rateLimiter.ts",
@@ -566,7 +436,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".pendingcount()",
       "source_file": "src/rateLimiter.ts",
@@ -578,7 +448,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".schedule()",
       "source_file": "src/rateLimiter.ts",
@@ -590,7 +460,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "decideshutdown()",
       "source_file": "src/shutdownDebounce.ts",
@@ -602,7 +472,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "analyzeswap()",
       "source_file": "src/watcher.ts",
@@ -614,7 +484,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/watcher.ts",
@@ -626,7 +496,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".drain()",
       "source_file": "src/watcher.ts",
@@ -638,7 +508,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".enqueue()",
       "source_file": "src/watcher.ts",
@@ -650,7 +520,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".handlesignature()",
       "source_file": "src/watcher.ts",
@@ -662,7 +532,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".remembersignature()",
       "source_file": "src/watcher.ts",
@@ -674,7 +544,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".start()",
       "source_file": "src/watcher.ts",
@@ -686,7 +556,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".stats()",
       "source_file": "src/watcher.ts",
@@ -698,11 +568,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": ".stop()",
       "source_file": "src/watcher.ts",
       "source_location": "L85"
+    },
+    {
+      "id": "test_logic_test_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L576"
     },
     {
       "id": "test_logic_test_maketx",
@@ -710,11 +592,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "maketx()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L37"
+      "source_location": "L38"
     },
     {
       "id": "test_logic_test_testanalyzeswap",
@@ -722,11 +604,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "testanalyzeswap()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L76"
+      "source_location": "L77"
+    },
+    {
+      "id": "test_logic_test_testnotifysounds",
+      "label": "testNotifySounds()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testnotifysounds()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L561"
     },
     {
       "id": "test_logic_test_testratelimiter",
@@ -734,11 +628,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "testratelimiter()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L98"
+      "source_location": "L99"
     },
     {
       "id": "test_logic_test_testshutdowndebounce",
@@ -746,11 +640,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "testshutdowndebounce()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L547"
+      "source_location": "L548"
     },
     {
       "id": "test_logic_test_testwatcherqueue",
@@ -758,11 +652,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "testwatcherqueue()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L316"
+      "source_location": "L317"
     },
     {
       "id": "src_positions_positionstore_all",
@@ -770,7 +664,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".all()",
       "source_file": "src/positions.ts",
@@ -782,7 +676,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".atriskcount()",
       "source_file": "src/positions.ts",
@@ -794,11 +688,35 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/positions.ts",
       "source_location": "L16"
+    },
+    {
+      "id": "src_positions_positionstore_findopenbymint",
+      "label": ".findOpenByMint()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": ".findopenbymint()",
+      "source_file": "src/positions.ts",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_positions_positionstore_findopenbymintandsource",
+      "label": ".findOpenByMintAndSource()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": ".findopenbymintandsource()",
+      "source_file": "src/positions.ts",
+      "source_location": "L51"
     },
     {
       "id": "src_positions_positionstore_markabandoned",
@@ -806,7 +724,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".markabandoned()",
       "source_file": "src/positions.ts",
@@ -818,7 +736,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".markstuck()",
       "source_file": "src/positions.ts",
@@ -830,7 +748,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".openposition()",
       "source_file": "src/positions.ts",
@@ -842,7 +760,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".recordsell()",
       "source_file": "src/positions.ts",
@@ -854,7 +772,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".reopenstuck()",
       "source_file": "src/positions.ts",
@@ -866,7 +784,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".save()",
       "source_file": "src/positions.ts",
@@ -878,11 +796,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": ".sellposition()",
       "source_file": "src/trader.ts",
-      "source_location": "L230"
+      "source_location": "L231"
     },
     {
       "id": "src_writeoff_main",
@@ -890,23 +808,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "src/writeoff.ts",
       "source_location": "L18"
-    },
-    {
-      "id": "test_logic_test_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "Position Store & Lifecycle",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L556"
     },
     {
       "id": "test_logic_test_testabandonedfreesslot",
@@ -914,11 +820,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testabandonedfreesslot()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L419"
+      "source_location": "L420"
     },
     {
       "id": "test_logic_test_testbalancecheckretriestransientfailure",
@@ -926,11 +832,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testbalancecheckretriestransientfailure()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L504"
+      "source_location": "L505"
     },
     {
       "id": "test_logic_test_testmarktomarket",
@@ -938,11 +844,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testmarktomarket()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L272"
+      "source_location": "L273"
     },
     {
       "id": "test_logic_test_testsellusesonchainbalance",
@@ -950,11 +856,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testsellusesonchainbalance()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L357"
+      "source_location": "L358"
     },
     {
       "id": "test_logic_test_testsummary",
@@ -962,11 +868,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testsummary()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L226"
+      "source_location": "L227"
     },
     {
       "id": "test_logic_test_testwriteofffiltering",
@@ -974,11 +880,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "testwriteofffiltering()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L473"
+      "source_location": "L474"
     },
     {
       "id": "src_index_main",
@@ -986,11 +892,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "src/index.ts",
       "source_location": "L42"
+    },
+    {
+      "id": "src_index_quietenrpcretrylogs",
+      "label": "quietenRpcRetryLogs()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Trader",
+      "file_type": "code",
+      "norm_label": "quietenrpcretrylogs()",
+      "source_file": "src/index.ts",
+      "source_location": "L27"
     },
     {
       "id": "src_positions_positionstore_bystatus",
@@ -998,35 +916,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".bystatus()",
       "source_file": "src/positions.ts",
       "source_location": "L38"
-    },
-    {
-      "id": "src_positions_positionstore_findopenbymint",
-      "label": ".findOpenByMint()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
-      "file_type": "code",
-      "norm_label": ".findopenbymint()",
-      "source_file": "src/positions.ts",
-      "source_location": "L47"
-    },
-    {
-      "id": "src_positions_positionstore_findopenbymintandsource",
-      "label": ".findOpenByMintAndSource()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
-      "file_type": "code",
-      "norm_label": ".findopenbymintandsource()",
-      "source_file": "src/positions.ts",
-      "source_location": "L51"
     },
     {
       "id": "src_positions_positionstore_load",
@@ -1034,11 +928,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".load()",
       "source_file": "src/positions.ts",
       "source_location": "L21"
+    },
+    {
+      "id": "src_summary_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Trader",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "src/summary.ts",
+      "source_location": "L16"
     },
     {
       "id": "src_trader_trader_beginshutdown",
@@ -1046,7 +952,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".beginshutdown()",
       "source_file": "src/trader.ts",
@@ -1058,11 +964,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".closeallpositions()",
       "source_file": "src/trader.ts",
-      "source_location": "L343"
+      "source_location": "L345"
     },
     {
       "id": "src_trader_trader_handleswapevent",
@@ -1070,7 +976,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".handleswapevent()",
       "source_file": "src/trader.ts",
@@ -1082,7 +988,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".maybecopybuy()",
       "source_file": "src/trader.ts",
@@ -1094,11 +1000,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".maybecopysell()",
       "source_file": "src/trader.ts",
-      "source_location": "L210"
+      "source_location": "L211"
     },
     {
       "id": "src_trader_trader_ordertaker",
@@ -1106,7 +1012,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".ordertaker()",
       "source_file": "src/trader.ts",
@@ -1118,7 +1024,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".processevent()",
       "source_file": "src/trader.ts",
@@ -1130,7 +1036,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".settleddeltaraw()",
       "source_file": "src/trader.ts",
@@ -1142,11 +1048,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".signandexecute()",
       "source_file": "src/trader.ts",
-      "source_location": "L358"
+      "source_location": "L360"
     },
     {
       "id": "src_trader_trader_tokenbalanceraw",
@@ -1154,7 +1060,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": ".tokenbalanceraw()",
       "source_file": "src/trader.ts",
@@ -1166,23 +1072,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
+      "community_name": "Trader",
       "file_type": "code",
       "norm_label": "testtrader()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L114"
+      "source_location": "L115"
     },
     {
-      "id": "src_index_quietenrpcretrylogs",
-      "label": "quietenRpcRetryLogs()",
+      "id": "src_notify_flagoff",
+      "label": "flagOff()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "README Concepts & Notifications",
+      "community_name": "notify.ts",
       "file_type": "code",
-      "norm_label": "quietenrpcretrylogs()",
-      "source_file": "src/index.ts",
-      "source_location": "L27"
+      "norm_label": "flagoff()",
+      "source_file": "src/notify.ts",
+      "source_location": "L40"
     },
     {
       "id": "src_notify_notify",
@@ -1190,11 +1096,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "README Concepts & Notifications",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "notify()",
       "source_file": "src/notify.ts",
-      "source_location": "L13"
+      "source_location": "L80"
+    },
+    {
+      "id": "src_notify_playsound",
+      "label": "playSound()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "playsound()",
+      "source_file": "src/notify.ts",
+      "source_location": "L59"
     },
     {
       "id": "src_notify_sanitize",
@@ -1202,18 +1120,126 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "README Concepts & Notifications",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "sanitize()",
       "source_file": "src/notify.ts",
-      "source_location": "L9"
+      "source_location": "L36"
+    },
+    {
+      "id": "src_notify_showbanner",
+      "label": "showBanner()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "showbanner()",
+      "source_file": "src/notify.ts",
+      "source_location": "L69"
+    },
+    {
+      "id": "src_notify_soundfor",
+      "label": "soundFor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "soundfor()",
+      "source_file": "src/notify.ts",
+      "source_location": "L50"
+    },
+    {
+      "id": "src_pnl_formatsol",
+      "label": "formatSol()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "formatsol()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_pnl_heldpercent",
+      "label": "heldPercent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "heldpercent()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_pnl_marktomarket",
+      "label": "markToMarket()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "marktomarket()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_pnl_printgroup",
+      "label": "printGroup()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "printgroup()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L72"
+    },
+    {
+      "id": "src_pnl_printsummary",
+      "label": "printSummary()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "printsummary()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L143"
+    },
+    {
+      "id": "src_solprice_getsolpriceusd",
+      "label": "getSolPriceUsd()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "getsolpriceusd()",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_watcher_shortaddress",
+      "label": "shortAddress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "shortaddress()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L180"
     },
     {
       "id": "package",
       "label": "package.json",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "package.json",
       "source_file": "package.json",
@@ -1224,7 +1250,7 @@
       "label": "dependencies",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "dependencies",
       "source_file": "package.json",
@@ -1235,7 +1261,7 @@
       "label": "bip39",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "bip39",
       "source_file": "package.json",
@@ -1246,7 +1272,7 @@
       "label": "bs58",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "bs58",
       "source_file": "package.json",
@@ -1257,7 +1283,7 @@
       "label": "dotenv",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "dotenv",
       "source_file": "package.json",
@@ -1268,7 +1294,7 @@
       "label": "ed25519-hd-key",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "ed25519-hd-key",
       "source_file": "package.json",
@@ -1279,7 +1305,7 @@
       "label": "@solana/web3.js",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "@solana/web3.js",
       "source_file": "package.json",
@@ -1290,7 +1316,7 @@
       "label": "description",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "description",
       "source_file": "package.json",
@@ -1301,7 +1327,7 @@
       "label": "devDependencies",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "devdependencies",
       "source_file": "package.json",
@@ -1312,7 +1338,7 @@
       "label": "tsx",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "tsx",
       "source_file": "package.json",
@@ -1323,7 +1349,7 @@
       "label": "@types/node",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "@types/node",
       "source_file": "package.json",
@@ -1334,7 +1360,7 @@
       "label": "typescript",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "typescript",
       "source_file": "package.json",
@@ -1345,7 +1371,7 @@
       "label": "name",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "name",
       "source_file": "package.json",
@@ -1356,7 +1382,7 @@
       "label": "private",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "private",
       "source_file": "package.json",
@@ -1367,7 +1393,7 @@
       "label": "scripts",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "scripts",
       "source_file": "package.json",
@@ -1378,7 +1404,7 @@
       "label": "start",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "start",
       "source_file": "package.json",
@@ -1389,7 +1415,7 @@
       "label": "summary",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "summary",
       "source_file": "package.json",
@@ -1400,7 +1426,7 @@
       "label": "test",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "test",
       "source_file": "package.json",
@@ -1411,7 +1437,7 @@
       "label": "typecheck",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "typecheck",
       "source_file": "package.json",
@@ -1422,7 +1448,7 @@
       "label": "writeoff",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "writeoff",
       "source_file": "package.json",
@@ -1433,62 +1459,29 @@
       "label": "version",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "code",
       "norm_label": "version",
       "source_file": "package.json",
       "source_location": "L3"
     },
     {
-      "id": "ref_bip39",
-      "label": "bip39",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "Package Manifest & Dependencies",
-      "file_type": "concept",
-      "norm_label": "bip39",
-      "source_file": "package.json",
-      "source_location": "L15"
-    },
-    {
-      "id": "ref_bs58",
-      "label": "bs58",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "Package Manifest & Dependencies",
-      "file_type": "concept",
-      "norm_label": "bs58",
-      "source_file": "package.json",
-      "source_location": "L16"
-    },
-    {
       "id": "ref_dotenv",
       "label": "dotenv",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "concept",
       "norm_label": "dotenv",
       "source_file": "package.json",
       "source_location": "L17"
     },
     {
-      "id": "ref_ed25519_hd_key",
-      "label": "ed25519-hd-key",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "Package Manifest & Dependencies",
-      "file_type": "concept",
-      "norm_label": "ed25519-hd-key",
-      "source_file": "package.json",
-      "source_location": "L18"
-    },
-    {
       "id": "ref_tsx",
       "label": "tsx",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "concept",
       "norm_label": "tsx",
       "source_file": "package.json",
@@ -1499,7 +1492,7 @@
       "label": "@types/node",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "concept",
       "norm_label": "@types/node",
       "source_file": "package.json",
@@ -1510,7 +1503,7 @@
       "label": "typescript",
       "_origin": "ast",
       "community": 0,
-      "community_name": "Package Manifest & Dependencies",
+      "community_name": "package.json",
       "file_type": "concept",
       "norm_label": "typescript",
       "source_file": "package.json",
@@ -1521,43 +1514,10 @@
       "label": "jupiter.ts",
       "_origin": "ast",
       "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
+      "community_name": "jupiter.ts",
       "file_type": "code",
       "norm_label": "jupiter.ts",
       "source_file": "src/jupiter.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pnl",
-      "label": "pnl.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "pnl.ts",
-      "source_file": "src/pnl.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_solprice",
-      "label": "solPrice.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "solprice.ts",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_summary",
-      "label": "summary.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "file_type": "code",
-      "norm_label": "summary.ts",
-      "source_file": "src/summary.ts",
       "source_location": "L1"
     },
     {
@@ -1565,7 +1525,7 @@
       "label": "config.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "config.ts",
       "source_file": "src/config.ts",
@@ -1576,7 +1536,7 @@
       "label": "QUOTE_MINTS",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "quote_mints",
       "source_file": "src/config.ts",
@@ -1587,7 +1547,7 @@
       "label": "SOL_MINT",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "sol_mint",
       "source_file": "src/config.ts",
@@ -1598,7 +1558,7 @@
       "label": "USDC_MINT",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "usdc_mint",
       "source_file": "src/config.ts",
@@ -1609,7 +1569,7 @@
       "label": "USDT_MINT",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "usdt_mint",
       "source_file": "src/config.ts",
@@ -1620,21 +1580,10 @@
       "label": "index.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "index.ts",
       "source_file": "src/index.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_positions",
-      "label": "positions.ts",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "Config, Types & Module Wiring",
-      "file_type": "code",
-      "norm_label": "positions.ts",
-      "source_file": "src/positions.ts",
       "source_location": "L1"
     },
     {
@@ -1642,7 +1591,7 @@
       "label": "rateLimiter.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "ratelimiter.ts",
       "source_file": "src/rateLimiter.ts",
@@ -1653,21 +1602,10 @@
       "label": "trader.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "trader.ts",
       "source_file": "src/trader.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_types",
-      "label": "types.ts",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "Config, Types & Module Wiring",
-      "file_type": "code",
-      "norm_label": "types.ts",
-      "source_file": "src/types.ts",
       "source_location": "L1"
     },
     {
@@ -1675,7 +1613,7 @@
       "label": "wallet.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "wallet.ts",
       "source_file": "src/wallet.ts",
@@ -1686,40 +1624,73 @@
       "label": "watcher.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "code",
       "norm_label": "watcher.ts",
       "source_file": "src/watcher.ts",
       "source_location": "L1"
     },
     {
+      "id": "ref_bip39",
+      "label": "bip39",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "watcher.ts",
+      "file_type": "concept",
+      "norm_label": "bip39",
+      "source_file": "package.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "ref_bs58",
+      "label": "bs58",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "watcher.ts",
+      "file_type": "concept",
+      "norm_label": "bs58",
+      "source_file": "package.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "ref_ed25519_hd_key",
+      "label": "ed25519-hd-key",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "watcher.ts",
+      "file_type": "concept",
+      "norm_label": "ed25519-hd-key",
+      "source_file": "package.json",
+      "source_location": "L18"
+    },
+    {
       "id": "ref_solana_web3_js",
       "label": "@solana/web3.js",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "concept",
       "norm_label": "@solana/web3.js",
       "source_file": "package.json",
       "source_location": "L14"
     },
     {
-      "id": "src_trader_rationale_325",
+      "id": "src_trader_rationale_327",
       "label": "IMPORTANT: a failed sell is NOT a closed position. The tokens are still",
       "_origin": "ast",
       "community": 2,
-      "community_name": "Config, Types & Module Wiring",
+      "community_name": "watcher.ts",
       "file_type": "rationale",
       "norm_label": "important: a failed sell is not a closed position. the tokens are still",
       "source_file": "src/trader.ts",
-      "source_location": "L325"
+      "source_location": "L327"
     },
     {
       "id": "src_shutdowndebounce",
       "label": "shutdownDebounce.ts",
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "shutdowndebounce.ts",
       "source_file": "src/shutdownDebounce.ts",
@@ -1730,7 +1701,7 @@
       "label": "logic-test.ts",
       "_origin": "ast",
       "community": 3,
-      "community_name": "Wallet Watcher & Rate Limiting",
+      "community_name": "logic-test.ts",
       "file_type": "code",
       "norm_label": "logic-test.ts",
       "source_file": "test/logic-test.ts",
@@ -1741,7 +1712,7 @@
       "label": "writeoff.ts",
       "_origin": "ast",
       "community": 4,
-      "community_name": "Position Store & Lifecycle",
+      "community_name": "PositionStore",
       "file_type": "code",
       "norm_label": "writeoff.ts",
       "source_file": "src/writeoff.ts",
@@ -1752,18 +1723,40 @@
       "label": "notify.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "README Concepts & Notifications",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "notify.ts",
       "source_file": "src/notify.ts",
       "source_location": "L1"
     },
     {
+      "id": "src_notify_default_sounds",
+      "label": "DEFAULT_SOUNDS",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "default_sounds",
+      "source_file": "src/notify.ts",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_notify_env_keys",
+      "label": "ENV_KEYS",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "notify.ts",
+      "file_type": "code",
+      "norm_label": "env_keys",
+      "source_file": "src/notify.ts",
+      "source_location": "L30"
+    },
+    {
       "id": "tsconfig",
       "label": "tsconfig.json",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "tsconfig.json",
       "source_file": "tsconfig.json",
@@ -1774,7 +1767,7 @@
       "label": "compilerOptions",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "compileroptions",
       "source_file": "tsconfig.json",
@@ -1785,7 +1778,7 @@
       "label": "esModuleInterop",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "esmoduleinterop",
       "source_file": "tsconfig.json",
@@ -1796,7 +1789,7 @@
       "label": "forceConsistentCasingInFileNames",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "forceconsistentcasinginfilenames",
       "source_file": "tsconfig.json",
@@ -1807,7 +1800,7 @@
       "label": "lib",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "lib",
       "source_file": "tsconfig.json",
@@ -1818,7 +1811,7 @@
       "label": "module",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "module",
       "source_file": "tsconfig.json",
@@ -1829,7 +1822,7 @@
       "label": "moduleResolution",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "moduleresolution",
       "source_file": "tsconfig.json",
@@ -1840,7 +1833,7 @@
       "label": "noEmit",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "noemit",
       "source_file": "tsconfig.json",
@@ -1851,7 +1844,7 @@
       "label": "resolveJsonModule",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "resolvejsonmodule",
       "source_file": "tsconfig.json",
@@ -1862,7 +1855,7 @@
       "label": "skipLibCheck",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "skiplibcheck",
       "source_file": "tsconfig.json",
@@ -1873,7 +1866,7 @@
       "label": "strict",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "strict",
       "source_file": "tsconfig.json",
@@ -1884,7 +1877,7 @@
       "label": "target",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "target",
       "source_file": "tsconfig.json",
@@ -1895,366 +1888,234 @@
       "label": "include",
       "_origin": "ast",
       "community": 7,
-      "community_name": "TypeScript Compiler Config",
+      "community_name": "compilerOptions",
       "file_type": "code",
       "norm_label": "include",
       "source_file": "tsconfig.json",
       "source_location": "L14"
     },
     {
-      "id": "readme_coingecko_sol_price",
-      "label": "CoinGecko SOL Price",
-      "author": null,
-      "captured_at": null,
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "coingecko sol price",
-      "source_file": "README.md",
-      "source_location": "L41",
-      "source_url": null
-    },
-    {
-      "id": "readme_pnl_reporting",
-      "label": "P&L in SOL and USD",
-      "author": null,
-      "captured_at": null,
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "p&l in sol and usd",
-      "rationale": "SOL price comes from CoinGecko rather than Jupiter so reporting never consumes the trading request budget. Always split SIMULATED vs REAL so paper results can't be mistaken for money.",
-      "source_file": "README.md",
-      "source_location": "L41",
-      "source_url": null
-    },
-    {
-      "id": "readme_thin_token_route_loss",
-      "label": "Thin-Token Route Loss",
-      "author": null,
-      "captured_at": null,
-      "community": 1,
-      "community_name": "Jupiter Swaps & P&L Reporting",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "thin-token route loss",
-      "rationale": "Very new or thin tokens can lose their Jupiter route within seconds; the bot retries sells but a successful exit is never guaranteed. Only trade SOL you can lose.",
-      "source_file": "README.md",
-      "source_location": "L47",
-      "source_url": null
-    },
-    {
-      "id": "readme_abandoned_position",
-      "label": "Abandoned Position",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "Position Store & Lifecycle",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "abandoned position",
-      "rationale": "A position sold outside the bot (Phantom, jup.ag) reads as zero balance on-chain; it is marked abandoned (not stuck, nothing left to retry), frees its MAX_OPEN_POSITIONS slot, and records no P&L because the bot never saw the sale price.",
-      "source_file": "README.md",
-      "source_location": "L22",
-      "source_url": null
-    },
-    {
-      "id": "readme_manual_writeoff",
-      "label": "Manual Write-off",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "Position Store & Lifecycle",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "manual write-off",
-      "rationale": "For a token still held but judged worthless (rugged, no route). Frees its slot without recording P&L. Only touches real open/stuck positions, never simulated or closed ones.",
-      "source_file": "README.md",
-      "source_location": "L193",
-      "source_url": null
-    },
-    {
-      "id": "readme_stuck_position",
-      "label": "Stuck Position",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "Position Store & Lifecycle",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "stuck position",
-      "rationale": "A real sell that fails after retries is marked STUCK ('tokens still in your wallet'), flagged loudly, excluded from realized P&L, still counts toward MAX_OPEN_POSITIONS, and gets one more try on shutdown. Never faked as closed.",
-      "source_file": "README.md",
-      "source_location": "L32",
-      "source_url": null
-    },
-    {
-      "id": "readme_copy_rules",
-      "label": "Copy Rules",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "copy rules",
-      "rationale": "One position per token; sells are only mirrored from the same wallet whose buy was copied; a tracked sell of more than 90% of their bag is treated as a full exit.",
-      "source_file": "README.md",
-      "source_location": "L233",
-      "source_url": null
-    },
-    {
-      "id": "readme_graceful_shutdown",
-      "label": "Graceful Shutdown",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "graceful shutdown",
-      "rationale": "First Ctrl+C stops watching immediately, then closes all positions. A second Ctrl+C only force-quits after 5 seconds so a key-repeat or impatient double-tap can't cut a real sell short. Sells never run twice.",
-      "source_file": "README.md",
-      "source_location": "L35",
-      "source_url": null
-    },
-    {
-      "id": "readme_sell_sizing_from_wallet",
-      "label": "Real Sells Sized From Wallet",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "community_name": "Trader: Copy Buy/Sell",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "real sells sized from wallet",
-      "rationale": "A fill delivers slightly less than quoted (slippage), so selling the quoted figure is rejected as 'Insufficient funds' and strands the position. The actual on-chain balance is read before every real sell.",
-      "source_file": "README.md",
-      "source_location": "L28",
-      "source_url": null
-    },
-    {
-      "id": "readme_copy_trading",
-      "label": "Copy Trading",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "copy trading",
-      "rationale": "Mirror a tracked wallet's buys with a small FIXED amount of SOL (never their size) and mirror their sells by the same fraction. Predictable exposure regardless of how big the tracked wallet trades.",
-      "source_file": "README.md",
-      "source_location": "L3",
-      "source_url": null
-    },
-    {
-      "id": "readme_desktop_notifications",
-      "label": "macOS Desktop Notifications",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "macos desktop notifications",
-      "source_file": "README.md",
-      "source_location": "L117",
-      "source_url": null
-    },
-    {
-      "id": "readme_env_configuration",
-      "label": ".env Configuration",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": ".env configuration",
-      "rationale": "All tunables live in .env: wallet, RPC URLs, Jupiter key, tracked wallets, DRY_RUN, buy size, max positions, dust filter, reserve, slippage, RPC pace, notifications, summary interval.",
-      "source_file": "README.md",
-      "source_location": "L92",
-      "source_url": null
-    },
-    {
-      "id": "readme_helius_rpc",
-      "label": "Helius RPC",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "helius rpc",
-      "source_file": "README.md",
-      "source_location": "L106",
-      "source_url": null
-    },
-    {
-      "id": "readme_jupiter_swap_api_v2",
-      "label": "Jupiter Swap API v2",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "jupiter swap api v2",
-      "source_file": "README.md",
-      "source_location": "L12",
-      "source_url": null
-    },
-    {
-      "id": "readme_logic_tests",
-      "label": "Offline Logic Tests",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "offline logic tests",
-      "rationale": "npm test runs with no wallet, no network and a throwaway keypair in a temp folder; verifies detection, limiter spacing, stuck handling, the double-Ctrl+C guard and that P&L never invents numbers.",
-      "source_file": "README.md",
-      "source_location": "L182",
-      "source_url": null
-    },
-    {
-      "id": "readme_phantom_wallet",
-      "label": "Phantom Wallet Key",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "phantom wallet key",
-      "rationale": "Either a base58 private key exported from Phantom or the 12/24-word recovery phrase at derivation path m/44'/501'/0'/0'. Kept in .env, which is gitignored.",
-      "source_file": "README.md",
-      "source_location": "L104",
-      "source_url": null
-    },
-    {
-      "id": "readme_positions_persistence",
-      "label": "Position Persistence",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "position persistence",
-      "rationale": "Positions are saved in data/positions.json and survive restarts; rm -rf data forgets them without selling anything.",
-      "source_file": "README.md",
-      "source_location": "L139",
-      "source_url": null
-    },
-    {
       "id": "readme",
       "label": "README.md",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
+      "node_kind": "page",
       "norm_label": "readme.md",
       "source_file": "README.md",
-      "source_location": "L1",
-      "source_url": null
+      "source_location": "L1"
+    },
+    {
+      "id": "readme_1_check_that_node_js_is_installed",
+      "label": "1. Check that Node.js is installed",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "1. check that node.js is installed",
+      "source_file": "README.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "readme_2_get_the_code_and_install_dependencies",
+      "label": "2. Get the code and install dependencies",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. get the code and install dependencies",
+      "source_file": "README.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "readme_3_create_your_env_file",
+      "label": "3. Create your .env file",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3. create your .env file",
+      "source_file": "README.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "readme_4_run_the_bot_dry_run",
+      "label": "4. Run the bot (dry-run)",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "4. run the bot (dry-run)",
+      "source_file": "README.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "readme_5_stopping_the_bot",
+      "label": "5. Stopping the bot",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "5. stopping the bot",
+      "source_file": "README.md",
+      "source_location": "L150"
+    },
+    {
+      "id": "readme_6_going_live_only_when_you_re_ready",
+      "label": "6. Going live (only when you're ready)",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "6. going live (only when you're ready)",
+      "source_file": "README.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "readme_how_it_decides_what_is_a_buy_or_sell",
+      "label": "How it decides what is a \"buy\" or \"sell\"",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "how it decides what is a \"buy\" or \"sell\"",
+      "source_file": "README.md",
+      "source_location": "L231"
+    },
+    {
+      "id": "readme_safety_features_on_by_default",
+      "label": "Safety features (on by default)",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "safety features (on by default)",
+      "source_file": "README.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "readme_setup_mac_terminal_step_by_step",
+      "label": "Setup (Mac, Terminal, step by step)",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "setup (mac, terminal, step by step)",
+      "source_file": "README.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "readme_solana_copy_trading_bot",
+      "label": "Solana Copy-Trading Bot",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "solana copy-trading bot",
+      "source_file": "README.md",
+      "source_location": "L1"
     },
     {
       "id": "readme_troubleshooting",
-      "label": "Troubleshooting Guide",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
+      "label": "Troubleshooting",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
-      "norm_label": "troubleshooting guide",
-      "rationale": "Maps each startup/runtime symptom (config error, wallet error, Helius unreachable, Jupiter 429s, RPC retries, stale skips, no route, idle bot) to its fix.",
+      "node_kind": "heading",
+      "norm_label": "troubleshooting",
       "source_file": "README.md",
-      "source_location": "L252",
-      "source_url": null
+      "source_location": "L259"
     },
     {
-      "id": "readme_buy_sell_detection",
-      "label": "Buy/Sell Detection Rules",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "buy/sell detection rules",
-      "rationale": "Compare the tracked wallet's balances before and after each confirmed transaction: exactly one non-quote token up while SOL/USDC/USDT down = buy; the reverse = sell; anything else (transfers, airdrops, LP, multi-token swaps) is skipped.",
+      "id": "readme_useful_extras",
+      "label": "Useful extras",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "useful extras",
       "source_file": "README.md",
-      "source_location": "L224",
-      "source_url": null
+      "source_location": "L168"
     },
     {
-      "id": "readme_dry_run_mode",
-      "label": "DRY_RUN Mode",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "dry_run mode",
-      "rationale": "Default on. Real Jupiter quotes are fetched but no transaction is ever sent until DRY_RUN=false is set explicitly, so behaviour can be watched safely first.",
+      "id": "readme_what_stuck_means",
+      "label": "What \"STUCK\" means",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "Setup (Mac, Terminal, step by step)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "what \"stuck\" means",
       "source_file": "README.md",
-      "source_location": "L17",
-      "source_url": null
+      "source_location": "L248"
     },
     {
-      "id": "readme_hard_caps",
-      "label": "Hard Caps",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "hard caps",
-      "rationale": "Fixed SOL per buy, max simultaneous positions (stuck ones count), a minimum SOL reserve real trades never dip below, and a dust filter on tiny tracked buys.",
-      "source_file": "README.md",
-      "source_location": "L43",
-      "source_url": null
+      "id": "src_pnl",
+      "label": "pnl.ts",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "pnl.ts",
+      "source_file": "src/pnl.ts",
+      "source_location": "L1"
     },
     {
-      "id": "readme_mark_to_market",
-      "label": "Mark to Market",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "mark to market",
-      "rationale": "npm run summary prices open positions with quote-only Jupiter orders (no taker, so no balance check) and flags NO ROUTE tokens. The in-run periodic summary is deliberately NOT marked to market because the 1 req/s budget belongs to trading.",
-      "source_file": "README.md",
-      "source_location": "L169",
-      "source_url": null
+      "id": "src_positions",
+      "label": "positions.ts",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "positions.ts",
+      "source_file": "src/positions.ts",
+      "source_location": "L1"
     },
     {
-      "id": "readme_shared_jupiter_rate_limiter",
-      "label": "Shared Jupiter Rate Limiter",
-      "author": null,
-      "captured_at": null,
-      "community": 6,
-      "community_name": "README Concepts & Notifications",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "shared jupiter rate limiter",
-      "rationale": "The free Jupiter tier allows 1 request/second, so ONE limiter sits in front of every Jupiter call: max 1 in flight, ~1.1s between calls.",
-      "source_file": "README.md",
-      "source_location": "L20",
-      "source_url": null
+      "id": "src_solprice",
+      "label": "solPrice.ts",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "solprice.ts",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_summary",
+      "label": "summary.ts",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "summary.ts",
+      "source_file": "src/summary.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_types",
+      "label": "types.ts",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "pnl.ts",
+      "file_type": "code",
+      "norm_label": "types.ts",
+      "source_file": "src/types.ts",
+      "source_location": "L1"
     }
   ],
   "links": [
@@ -2548,6 +2409,54 @@
     },
     {
       "source": "src_notify_notify",
+      "target": "src_notify_soundfor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_notify",
+      "target": "src_notify_playsound",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_notify",
+      "target": "src_notify_flagoff",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_notify",
+      "target": "src_notify_showbanner",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_showbanner",
       "target": "src_notify_sanitize",
       "relation": "calls",
       "_origin": "ast",
@@ -2555,7 +2464,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L17",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_soundfor",
+      "target": "src_notify_flagoff",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
@@ -2771,7 +2692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L354",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -2867,7 +2788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L213",
+      "source_location": "L214",
       "weight": 1.0
     },
     {
@@ -2879,7 +2800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L226",
+      "source_location": "L227",
       "weight": 1.0
     },
     {
@@ -2915,7 +2836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L244",
+      "source_location": "L245",
       "weight": 1.0
     },
     {
@@ -2927,7 +2848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L246",
+      "source_location": "L247",
       "weight": 1.0
     },
     {
@@ -2939,7 +2860,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L257",
+      "source_location": "L258",
       "weight": 1.0
     },
     {
@@ -2951,7 +2872,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L289",
+      "source_location": "L290",
       "weight": 1.0
     },
     {
@@ -2963,7 +2884,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L300",
+      "source_location": "L301",
       "weight": 1.0
     },
     {
@@ -2975,7 +2896,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L305",
+      "source_location": "L306",
       "weight": 1.0
     },
     {
@@ -3112,6 +3033,18 @@
     },
     {
       "source": "test_logic_test_main",
+      "target": "test_logic_test_testnotifysounds",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L577",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
       "target": "test_logic_test_testshutdowndebounce",
       "relation": "calls",
       "_origin": "ast",
@@ -3119,7 +3052,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L557",
+      "source_location": "L578",
       "weight": 1.0
     },
     {
@@ -3131,7 +3064,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L558",
+      "source_location": "L579",
       "weight": 1.0
     },
     {
@@ -3143,7 +3076,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L559",
+      "source_location": "L580",
       "weight": 1.0
     },
     {
@@ -3155,7 +3088,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L560",
+      "source_location": "L581",
       "weight": 1.0
     },
     {
@@ -3167,7 +3100,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L561",
+      "source_location": "L582",
       "weight": 1.0
     },
     {
@@ -3179,7 +3112,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L562",
+      "source_location": "L583",
       "weight": 1.0
     },
     {
@@ -3191,7 +3124,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L563",
+      "source_location": "L584",
       "weight": 1.0
     },
     {
@@ -3203,7 +3136,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L564",
+      "source_location": "L585",
       "weight": 1.0
     },
     {
@@ -3215,7 +3148,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L565",
+      "source_location": "L586",
       "weight": 1.0
     },
     {
@@ -3227,7 +3160,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L566",
+      "source_location": "L587",
       "weight": 1.0
     },
     {
@@ -3239,7 +3172,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L420",
+      "source_location": "L421",
       "weight": 1.0
     },
     {
@@ -3251,7 +3184,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L437",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -3263,7 +3196,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L438",
+      "source_location": "L439",
       "weight": 1.0
     },
     {
@@ -3275,7 +3208,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L78",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -3287,7 +3220,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L78",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -3299,7 +3232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L505",
+      "source_location": "L506",
       "weight": 1.0
     },
     {
@@ -3311,7 +3244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L521",
+      "source_location": "L522",
       "weight": 1.0
     },
     {
@@ -3323,7 +3256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L522",
+      "source_location": "L523",
       "weight": 1.0
     },
     {
@@ -3335,7 +3268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L274",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -3347,7 +3280,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L297",
+      "source_location": "L298",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testnotifysounds",
+      "target": "src_notify_soundfor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L563",
       "weight": 1.0
     },
     {
@@ -3359,7 +3304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L99",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -3371,7 +3316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L358",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
@@ -3383,7 +3328,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L378",
+      "source_location": "L379",
       "weight": 1.0
     },
     {
@@ -3395,7 +3340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L379",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -3407,7 +3352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L549",
+      "source_location": "L550",
       "weight": 1.0
     },
     {
@@ -3419,7 +3364,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L227",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -3431,7 +3376,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L245",
+      "source_location": "L246",
       "weight": 1.0
     },
     {
@@ -3443,7 +3388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L258",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -3455,7 +3400,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L267",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -3467,7 +3412,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L115",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -3479,7 +3424,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L117",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -3491,7 +3436,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L145",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -3503,7 +3448,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L325",
+      "source_location": "L326",
       "weight": 1.0
     },
     {
@@ -3515,7 +3460,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L327",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -3527,7 +3472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L474",
+      "source_location": "L475",
       "weight": 1.0
     },
     {
@@ -4323,6 +4268,18 @@
       "weight": 1.0
     },
     {
+      "source": "test_logic_test",
+      "target": "src_notify_soundfor",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
       "source": "src_config",
       "target": "ref_solana_web3_js",
       "relation": "imports_from",
@@ -4971,6 +4928,18 @@
       "weight": 1.0
     },
     {
+      "source": "test_logic_test",
+      "target": "src_notify",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
       "source": "src_jupiter_jupiterclient_constructor",
       "target": "src_ratelimiter_ratelimiter",
       "relation": "references",
@@ -5111,7 +5080,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/trader.ts",
-      "source_location": "L210",
+      "source_location": "L211",
       "weight": 1.0
     },
     {
@@ -5135,7 +5104,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/trader.ts",
-      "source_location": "L230",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -5431,6 +5400,149 @@
       "weight": 1.0
     },
     {
+      "source": "readme",
+      "target": "readme_solana_copy_trading_bot",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_4_run_the_bot_dry_run",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_5_stopping_the_bot",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_6_going_live_only_when_you_re_ready",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_useful_extras",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_1_check_that_node_js_is_installed",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_2_get_the_code_and_install_dependencies",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_setup_mac_terminal_step_by_step",
+      "target": "readme_3_create_your_env_file",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_solana_copy_trading_bot",
+      "target": "readme_safety_features_on_by_default",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_solana_copy_trading_bot",
+      "target": "readme_how_it_decides_what_is_a_buy_or_sell",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_solana_copy_trading_bot",
+      "target": "readme_what_stuck_means",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L248",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_solana_copy_trading_bot",
+      "target": "readme_troubleshooting",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_solana_copy_trading_bot",
+      "target": "readme_setup_mac_terminal_step_by_step",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
       "source": "src_config",
       "target": "src_config_quote_mints",
       "relation": "contains",
@@ -5630,13 +5742,35 @@
     },
     {
       "source": "src_notify",
-      "target": "src_notify_notify",
+      "target": "src_notify_notifykind",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L13",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_default_sounds",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_env_keys",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -5647,7 +5781,62 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L9",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_flagoff",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_soundfor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_playsound",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_showbanner",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_notify",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -5933,7 +6122,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L114",
+      "source_location": "L115",
       "weight": 1.0
     },
     {
@@ -5944,7 +6133,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L226",
+      "source_location": "L227",
       "weight": 1.0
     },
     {
@@ -5955,7 +6144,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L272",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -5966,7 +6155,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L316",
+      "source_location": "L317",
       "weight": 1.0
     },
     {
@@ -5977,7 +6166,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L357",
+      "source_location": "L358",
       "weight": 1.0
     },
     {
@@ -5988,7 +6177,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0
     },
     {
@@ -5999,7 +6188,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L419",
+      "source_location": "L420",
       "weight": 1.0
     },
     {
@@ -6010,7 +6199,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L473",
+      "source_location": "L474",
       "weight": 1.0
     },
     {
@@ -6021,7 +6210,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L504",
+      "source_location": "L505",
       "weight": 1.0
     },
     {
@@ -6032,7 +6221,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L547",
+      "source_location": "L548",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "test_logic_test_testnotifysounds",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/logic-test.ts",
+      "source_location": "L561",
       "weight": 1.0
     },
     {
@@ -6043,7 +6243,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L556",
+      "source_location": "L576",
       "weight": 1.0
     },
     {
@@ -6054,7 +6254,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L76",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -6065,7 +6265,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L98",
+      "source_location": "L99",
       "weight": 1.0
     },
     {
@@ -6450,7 +6650,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/trader.ts",
-      "source_location": "L210",
+      "source_location": "L211",
       "weight": 1.0
     },
     {
@@ -6461,7 +6661,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/trader.ts",
-      "source_location": "L230",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -6483,7 +6683,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/trader.ts",
-      "source_location": "L343",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -6494,7 +6694,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/trader.ts",
-      "source_location": "L358",
+      "source_location": "L360",
       "weight": 1.0
     },
     {
@@ -6652,14 +6852,14 @@
       "weight": 1.0
     },
     {
-      "source": "src_trader_rationale_325",
+      "source": "src_trader_rationale_327",
       "target": "src_trader",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/trader.ts",
-      "source_location": "L325",
+      "source_location": "L327",
       "weight": 1.0
     },
     {
@@ -6827,7 +7027,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L347",
+      "source_location": "L349",
       "weight": 1.0
     },
     {
@@ -6887,7 +7087,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L211",
+      "source_location": "L212",
       "weight": 1.0
     },
     {
@@ -6899,7 +7099,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L231",
+      "source_location": "L232",
       "weight": 1.0
     },
     {
@@ -6911,7 +7111,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L255",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -6923,7 +7123,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L285",
+      "source_location": "L286",
       "weight": 1.0
     },
     {
@@ -6935,7 +7135,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L295",
+      "source_location": "L296",
       "weight": 1.0
     },
     {
@@ -6947,7 +7147,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L327",
+      "source_location": "L329",
       "weight": 1.0
     },
     {
@@ -6959,7 +7159,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/trader.ts",
-      "source_location": "L362",
+      "source_location": "L364",
       "weight": 1.0
     },
     {
@@ -7019,7 +7219,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L443",
+      "source_location": "L444",
       "weight": 1.0
     },
     {
@@ -7031,7 +7231,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L447",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -7043,7 +7243,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L450",
+      "source_location": "L451",
       "weight": 1.0
     },
     {
@@ -7055,7 +7255,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L451",
+      "source_location": "L452",
       "weight": 1.0
     },
     {
@@ -7067,7 +7267,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L527",
+      "source_location": "L528",
       "weight": 1.0
     },
     {
@@ -7079,7 +7279,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L531",
+      "source_location": "L532",
       "weight": 1.0
     },
     {
@@ -7091,7 +7291,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L276",
+      "source_location": "L277",
       "weight": 1.0
     },
     {
@@ -7103,7 +7303,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L102",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -7115,7 +7315,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L384",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -7127,24 +7327,12 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L388",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
       "source": "test_logic_test_testsummary",
       "target": "src_positions_positionstore_openposition",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L230",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_testsummary",
-      "target": "src_positions_positionstore_recordsell",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "INFERRED",
@@ -7156,6 +7344,18 @@
     },
     {
       "source": "test_logic_test_testsummary",
+      "target": "src_positions_positionstore_recordsell",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testsummary",
       "target": "src_positions_positionstore_markstuck",
       "relation": "calls",
       "_origin": "ast",
@@ -7163,7 +7363,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L237",
+      "source_location": "L238",
       "weight": 1.0
     },
     {
@@ -7175,7 +7375,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L118",
+      "source_location": "L119",
       "weight": 1.0
     },
     {
@@ -7187,7 +7387,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L151",
+      "source_location": "L152",
       "weight": 1.0
     },
     {
@@ -7199,7 +7399,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L152",
+      "source_location": "L153",
       "weight": 1.0
     },
     {
@@ -7211,7 +7411,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L196",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -7223,7 +7423,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L199",
+      "source_location": "L200",
       "weight": 1.0
     },
     {
@@ -7235,7 +7435,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L329",
+      "source_location": "L330",
       "weight": 1.0
     },
     {
@@ -7247,7 +7447,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L334",
+      "source_location": "L335",
       "weight": 1.0
     },
     {
@@ -7259,7 +7459,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L349",
+      "source_location": "L350",
       "weight": 1.0
     },
     {
@@ -7271,7 +7471,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L477",
+      "source_location": "L478",
       "weight": 1.0
     },
     {
@@ -7283,7 +7483,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L478",
+      "source_location": "L479",
       "weight": 1.0
     },
     {
@@ -7295,7 +7495,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L483",
+      "source_location": "L484",
       "weight": 1.0
     },
     {
@@ -7307,7 +7507,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L486",
+      "source_location": "L487",
       "weight": 1.0
     },
     {
@@ -7319,7 +7519,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L492",
+      "source_location": "L493",
       "weight": 1.0
     },
     {
@@ -7331,915 +7531,10 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L493",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_phantom_wallet",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L104",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L106",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_desktop_notifications",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L117",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_jupiter_swap_api_v2",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L12",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_positions_persistence",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L139",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_mark_to_market",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L169",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_dry_run_mode",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L17",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_logic_tests",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L182",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_manual_writeoff",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L193",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_shared_jupiter_rate_limiter",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L20",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_abandoned_position",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L22",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_buy_sell_detection",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L224",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_copy_rules",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L233",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_troubleshooting",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L252",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_sell_sizing_from_wallet",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L28",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_copy_trading",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L3",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_stuck_position",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L32",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_graceful_shutdown",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L35",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_coingecko_sol_price",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L41",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_pnl_reporting",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L41",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_hard_caps",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L43",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_thin_token_route_loss",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L47",
-      "weight": 1.0
-    },
-    {
-      "source": "readme",
-      "target": "readme_env_configuration",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L92",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_copy_trading",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L12",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_copy_trading",
-      "target": "readme_jupiter_swap_api_v2",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L12",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_env_configuration",
-      "target": "readme_phantom_wallet",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L104",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_env_configuration",
-      "target": "readme_dry_run_mode",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L110",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_env_configuration",
-      "target": "readme_hard_caps",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L111",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_graceful_shutdown",
-      "target": "readme_stuck_position",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L249",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_hard_caps",
-      "target": "readme_stuck_position",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L43",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_manual_writeoff",
-      "target": "readme_abandoned_position",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L194",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_mark_to_market",
-      "target": "readme_shared_jupiter_rate_limiter",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L179",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_pnl_reporting",
-      "target": "readme_coingecko_sol_price",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L41",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_troubleshooting",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L258",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_troubleshooting",
-      "target": "readme_shared_jupiter_rate_limiter",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L259",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_dry_run_mode",
-      "target": "readme_pnl_reporting",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": "L158",
-      "weight": 1.0
-    },
-    {
-      "source": "src_index_main",
-      "target": "readme_graceful_shutdown",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_ordertaker",
-      "target": "readme_mark_to_market",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_index_quietenrpcretrylogs",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": "L260",
-      "weight": 1.0
-    },
-    {
-      "source": "src_index_reportwatcherhealth",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": "L260",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_copy_rules",
-      "target": "readme_buy_sell_detection",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L233",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_sell_sizing_from_wallet",
-      "target": "readme_stuck_position",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L28",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_stuck_position",
-      "target": "readme_abandoned_position",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L22",
-      "weight": 1.0
-    },
-    {
-      "source": "src_config_config",
-      "target": "readme_hard_caps",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_config_quote_mints",
-      "target": "readme_buy_sell_detection",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_jupiter_jupiterclient",
-      "target": "readme_shared_jupiter_rate_limiter",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_jupiter_lookslikenoroute",
-      "target": "readme_thin_token_route_loss",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_atriskcount",
-      "target": "readme_hard_caps",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_findopenbymint",
-      "target": "readme_copy_rules",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_findopenbymintandsource",
-      "target": "readme_copy_rules",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_reopenstuck",
-      "target": "readme_stuck_position",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_solprice_getsolpriceusd",
-      "target": "readme_pnl_reporting",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_summary_main",
-      "target": "readme_mark_to_market",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_beginshutdown",
-      "target": "readme_graceful_shutdown",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_maybecopybuy",
-      "target": "readme_copy_rules",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_maybecopybuy",
-      "target": "readme_hard_caps",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_maybecopysell",
-      "target": "readme_copy_rules",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_ordertaker",
-      "target": "readme_dry_run_mode",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_sellposition",
-      "target": "readme_abandoned_position",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_sellposition",
-      "target": "readme_stuck_position",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_settleddeltaraw",
-      "target": "readme_sell_sizing_from_wallet",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_shared_jupiter_rate_limiter",
-      "target": "readme_pnl_reporting",
-      "relation": "rationale_for",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L41",
-      "weight": 1.0
-    },
-    {
-      "source": "src_watcher_walletwatcher",
-      "target": "readme_helius_rpc",
-      "relation": "references",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L106",
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_rationale_325",
-      "target": "readme_stuck_position",
-      "relation": "semantically_similar_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": "L32",
-      "weight": 1.0
-    },
-    {
-      "source": "src_config_loadconfig",
-      "target": "readme_dry_run_mode",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_config_loadconfig",
-      "target": "readme_env_configuration",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_jupiter_jupiterclient",
-      "target": "readme_jupiter_swap_api_v2",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_notify",
-      "target": "readme_desktop_notifications",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_pnl_marktomarket",
-      "target": "readme_mark_to_market",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_pnl_printsummary",
-      "target": "readme_pnl_reporting",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_load",
-      "target": "readme_positions_persistence",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_markabandoned",
-      "target": "readme_abandoned_position",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_markstuck",
-      "target": "readme_stuck_position",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_positions_positionstore_save",
-      "target": "readme_positions_persistence",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_ratelimiter_ratelimiter",
-      "target": "readme_shared_jupiter_rate_limiter",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_shutdowndebounce_decideshutdown",
-      "target": "readme_graceful_shutdown",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_solprice_getsolpriceusd",
-      "target": "readme_coingecko_sol_price",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_closeallpositions",
-      "target": "readme_graceful_shutdown",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_maybecopybuy",
-      "target": "readme_copy_trading",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_maybecopysell",
-      "target": "readme_copy_trading",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_trader_trader_tokenbalanceraw",
-      "target": "readme_sell_sizing_from_wallet",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_wallet_loadkeypair",
-      "target": "readme_phantom_wallet",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_watcher_analyzeswap",
-      "target": "readme_buy_sell_detection",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "src_writeoff_main",
-      "target": "readme_manual_writeoff",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "readme_logic_tests",
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_thin_token_route_loss",
-      "target": "readme_stuck_position",
-      "relation": "rationale_for",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "README.md",
-      "source_location": "L47",
+      "source_location": "L494",
       "weight": 1.0
     }
   ],
-  "hyperedges": [
-    {
-      "id": "external_services",
-      "label": "External Services",
-      "nodes": [
-        "readme_helius_rpc",
-        "readme_jupiter_swap_api_v2",
-        "readme_coingecko_sol_price",
-        "readme_phantom_wallet"
-      ],
-      "relation": "participate_in",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md"
-    },
-    {
-      "id": "failed_sell_safety_net",
-      "label": "Failed-Sell Safety Net",
-      "nodes": [
-        "readme_stuck_position",
-        "readme_abandoned_position",
-        "readme_manual_writeoff",
-        "readme_sell_sizing_from_wallet",
-        "readme_graceful_shutdown",
-        "readme_thin_token_route_loss"
-      ],
-      "relation": "form",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md"
-    },
-    {
-      "id": "jupiter_budget_discipline",
-      "label": "Jupiter Request Budget Discipline",
-      "nodes": [
-        "readme_shared_jupiter_rate_limiter",
-        "readme_mark_to_market",
-        "readme_coingecko_sol_price",
-        "readme_pnl_reporting"
-      ],
-      "relation": "form",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md"
-    }
-  ],
-  "built_at_commit": "5af7ac298ca5bfb16434afae07bc6dc911c086af"
+  "hyperedges": [],
+  "built_at_commit": "6bef3a32fbd8e83a27b27d91a5bbd78209fde2c9"
 }

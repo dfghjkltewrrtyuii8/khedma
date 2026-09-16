@@ -1,1 +1,12 @@
-{"0": "Package Manifest & Dependencies", "1": "Jupiter Swaps & P&L Reporting", "2": "Config, Types & Module Wiring", "3": "Wallet Watcher & Rate Limiting", "4": "Position Store & Lifecycle", "5": "Trader: Copy Buy/Sell", "6": "README Concepts & Notifications", "7": "TypeScript Compiler Config"}
+{
+  "0": "package.json",
+  "1": "jupiter.ts",
+  "2": "watcher.ts",
+  "3": "logic-test.ts",
+  "4": "PositionStore",
+  "5": "Trader",
+  "6": "notify.ts",
+  "7": "compilerOptions",
+  "8": "Setup (Mac, Terminal, step by step)",
+  "9": "pnl.ts"
+}
