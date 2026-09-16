@@ -115,6 +115,8 @@ with **Cmd+S** and close TextEdit.
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
+| `SOUNDS` | macOS sound on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
+| `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which sound for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
 | `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
 
 > 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
@@ -135,6 +137,11 @@ wallet trades, you'll see lines like:
    ↳ copying: buying 0.01 SOL of Ab3d…9kQz…
    ✅ [DRY RUN] SIMULATED buy: 1,234 Ab3d…9kQz for 0.01 SOL (position pos-…)
 ```
+
+On a Mac you'll also *hear* it: **Glass** when a buy fills, **Hero** when a
+sell completes, **Basso** when a sell fails and the position is stuck — so
+you know what happened without looking at the screen. (`SOUNDS` and
+`SOUND_*` in `.env` change or silence them.)
 
 A P&L summary prints every 30 seconds (`SUMMARY_INTERVAL_SECONDS` in `.env`)
 and on shutdown. Positions survive restarts — they're saved in
@@ -260,4 +267,5 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | Summary reports `RPC rate-limit retries` | You're exceeding your Helius plan. Lower `RPC_REQUESTS_PER_SECOND` or watch fewer wallets — every retry is a delayed or dropped trade. |
 | Summary reports transactions `skipped as stale` | The watcher fell behind and discarded trades too old to copy (>45s). Same fix as above. |
 | `no route for …` when buying | Token too new/illiquid for Jupiter — the bot just skips it. |
-| Bot seems idle | Normal — it only acts when a tracked wallet trades. The 15-minute summaries confirm it's alive. |
+| Bot seems idle | Normal — it only acts when a tracked wallet trades. The periodic summaries confirm it's alive. |
+| No sound on buys/sells | `SOUNDS` must not be `false` in `.env`, and the Mac can't be muted. Test a sound directly: `afplay /System/Library/Sounds/Glass.aiff`. Your own file needs a full path starting with `/`. |

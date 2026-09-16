@@ -30,6 +30,7 @@ import { JupiterOrder, OrderParams } from '../src/jupiter';
 import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
+import { soundFor } from '../src/notify';
 
 const TRACKED = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -553,7 +554,27 @@ function testShutdownDebounce() {
   console.log('✅ shutdown debounce: an accidental double Ctrl+C cannot force-quit mid-close');
 }
 
+// Which sound plays for which event is pure config -> file path, so pin it
+// here without spawning afplay: distinct defaults per event, .env overrides
+// by system-sound name or absolute file, a bad override falls back to the
+// default (never to silence), and SOUNDS=false silences everything.
+function testNotifySounds() {
+  const none: NodeJS.ProcessEnv = {};
+  assert(soundFor('buy', none) === '/System/Library/Sounds/Glass.aiff', 'default buy sound');
+  assert(soundFor('sell', none) === '/System/Library/Sounds/Hero.aiff', 'default sell sound');
+  assert(soundFor('fail', none) === '/System/Library/Sounds/Basso.aiff', 'default fail sound');
+  assert(soundFor('buy', none) !== soundFor('sell', none), 'a fill and a sale must sound different');
+  assert(soundFor('sell', { SOUND_SELL: 'Ping' }) === '/System/Library/Sounds/Ping.aiff', 'override by system-sound name');
+  assert(soundFor('buy', { SOUND_BUY: '/Users/me/filled.mp3' }) === '/Users/me/filled.mp3', 'override by absolute file path');
+  assert(soundFor('buy', { SOUND_BUY: 'Glass; rm -rf ~' }) === '/System/Library/Sounds/Glass.aiff', 'a bad override falls back to the default, not to silence');
+  assert(soundFor('sell', { SOUND_SELL: 'Hero.aiff' }) === '/System/Library/Sounds/Hero.aiff', 'a name with .aiff on it still falls back to a valid file');
+  assert(soundFor('buy', { SOUNDS: 'false' }) === null, 'SOUNDS=false silences');
+  assert(soundFor('fail', { SOUNDS: 'false', SOUND_FAIL: 'Ping' }) === null, 'SOUNDS=false wins over an override');
+  console.log('✅ notify sounds: distinct buy/sell/fail sounds, overridable, never silently muted by a typo');
+}
+
 async function main() {
+  testNotifySounds();
   testShutdownDebounce();
   await testBalanceCheckRetriesTransientFailure(console.log);
   await testWriteoffFiltering(console.log);
