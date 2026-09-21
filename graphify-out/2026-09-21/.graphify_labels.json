@@ -1,12 +1,12 @@
 {
   "0": "package.json",
-  "1": "RateLimiter",
-  "2": "logic-test.ts",
-  "3": "index.ts",
+  "1": "doctor.ts",
+  "2": "setup.ts",
+  "3": "logic-test.ts",
   "4": "PositionStore",
   "5": "trader.ts",
   "6": "notify.ts",
   "7": "compilerOptions",
   "8": "Setup (Mac, Terminal, step by step)",
-  "9": "pnl.ts"
+  "9": "index.ts"
 }

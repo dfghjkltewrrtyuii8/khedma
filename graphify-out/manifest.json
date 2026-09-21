@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1789985723.239271,
-    "seen": 1789985794.3913126,
-    "ast_hash": "96db3b9818a43baf972cd8cdce705e90",
+    "mtime": 1790029939.8630865,
+    "seen": 1790030002.9116535,
+    "ast_hash": "ee48ddd189d2044ff0cc5f6d8db60618",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -24,9 +24,9 @@
     "semantic_hash": "a6a2d7e055201162335f90d6abd0b9bd"
   },
   "src/notify.ts": {
-    "mtime": 1789541726.7044673,
-    "seen": 1789541788.3798661,
-    "ast_hash": "97d0142f9e423ede6fae2029519d719c",
+    "mtime": 1790029939.8017833,
+    "seen": 1790030002.911664,
+    "ast_hash": "558149ef747ddb3e3780be1b079481fb",
     "semantic_hash": ""
   },
   "src/pnl.ts": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "src/trader.ts": {
-    "mtime": 1789542327.7756622,
-    "seen": 1789542461.2715127,
-    "ast_hash": "0883cb46c5d5121654dcd461cbf05def",
+    "mtime": 1790029939.8625715,
+    "seen": 1790030002.911677,
+    "ast_hash": "f1ecce6d0635a9e17ff5d03782d6a741",
     "semantic_hash": ""
   },
   "src/types.ts": {
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1789985580.8042808,
-    "seen": 1789985794.3913488,
-    "ast_hash": "4a9d2ac16f1d634e52c1b54d50f8a9f9",
+    "mtime": 1790029939.8664927,
+    "seen": 1790030002.9116838,
+    "ast_hash": "71a7f5323c9bfeae32d8da2456e6ce77",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1789985580.8049486,
-    "seen": 1789985794.3913505,
-    "ast_hash": "ffe5f8e2c57af156244ac5c7a454dae3",
+    "mtime": 1790029939.8670719,
+    "seen": 1790030002.911686,
+    "ast_hash": "5d54d405dc648429af0d708d4569b8f1",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "src/doctor.ts": {
-    "mtime": 1789985580.730649,
-    "seen": 1789985794.39132,
-    "ast_hash": "2d43248973c76aaae17564b6544b5a7c",
+    "mtime": 1790029939.8638792,
+    "seen": 1790030002.9116604,
+    "ast_hash": "eccc843aa9f2ddfbcc0042776bd068b3",
     "semantic_hash": ""
   },
   "src/setup.ts": {
@@ -138,9 +138,15 @@
     "semantic_hash": ""
   },
   "src/setupChecks.ts": {
-    "mtime": 1789985580.7272036,
-    "seen": 1789985794.3913348,
-    "ast_hash": "ef58a44af08a6582c06bebcd57a9e547",
+    "mtime": 1790029939.8634758,
+    "seen": 1790030002.9116702,
+    "ast_hash": "6bd57dc5a64fa663950f12d80646296c",
+    "semantic_hash": ""
+  },
+  "src/alerts.ts": {
+    "mtime": 1790029939.8062298,
+    "seen": 1790030002.9116561,
+    "ast_hash": "1d50504de74f8e3189d211b181b8b378",
     "semantic_hash": ""
   }
 }
