@@ -265,8 +265,13 @@ npm test
 ```
 
 It should end with `All logic tests passed.` This verifies buy/sell detection,
-the Jupiter rate limiter spacing, stuck-position handling, the double-Ctrl+C
-guard, and that P&L never invents numbers.
+the Jupiter rate limiter spacing, stuck-position handling, the exit rules, the
+double-Ctrl+C guard, and that P&L never invents numbers.
+
+The suite pins every setting itself (`test/test-env.ts`), so it reads the same
+on every machine and ignores your `.env` entirely — your own buy size or stop-
+loss can never turn a working build red. It also stays silent: no chimes, no
+speech, no notifications while it runs.
 
 Write off a position that's genuinely stuck for good — e.g. a token that
 rugged (lost all liquidity) and will never find a route to sell. Unlike the

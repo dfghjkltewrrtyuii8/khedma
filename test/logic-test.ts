@@ -4,22 +4,16 @@
 // Uses a throwaway keypair and a temp directory — never touches your real
 // .env or data/positions.json.
 
+// MUST be first: it pins every setting before src/config.ts loads dotenv, so
+// the suite never reads the .env of whoever is running it. See test-env.ts.
+import { TEST_WALLET } from './test-env';
+
 import assert from 'assert';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import bs58 from 'bs58';
 import { Keypair, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
-
-// A fresh keypair generated per run, so no private key is ever committed and
-// the tests can't touch a funded wallet. These env vars are set before any
-// loadConfig() call (which happens inside the test functions below).
-process.env.PRIVATE_KEY_BASE58 = bs58.encode(Keypair.generate().secretKey);
-process.env.HELIUS_HTTPS_URL = 'https://example.com';
-process.env.HELIUS_WSS_URL = 'wss://example.com';
-process.env.JUPITER_API_KEY = 'test';
-process.env.TRACKED_WALLETS = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
-process.env.DRY_RUN = 'true';
 
 import { analyzeSwap, WalletWatcher } from '../src/watcher';
 import { RateLimiter } from '../src/rateLimiter';
@@ -38,7 +32,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 
-const TRACKED = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
+const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
 
 // The token gate's market source for tests that aren't about the gate: an
@@ -811,6 +805,9 @@ function testExitDecisions() {
 // back into something it just stopped out of.
 async function testExitsInTrader(realLog: typeof console.log) {
   const config = loadConfig();
+  // If this ever fails, test isolation has broken and the suite is reading a
+  // real .env again — the arithmetic below is all relative to what we spend.
+  assert(config.copyBuyAmountSol === 0.01, `test env leaked: COPY_BUY_AMOUNT_SOL is ${config.copyBuyAmountSol}, expected 0.01 (see test/test-env.ts)`);
   config.maxOpenPositions = 10;
   config.stopLossPercent = 30;
   config.trailingStopPercent = 30;
@@ -872,7 +869,21 @@ async function testExitsInTrader(realLog: typeof console.log) {
   realLog('✅ exits in trader: stop-loss sells without the tracked wallet, no instant re-buy, trailing stop banks a runner');
 }
 
+// The suite must read the same on every machine. A real .env leaking in was
+// a genuine failure once: tests went red on a working build because the
+// person running them traded a different size.
+function testEnvIsolation() {
+  const config = loadConfig();
+  assert(config.dryRun === true, 'tests always run in dry-run, whatever the real .env says');
+  assert(config.copyBuyAmountSol === 0.01, 'buy size is pinned by test-env.ts');
+  assert(config.trackedWallets.length === 1 && config.trackedWallets[0].toBase58() === TRACKED, 'tracked wallets are pinned');
+  assert(config.stopLossPercent === 30 && config.takeProfitPercent === 0, 'exit rules are pinned');
+  assert(process.env.SPEECH === 'false' && process.env.SOUNDS === 'false', 'tests never make the machine ding or talk');
+  console.log('✅ test isolation: the suite reads pinned settings, never the real .env');
+}
+
 async function main() {
+  testEnvIsolation();
   testSetupChecks();
   testExitDecisions();
   await testExitsInTrader(console.log);
