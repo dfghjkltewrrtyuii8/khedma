@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1790029939.8630865,
-    "seen": 1790030002.9116535,
-    "ast_hash": "ee48ddd189d2044ff0cc5f6d8db60618",
+    "mtime": 1790031748.989804,
+    "seen": 1790031749.901715,
+    "ast_hash": "d33499f97242ec1491bcea487b213800",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790031365.129592,
-    "seen": 1790031430.966635,
-    "ast_hash": "e0e5607628ae3e3d3742e0e3044ea222",
+    "mtime": 1790031630.7711608,
+    "seen": 1790031749.9017467,
+    "ast_hash": "823035e8ed2aece653397af107ace94b",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790031365.1303432,
-    "seen": 1790031430.9666374,
-    "ast_hash": "6685461379f5524aa9c8c3a29f390d75",
+    "mtime": 1790031748.989474,
+    "seen": 1790031749.9017508,
+    "ast_hash": "deea678277b79b8010f9332348f0c020",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -153,6 +153,12 @@
     "mtime": 1790031276.1276877,
     "seen": 1790031430.96661,
     "ast_hash": "c9a7fd6d822dbb947adfafaed872a738",
+    "semantic_hash": ""
+  },
+  "test/test-env.ts": {
+    "mtime": 1790031630.7487564,
+    "seen": 1790031749.9017482,
+    "ast_hash": "77023db8431f8e88125a1755300dc462",
     "semantic_hash": ""
   }
 }

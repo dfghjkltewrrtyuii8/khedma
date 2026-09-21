@@ -6,15 +6,15 @@
     "semantic_hash": ""
   },
   "src/config.ts": {
-    "mtime": 1789542428.079883,
-    "seen": 1789542461.2714987,
-    "ast_hash": "5d2ca02af43908ee3b3aaa8a09a222be",
+    "mtime": 1790031276.182879,
+    "seen": 1790031430.9666064,
+    "ast_hash": "13fe48397ebe0fbcd0561fbad3fb9b73",
     "semantic_hash": ""
   },
   "src/index.ts": {
-    "mtime": 1789542327.7764273,
-    "seen": 1789542461.2715008,
-    "ast_hash": "2970d2f70ed5193a7deda2ed64127d08",
+    "mtime": 1790031276.1841862,
+    "seen": 1790031430.9666116,
+    "ast_hash": "4334d8e590f82c8ea1975c0020732783",
     "semantic_hash": ""
   },
   "src/jupiter.ts": {
@@ -30,16 +30,16 @@
     "semantic_hash": ""
   },
   "src/pnl.ts": {
-    "mtime": 1789542327.7760408,
-    "seen": 1789542461.2715044,
-    "ast_hash": "799077d11ce06bac9bc744e065d34246",
+    "mtime": 1790031276.184488,
+    "seen": 1790031430.966616,
+    "ast_hash": "5cf4e984765e7b4efa85818d8ee44e8a",
     "semantic_hash": ""
   },
   "src/positions.ts": {
-    "mtime": 1788714907.9732122,
-    "seen": 1789459579.9462762,
-    "ast_hash": "3ea8f617c8b2ca5659c73e95bf61016c",
-    "semantic_hash": "3ea8f617c8b2ca5659c73e95bf61016c"
+    "mtime": 1790031276.1831768,
+    "seen": 1790031430.966617,
+    "ast_hash": "68d3ef7aff8f3bcdcf443d46ee10871b",
+    "semantic_hash": ""
   },
   "src/rateLimiter.ts": {
     "mtime": 1788118166.153135,
@@ -66,16 +66,16 @@
     "semantic_hash": ""
   },
   "src/trader.ts": {
-    "mtime": 1790029939.8625715,
-    "seen": 1790030002.911677,
-    "ast_hash": "f1ecce6d0635a9e17ff5d03782d6a741",
+    "mtime": 1790031276.1838906,
+    "seen": 1790031430.9666283,
+    "ast_hash": "d61ab53a668f1c11a9907fd09188a415",
     "semantic_hash": ""
   },
   "src/types.ts": {
-    "mtime": 1788714896.0630207,
-    "seen": 1789459579.9462984,
-    "ast_hash": "797bd1a08f2a05b16560e0e29042c5f8",
-    "semantic_hash": "797bd1a08f2a05b16560e0e29042c5f8"
+    "mtime": 1790031276.1823547,
+    "seen": 1790031430.9666293,
+    "ast_hash": "76dfd61dc17434b7cba4c021781111f4",
+    "semantic_hash": ""
   },
   "src/wallet.ts": {
     "mtime": 1789985580.8023489,
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790029939.8664927,
-    "seen": 1790030002.9116838,
-    "ast_hash": "71a7f5323c9bfeae32d8da2456e6ce77",
+    "mtime": 1790031365.129592,
+    "seen": 1790031430.966635,
+    "ast_hash": "e0e5607628ae3e3d3742e0e3044ea222",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790029939.8670719,
-    "seen": 1790030002.911686,
-    "ast_hash": "5d54d405dc648429af0d708d4569b8f1",
+    "mtime": 1790031365.1303432,
+    "seen": 1790031430.9666374,
+    "ast_hash": "6685461379f5524aa9c8c3a29f390d75",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "src/doctor.ts": {
-    "mtime": 1790029939.8638792,
-    "seen": 1790030002.9116604,
-    "ast_hash": "eccc843aa9f2ddfbcc0042776bd068b3",
+    "mtime": 1790031276.1847594,
+    "seen": 1790031430.966608,
+    "ast_hash": "40c266102065ce9f2fe98a1b9d433403",
     "semantic_hash": ""
   },
   "src/setup.ts": {
@@ -138,15 +138,21 @@
     "semantic_hash": ""
   },
   "src/setupChecks.ts": {
-    "mtime": 1790029939.8634758,
-    "seen": 1790030002.9116702,
-    "ast_hash": "6bd57dc5a64fa663950f12d80646296c",
+    "mtime": 1790031276.185034,
+    "seen": 1790031430.9666212,
+    "ast_hash": "01de2385ba92b2f3241c963c3aa36636",
     "semantic_hash": ""
   },
   "src/alerts.ts": {
     "mtime": 1790029939.8062298,
     "seen": 1790030002.9116561,
     "ast_hash": "1d50504de74f8e3189d211b181b8b378",
+    "semantic_hash": ""
+  },
+  "src/exitRules.ts": {
+    "mtime": 1790031276.1276877,
+    "seen": 1790031430.96661,
+    "ast_hash": "c9a7fd6d822dbb947adfafaed872a738",
     "semantic_hash": ""
   }
 }

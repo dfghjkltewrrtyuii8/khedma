@@ -10,7 +10,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "jupiterclient",
       "source_file": "src/jupiter.ts",
@@ -23,7 +23,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "jupitererror",
       "source_file": "src/jupiter.ts",
@@ -36,37 +36,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "jupitererrorkind",
       "source_file": "src/jupiter.ts",
       "source_location": "L11"
     },
     {
-      "id": "src_jupiter_jupiterorder",
-      "label": "JupiterOrder",
+      "id": "src_pnl_mark",
+      "label": "Mark",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "jupiterorder",
-      "source_file": "src/jupiter.ts",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_jupiter_orderparams",
-      "label": "OrderParams",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "RateLimiter",
-      "file_type": "code",
-      "norm_label": "orderparams",
-      "source_file": "src/jupiter.ts",
-      "source_location": "L28"
+      "norm_label": "mark",
+      "source_file": "src/pnl.ts",
+      "source_location": "L17"
     },
     {
       "id": "src_ratelimiter_ratelimiter",
@@ -75,37 +62,37 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "ratelimiter",
       "source_file": "src/rateLimiter.ts",
       "source_location": "L10"
     },
     {
-      "id": "src_pnl_mark",
-      "label": "Mark",
+      "id": "src_types_exitrule",
+      "label": "ExitRule",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "mark",
-      "source_file": "src/pnl.ts",
-      "source_location": "L17"
+      "norm_label": "exitrule",
+      "source_file": "src/types.ts",
+      "source_location": "L21"
     },
     {
-      "id": "src_shutdowndebounce_shutdowndecision",
-      "label": "ShutdownDecision",
+      "id": "src_types_positionstatus",
+      "label": "PositionStatus",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "shutdowndecision",
-      "source_file": "src/shutdownDebounce.ts",
-      "source_location": "L8"
+      "norm_label": "positionstatus",
+      "source_file": "src/types.ts",
+      "source_location": "L17"
     },
     {
       "id": "src_walletgate_walletgateconfig",
@@ -113,8 +100,8 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "walletgateconfig",
       "source_file": "src/walletGate.ts",
@@ -126,8 +113,8 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "walletmute",
       "source_file": "src/walletGate.ts",
@@ -139,12 +126,51 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "walletrecord",
       "source_file": "src/walletGate.ts",
       "source_location": "L20"
+    },
+    {
+      "id": "src_watcher_queuedtx",
+      "label": "QueuedTx",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "queuedtx",
+      "source_file": "src/watcher.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_watcher_swaphandler",
+      "label": "SwapHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "swaphandler",
+      "source_file": "src/watcher.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_watcher_watcherstats",
+      "label": "WatcherStats",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "watcherstats",
+      "source_file": "src/watcher.ts",
+      "source_location": "L37"
     },
     {
       "id": "src_watcher_walletwatcher",
@@ -153,7 +179,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": "walletwatcher",
       "source_file": "src/watcher.ts",
@@ -166,7 +192,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "envvalues",
       "source_file": "src/setupChecks.ts",
@@ -179,11 +205,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "walletsecretkind",
       "source_file": "src/setupChecks.ts",
       "source_location": "L12"
+    },
+    {
+      "id": "src_jupiter_jupiterorder",
+      "label": "JupiterOrder",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "jupiterorder",
+      "source_file": "src/jupiter.ts",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_jupiter_orderparams",
+      "label": "OrderParams",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "orderparams",
+      "source_file": "src/jupiter.ts",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_shutdowndebounce_shutdowndecision",
+      "label": "ShutdownDecision",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "shutdowndecision",
+      "source_file": "src/shutdownDebounce.ts",
+      "source_location": "L8"
     },
     {
       "id": "src_positions_positionstore",
@@ -244,50 +309,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "config",
       "source_file": "src/config.ts",
       "source_location": "L12"
-    },
-    {
-      "id": "src_exitrules_exitcandidate",
-      "label": "ExitCandidate",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitcandidate",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L27"
-    },
-    {
-      "id": "src_exitrules_exitconfig",
-      "label": "ExitConfig",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitconfig",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_exitrules_exitdecision",
-      "label": "ExitDecision",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitdecision",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L33"
     },
     {
       "id": "src_tokenmarket_dexpair",
@@ -296,7 +322,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "dexpair",
       "source_file": "src/tokenMarket.ts",
@@ -309,7 +335,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "marketsource",
       "source_file": "src/tokenMarket.ts",
@@ -322,7 +348,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "tokengateconfig",
       "source_file": "src/tokenMarket.ts",
@@ -335,7 +361,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "tokenmarket",
       "source_file": "src/tokenMarket.ts",
@@ -348,37 +374,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "tokenverdict",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L27"
-    },
-    {
-      "id": "src_types_exitrule",
-      "label": "ExitRule",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitrule",
-      "source_file": "src/types.ts",
-      "source_location": "L21"
-    },
-    {
-      "id": "src_types_positionstatus",
-      "label": "PositionStatus",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "positionstatus",
-      "source_file": "src/types.ts",
-      "source_location": "L17"
     },
     {
       "id": "src_notify_notifykind",
@@ -394,43 +394,91 @@
       "source_location": "L19"
     },
     {
-      "id": "src_watcher_queuedtx",
-      "label": "QueuedTx",
+      "id": "src_exitrules_exitcandidate",
+      "label": "ExitCandidate",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "queuedtx",
-      "source_file": "src/watcher.ts",
-      "source_location": "L31"
+      "norm_label": "exitcandidate",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L27"
     },
     {
-      "id": "src_watcher_swaphandler",
-      "label": "SwapHandler",
+      "id": "src_exitrules_exitconfig",
+      "label": "ExitConfig",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "swaphandler",
-      "source_file": "src/watcher.ts",
-      "source_location": "L29"
+      "norm_label": "exitconfig",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L22"
     },
     {
-      "id": "src_watcher_watcherstats",
-      "label": "WatcherStats",
+      "id": "src_exitrules_exitdecision",
+      "label": "ExitDecision",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "watcherstats",
-      "source_file": "src/watcher.ts",
-      "source_location": "L37"
+      "norm_label": "exitdecision",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_config_fail",
+      "label": "fail()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "fail()",
+      "source_file": "src/config.ts",
+      "source_location": "L41"
+    },
+    {
+      "id": "src_config_loadconfig",
+      "label": "loadConfig()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "loadconfig()",
+      "source_file": "src/config.ts",
+      "source_location": "L64"
+    },
+    {
+      "id": "src_config_numberenv",
+      "label": "numberEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "numberenv()",
+      "source_file": "src/config.ts",
+      "source_location": "L53"
+    },
+    {
+      "id": "src_config_requireenv",
+      "label": "requireEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "requireenv()",
+      "source_file": "src/config.ts",
+      "source_location": "L47"
     },
     {
       "id": "src_jupiter_jupiterclient_constructor",
@@ -438,7 +486,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/jupiter.ts",
@@ -450,7 +498,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".execute()",
       "source_file": "src/jupiter.ts",
@@ -462,7 +510,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".getorder()",
       "source_file": "src/jupiter.ts",
@@ -474,7 +522,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".request()",
       "source_file": "src/jupiter.ts",
@@ -486,7 +534,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/jupiter.ts",
@@ -498,11 +546,71 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "lookslikenoroute()",
       "source_file": "src/jupiter.ts",
       "source_location": "L40"
+    },
+    {
+      "id": "src_pnl_formatsol",
+      "label": "formatSol()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "formatsol()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_pnl_heldpercent",
+      "label": "heldPercent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "heldpercent()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_pnl_marktomarket",
+      "label": "markToMarket()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "marktomarket()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L38"
+    },
+    {
+      "id": "src_pnl_printgroup",
+      "label": "printGroup()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "printgroup()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L73"
+    },
+    {
+      "id": "src_pnl_printsummary",
+      "label": "printSummary()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "printsummary()",
+      "source_file": "src/pnl.ts",
+      "source_location": "L155"
     },
     {
       "id": "src_ratelimiter_ratelimiter_constructor",
@@ -510,7 +618,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/rateLimiter.ts",
@@ -522,7 +630,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".pendingcount()",
       "source_file": "src/rateLimiter.ts",
@@ -534,7 +642,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": ".schedule()",
       "source_file": "src/rateLimiter.ts",
@@ -546,175 +654,43 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "sleep()",
       "source_file": "src/rateLimiter.ts",
       "source_location": "L6"
     },
     {
-      "id": "src_watcher_walletwatcher_constructor",
-      "label": ".constructor()",
+      "id": "src_solprice_getsolpriceusd",
+      "label": "getSolPriceUsd()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L54"
+      "norm_label": "getsolpriceusd()",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L16"
     },
     {
-      "id": "test_logic_test_testratelimiter",
-      "label": "testRateLimiter()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "RateLimiter",
-      "file_type": "code",
-      "norm_label": "testratelimiter()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L109"
-    },
-    {
-      "id": "src_index_main",
+      "id": "src_summary_main",
       "label": "main()",
       "_callable": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "main()",
-      "source_file": "src/index.ts",
-      "source_location": "L45"
-    },
-    {
-      "id": "src_index_quietenrpcretrylogs",
-      "label": "quietenRpcRetryLogs()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "quietenrpcretrylogs()",
-      "source_file": "src/index.ts",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_index_reportwatcherhealth",
-      "label": "reportWatcherHealth()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "reportwatcherhealth()",
-      "source_file": "src/index.ts",
-      "source_location": "L209"
-    },
-    {
-      "id": "src_pnl_formatsol",
-      "label": "formatSol()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "formatsol()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_pnl_heldpercent",
-      "label": "heldPercent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "heldpercent()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_pnl_marktomarket",
-      "label": "markToMarket()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "marktomarket()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L38"
-    },
-    {
-      "id": "src_pnl_printgroup",
-      "label": "printGroup()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "printgroup()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L73"
-    },
-    {
-      "id": "src_pnl_printsummary",
-      "label": "printSummary()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "printsummary()",
-      "source_file": "src/pnl.ts",
-      "source_location": "L155"
-    },
-    {
-      "id": "src_shutdowndebounce_decideshutdown",
-      "label": "decideShutdown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "decideshutdown()",
-      "source_file": "src/shutdownDebounce.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_trader_trader_beginshutdown",
-      "label": ".beginShutdown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": ".beginshutdown()",
-      "source_file": "src/trader.ts",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_wallet_loadkeypair",
-      "label": "loadKeypair()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "loadkeypair()",
-      "source_file": "src/wallet.ts",
-      "source_location": "L10"
+      "source_file": "src/summary.ts",
+      "source_location": "L16"
     },
     {
       "id": "src_walletgate_isloss",
       "label": "isLoss()",
       "_callable": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "isloss()",
       "source_file": "src/walletGate.ts",
@@ -725,24 +701,36 @@
       "label": "walletRecords()",
       "_callable": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "walletrecords()",
       "source_file": "src/walletGate.ts",
       "source_location": "L43"
     },
     {
-      "id": "src_watcher_shortaddress",
-      "label": "shortAddress()",
+      "id": "src_watcher_walletwatcher_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_index_reportwatcherhealth",
+      "label": "reportWatcherHealth()",
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
-      "norm_label": "shortaddress()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L180"
+      "norm_label": "reportwatcherhealth()",
+      "source_file": "src/index.ts",
+      "source_location": "L209"
     },
     {
       "id": "src_watcher_walletwatcher_drain",
@@ -750,7 +738,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".drain()",
       "source_file": "src/watcher.ts",
@@ -762,7 +750,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".enqueue()",
       "source_file": "src/watcher.ts",
@@ -774,7 +762,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".handlesignature()",
       "source_file": "src/watcher.ts",
@@ -786,7 +774,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".remembersignature()",
       "source_file": "src/watcher.ts",
@@ -798,7 +786,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".start()",
       "source_file": "src/watcher.ts",
@@ -810,7 +798,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".stats()",
       "source_file": "src/watcher.ts",
@@ -822,35 +810,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".stop()",
       "source_file": "src/watcher.ts",
       "source_location": "L85"
-    },
-    {
-      "id": "test_logic_test_testshutdowndebounce",
-      "label": "testShutdownDebounce()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "testshutdowndebounce()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L558"
-    },
-    {
-      "id": "test_logic_test_testwalletgate",
-      "label": "testWalletGate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "testwalletgate()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L615"
     },
     {
       "id": "test_logic_test_testwatcherqueue",
@@ -858,11 +822,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "index.ts",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": "testwatcherqueue()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L327"
+      "source_location": "L321"
     },
     {
       "id": "src_setup_ask",
@@ -870,7 +834,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "ask()",
       "source_file": "src/setup.ts",
@@ -882,7 +846,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "askhidden()",
       "source_file": "src/setup.ts",
@@ -894,7 +858,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "askyesno()",
       "source_file": "src/setup.ts",
@@ -906,7 +870,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "bail()",
       "source_file": "src/setup.ts",
@@ -918,7 +882,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "deriveaddress()",
       "source_file": "src/setup.ts",
@@ -930,7 +894,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "src/setup.ts",
@@ -942,7 +906,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "nextline()",
       "source_file": "src/setup.ts",
@@ -954,7 +918,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "say()",
       "source_file": "src/setup.ts",
@@ -966,7 +930,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "stamp()",
       "source_file": "src/setup.ts",
@@ -978,23 +942,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "classifywalletsecret()",
       "source_file": "src/setupChecks.ts",
       "source_location": "L19"
-    },
-    {
-      "id": "src_setupchecks_findplaceholders",
-      "label": "findPlaceholders()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "findplaceholders()",
-      "source_file": "src/setupChecks.ts",
-      "source_location": "L86"
     },
     {
       "id": "src_setupchecks_masksecret",
@@ -1002,7 +954,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "masksecret()",
       "source_file": "src/setupChecks.ts",
@@ -1014,7 +966,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "parseheliusinput()",
       "source_file": "src/setupChecks.ts",
@@ -1026,7 +978,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "parsewalletlist()",
       "source_file": "src/setupChecks.ts",
@@ -1038,47 +990,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "renderenv()",
       "source_file": "src/setupChecks.ts",
       "source_location": "L146"
     },
     {
-      "id": "src_watcher_analyzeswap",
-      "label": "analyzeSwap()",
+      "id": "src_wallet_loadkeypair",
+      "label": "loadKeypair()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
-      "norm_label": "analyzeswap()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L185"
-    },
-    {
-      "id": "test_logic_test_maketx",
-      "label": "makeTx()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "maketx()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L48"
-    },
-    {
-      "id": "test_logic_test_testanalyzeswap",
-      "label": "testAnalyzeSwap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "testanalyzeswap()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L87"
+      "norm_label": "loadkeypair()",
+      "source_file": "src/wallet.ts",
+      "source_location": "L10"
     },
     {
       "id": "test_logic_test_testsetupchecks",
@@ -1086,23 +1014,215 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "testsetupchecks()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L737"
+      "source_location": "L731"
     },
     {
-      "id": "src_config_loadconfig",
-      "label": "loadConfig()",
+      "id": "src_shutdowndebounce_decideshutdown",
+      "label": "decideShutdown()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "decideshutdown()",
+      "source_file": "src/shutdownDebounce.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_tokenmarket_summarizepairs",
+      "label": "summarizePairs()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "summarizepairs()",
+      "source_file": "src/tokenMarket.ts",
+      "source_location": "L92"
+    },
+    {
+      "id": "src_watcher_analyzeswap",
+      "label": "analyzeSwap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "analyzeswap()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L185"
+    },
+    {
+      "id": "test_logic_test_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L885"
+    },
+    {
+      "id": "test_logic_test_maketx",
+      "label": "makeTx()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "maketx()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L42"
+    },
+    {
+      "id": "test_logic_test_okmarket",
+      "label": "okMarket()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "okmarket()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L40"
+    },
+    {
+      "id": "test_logic_test_testanalyzeswap",
+      "label": "testAnalyzeSwap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testanalyzeswap()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L81"
+    },
+    {
+      "id": "test_logic_test_testbalancecheckretriestransientfailure",
+      "label": "testBalanceCheckRetriesTransientFailure()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testbalancecheckretriestransientfailure()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L509"
+    },
+    {
+      "id": "test_logic_test_testenvisolation",
+      "label": "testEnvIsolation()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testenvisolation()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L875"
+    },
+    {
+      "id": "test_logic_test_testnotifysounds",
+      "label": "testNotifySounds()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testnotifysounds()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L565"
+    },
+    {
+      "id": "test_logic_test_testratelimiter",
+      "label": "testRateLimiter()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testratelimiter()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L103"
+    },
+    {
+      "id": "test_logic_test_testsellusesonchainbalance",
+      "label": "testSellUsesOnChainBalance()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testsellusesonchainbalance()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L362"
+    },
+    {
+      "id": "test_logic_test_testshutdowndebounce",
+      "label": "testShutdownDebounce()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testshutdowndebounce()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L552"
+    },
+    {
+      "id": "test_logic_test_testtokengate",
+      "label": "testTokenGate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testtokengate()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L644"
+    },
+    {
+      "id": "test_logic_test_testwalletgate",
+      "label": "testWalletGate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testwalletgate()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L609"
+    },
+    {
+      "id": "src_index_main",
+      "label": "main()",
       "_callable": true,
       "_origin": "ast",
       "community": 4,
       "community_name": "PositionStore",
       "file_type": "code",
-      "norm_label": "loadconfig()",
-      "source_file": "src/config.ts",
-      "source_location": "L64"
+      "norm_label": "main()",
+      "source_file": "src/index.ts",
+      "source_location": "L45"
+    },
+    {
+      "id": "src_index_quietenrpcretrylogs",
+      "label": "quietenRpcRetryLogs()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "quietenrpcretrylogs()",
+      "source_file": "src/index.ts",
+      "source_location": "L30"
     },
     {
       "id": "src_positions_positionstore_all",
@@ -1297,16 +1417,16 @@
       "source_location": "L86"
     },
     {
-      "id": "src_summary_main",
-      "label": "main()",
+      "id": "src_tokenmarket_tokengateenabled",
+      "label": "tokenGateEnabled()",
       "_callable": true,
       "_origin": "ast",
       "community": 4,
       "community_name": "PositionStore",
       "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "src/summary.ts",
-      "source_location": "L16"
+      "norm_label": "tokengateenabled()",
+      "source_file": "src/tokenMarket.ts",
+      "source_location": "L29"
     },
     {
       "id": "src_trader_trader_announcemuteiftriggered",
@@ -1319,6 +1439,18 @@
       "norm_label": ".announcemuteiftriggered()",
       "source_file": "src/trader.ts",
       "source_location": "L381"
+    },
+    {
+      "id": "src_trader_trader_beginshutdown",
+      "label": ".beginShutdown()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": ".beginshutdown()",
+      "source_file": "src/trader.ts",
+      "source_location": "L44"
     },
     {
       "id": "src_trader_trader_checkexits",
@@ -1465,6 +1597,18 @@
       "source_location": "L57"
     },
     {
+      "id": "src_watcher_shortaddress",
+      "label": "shortAddress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "shortaddress()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L180"
+    },
+    {
       "id": "src_writeoff_main",
       "label": "main()",
       "_callable": true,
@@ -1477,30 +1621,6 @@
       "source_location": "L18"
     },
     {
-      "id": "test_logic_test_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L875"
-    },
-    {
-      "id": "test_logic_test_okmarket",
-      "label": "okMarket()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "okmarket()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L46"
-    },
-    {
       "id": "test_logic_test_testabandonedfreesslot",
       "label": "testAbandonedFreesSlot()",
       "_callable": true,
@@ -1510,19 +1630,7 @@
       "file_type": "code",
       "norm_label": "testabandonedfreesslot()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L430"
-    },
-    {
-      "id": "test_logic_test_testbalancecheckretriestransientfailure",
-      "label": "testBalanceCheckRetriesTransientFailure()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "testbalancecheckretriestransientfailure()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L515"
+      "source_location": "L424"
     },
     {
       "id": "test_logic_test_testexitsintrader",
@@ -1534,7 +1642,7 @@
       "file_type": "code",
       "norm_label": "testexitsintrader()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L812"
+      "source_location": "L806"
     },
     {
       "id": "test_logic_test_testgatesintrader",
@@ -1546,7 +1654,7 @@
       "file_type": "code",
       "norm_label": "testgatesintrader()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L682"
+      "source_location": "L676"
     },
     {
       "id": "test_logic_test_testmarktomarket",
@@ -1558,19 +1666,7 @@
       "file_type": "code",
       "norm_label": "testmarktomarket()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L283"
-    },
-    {
-      "id": "test_logic_test_testsellusesonchainbalance",
-      "label": "testSellUsesOnChainBalance()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "testsellusesonchainbalance()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L368"
+      "source_location": "L277"
     },
     {
       "id": "test_logic_test_testsummary",
@@ -1582,7 +1678,7 @@
       "file_type": "code",
       "norm_label": "testsummary()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L237"
+      "source_location": "L231"
     },
     {
       "id": "test_logic_test_testtrader",
@@ -1594,7 +1690,7 @@
       "file_type": "code",
       "norm_label": "testtrader()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L125"
+      "source_location": "L119"
     },
     {
       "id": "test_logic_test_testwriteofffiltering",
@@ -1606,55 +1702,7 @@
       "file_type": "code",
       "norm_label": "testwriteofffiltering()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L484"
-    },
-    {
-      "id": "src_exitrules_decideexit",
-      "label": "decideExit()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "decideexit()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L46"
-    },
-    {
-      "id": "src_exitrules_describeexitrules",
-      "label": "describeExitRules()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "describeexitrules()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L105"
-    },
-    {
-      "id": "src_exitrules_exitrulesenabled",
-      "label": "exitRulesEnabled()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitrulesenabled()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_exitrules_pct",
-      "label": "pct()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "pct()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L41"
+      "source_location": "L478"
     },
     {
       "id": "src_tokenmarket_describeage",
@@ -1662,7 +1710,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "describeage()",
       "source_file": "src/tokenMarket.ts",
@@ -1674,35 +1722,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "evaluatetoken()",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L44"
-    },
-    {
-      "id": "src_tokenmarket_summarizepairs",
-      "label": "summarizePairs()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "summarizepairs()",
-      "source_file": "src/tokenMarket.ts",
-      "source_location": "L92"
-    },
-    {
-      "id": "src_tokenmarket_tokengateenabled",
-      "label": "tokenGateEnabled()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "tokengateenabled()",
-      "source_file": "src/tokenMarket.ts",
-      "source_location": "L29"
     },
     {
       "id": "src_tokenmarket_usd",
@@ -1710,7 +1734,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "usd()",
       "source_file": "src/tokenMarket.ts",
@@ -1722,35 +1746,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/trader.ts",
       "source_location": "L33"
-    },
-    {
-      "id": "test_logic_test_testexitdecisions",
-      "label": "testExitDecisions()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "testexitdecisions()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L777"
-    },
-    {
-      "id": "test_logic_test_testtokengate",
-      "label": "testTokenGate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "testtokengate()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L650"
     },
     {
       "id": "src_alerts_main",
@@ -1885,18 +1885,6 @@
       "source_location": "L75"
     },
     {
-      "id": "test_logic_test_testnotifysounds",
-      "label": "testNotifySounds()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "notify.ts",
-      "file_type": "code",
-      "norm_label": "testnotifysounds()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L571"
-    },
-    {
       "id": "test_logic_test_testnotifyspeech",
       "label": "testNotifySpeech()",
       "_callable": true,
@@ -1906,43 +1894,7 @@
       "file_type": "code",
       "norm_label": "testnotifyspeech()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L589"
-    },
-    {
-      "id": "src_config_fail",
-      "label": "fail()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "fail()",
-      "source_file": "src/config.ts",
-      "source_location": "L41"
-    },
-    {
-      "id": "src_config_numberenv",
-      "label": "numberEnv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "numberenv()",
-      "source_file": "src/config.ts",
-      "source_location": "L53"
-    },
-    {
-      "id": "src_config_requireenv",
-      "label": "requireEnv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "requireenv()",
-      "source_file": "src/config.ts",
-      "source_location": "L47"
+      "source_location": "L583"
     },
     {
       "id": "src_doctor_ago",
@@ -2041,16 +1993,64 @@
       "source_location": "L38"
     },
     {
-      "id": "src_solprice_getsolpriceusd",
-      "label": "getSolPriceUsd()",
+      "id": "src_exitrules_decideexit",
+      "label": "decideExit()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "getsolpriceusd()",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L16"
+      "norm_label": "decideexit()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_exitrules_describeexitrules",
+      "label": "describeExitRules()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "describeexitrules()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "src_exitrules_exitrulesenabled",
+      "label": "exitRulesEnabled()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitrulesenabled()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_exitrules_pct",
+      "label": "pct()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "pct()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L41"
+    },
+    {
+      "id": "src_setupchecks_findplaceholders",
+      "label": "findPlaceholders()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "findplaceholders()",
+      "source_file": "src/setupChecks.ts",
+      "source_location": "L86"
     },
     {
       "id": "src_tokenmarket_fetchdexscreenermarket",
@@ -2063,6 +2063,18 @@
       "norm_label": "fetchdexscreenermarket()",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L110"
+    },
+    {
+      "id": "test_logic_test_testexitdecisions",
+      "label": "testExitDecisions()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "testexitdecisions()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L771"
     },
     {
       "id": "package",
@@ -2373,14 +2385,102 @@
       "source_location": "L26"
     },
     {
+      "id": "src_config",
+      "label": "config.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "config.ts",
+      "source_file": "src/config.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_config_quote_mints",
+      "label": "QUOTE_MINTS",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "quote_mints",
+      "source_file": "src/config.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_config_sol_mint",
+      "label": "SOL_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "sol_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_config_usdc_mint",
+      "label": "USDC_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "usdc_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_config_usdt_mint",
+      "label": "USDT_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "usdt_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_index",
+      "label": "index.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "index.ts",
+      "source_file": "src/index.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_jupiter",
       "label": "jupiter.ts",
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "jupiter.ts",
       "source_file": "src/jupiter.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pnl",
+      "label": "pnl.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "pnl.ts",
+      "source_file": "src/pnl.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_positions",
+      "label": "positions.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "positions.ts",
+      "source_file": "src/positions.ts",
       "source_location": "L1"
     },
     {
@@ -2388,10 +2488,21 @@
       "label": "rateLimiter.ts",
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "ratelimiter.ts",
       "source_file": "src/rateLimiter.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_solprice",
+      "label": "solPrice.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "solprice.ts",
+      "source_file": "src/solPrice.ts",
       "source_location": "L1"
     },
     {
@@ -2399,62 +2510,84 @@
       "label": "summary.ts",
       "_origin": "ast",
       "community": 1,
-      "community_name": "RateLimiter",
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "summary.ts",
       "source_file": "src/summary.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_index",
-      "label": "index.ts",
+      "id": "src_trader",
+      "label": "trader.ts",
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "index.ts",
-      "source_file": "src/index.ts",
+      "norm_label": "trader.ts",
+      "source_file": "src/trader.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_pnl",
-      "label": "pnl.ts",
+      "id": "src_types",
+      "label": "types.ts",
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "pnl.ts",
-      "source_file": "src/pnl.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_shutdowndebounce",
-      "label": "shutdownDebounce.ts",
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
-      "file_type": "code",
-      "norm_label": "shutdowndebounce.ts",
-      "source_file": "src/shutdownDebounce.ts",
+      "norm_label": "types.ts",
+      "source_file": "src/types.ts",
       "source_location": "L1"
     },
     {
       "id": "src_walletgate",
       "label": "walletGate.ts",
       "_origin": "ast",
-      "community": 10,
-      "community_name": "index.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
       "norm_label": "walletgate.ts",
       "source_file": "src/walletGate.ts",
       "source_location": "L1"
     },
     {
+      "id": "src_watcher",
+      "label": "watcher.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "watcher.ts",
+      "source_file": "src/watcher.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_solana_web3_js",
+      "label": "@solana/web3.js",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "concept",
+      "norm_label": "@solana/web3.js",
+      "source_file": "package.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_trader_rationale_363",
+      "label": "IMPORTANT: a failed sell is NOT a closed position. The tokens are still",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "rationale",
+      "norm_label": "important: a failed sell is not a closed position. the tokens are still",
+      "source_file": "src/trader.ts",
+      "source_location": "L363"
+    },
+    {
       "id": "src_setup",
       "label": "setup.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "setup.ts",
       "source_file": "src/setup.ts",
@@ -2465,7 +2598,7 @@
       "label": "ENV_PATH",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "env_path",
       "source_file": "src/setup.ts",
@@ -2476,7 +2609,7 @@
       "label": "output",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "output",
       "source_file": "src/setup.ts",
@@ -2487,7 +2620,7 @@
       "label": "pendingLines",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "pendinglines",
       "source_file": "src/setup.ts",
@@ -2498,7 +2631,7 @@
       "label": "rl",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "rl",
       "source_file": "src/setup.ts",
@@ -2509,7 +2642,7 @@
       "label": "waiting",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "waiting",
       "source_file": "src/setup.ts",
@@ -2520,7 +2653,7 @@
       "label": "setupChecks.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "setupchecks.ts",
       "source_file": "src/setupChecks.ts",
@@ -2531,7 +2664,7 @@
       "label": "ENV_DEFAULTS",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "env_defaults",
       "source_file": "src/setupChecks.ts",
@@ -2542,7 +2675,7 @@
       "label": "PLACEHOLDER_MARKERS",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "placeholder_markers",
       "source_file": "src/setupChecks.ts",
@@ -2553,7 +2686,7 @@
       "label": "REQUIRED_KEYS",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "required_keys",
       "source_file": "src/setupChecks.ts",
@@ -2564,21 +2697,10 @@
       "label": "wallet.ts",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "code",
       "norm_label": "wallet.ts",
       "source_file": "src/wallet.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "test_logic_test",
-      "label": "logic-test.ts",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "logic-test.ts",
-      "source_file": "test/logic-test.ts",
       "source_location": "L1"
     },
     {
@@ -2586,33 +2708,88 @@
       "label": "bip39",
       "_origin": "ast",
       "community": 2,
-      "community_name": "logic-test.ts",
+      "community_name": "setup.ts",
       "file_type": "concept",
       "norm_label": "bip39",
       "source_file": "package.json",
       "source_location": "L18"
     },
     {
+      "id": "ref_ed25519_hd_key",
+      "label": "ed25519-hd-key",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "concept",
+      "norm_label": "ed25519-hd-key",
+      "source_file": "package.json",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_shutdowndebounce",
+      "label": "shutdownDebounce.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "shutdowndebounce.ts",
+      "source_file": "src/shutdownDebounce.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_logic_test",
+      "label": "logic-test.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "logic-test.ts",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_test_env",
+      "label": "test-env.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test-env.ts",
+      "source_file": "test/test-env.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_test_env_test_env",
+      "label": "TEST_ENV",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test_env",
+      "source_file": "test/test-env.ts",
+      "source_location": "L23"
+    },
+    {
+      "id": "test_test_env_test_wallet",
+      "label": "TEST_WALLET",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test_wallet",
+      "source_file": "test/test-env.ts",
+      "source_location": "L19"
+    },
+    {
       "id": "ref_bs58",
       "label": "bs58",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "community_name": "logic-test.ts",
       "file_type": "concept",
       "norm_label": "bs58",
       "source_file": "package.json",
       "source_location": "L19"
-    },
-    {
-      "id": "ref_ed25519_hd_key",
-      "label": "ed25519-hd-key",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "logic-test.ts",
-      "file_type": "concept",
-      "norm_label": "ed25519-hd-key",
-      "source_file": "package.json",
-      "source_location": "L21"
     },
     {
       "id": "src_writeoff",
@@ -2626,33 +2803,11 @@
       "source_location": "L1"
     },
     {
-      "id": "src_exitrules",
-      "label": "exitRules.ts",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "exitrules.ts",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_positions",
-      "label": "positions.ts",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "positions.ts",
-      "source_file": "src/positions.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_tokenmarket",
       "label": "tokenMarket.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "tokenmarket.ts",
       "source_file": "src/tokenMarket.ts",
@@ -2663,44 +2818,11 @@
       "label": "cache",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "tokenMarket.ts",
       "file_type": "code",
       "norm_label": "cache",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L87"
-    },
-    {
-      "id": "src_trader",
-      "label": "trader.ts",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "trader.ts",
-      "source_file": "src/trader.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_types",
-      "label": "types.ts",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "types.ts",
-      "source_file": "src/types.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_trader_rationale_363",
-      "label": "IMPORTANT: a failed sell is NOT a closed position. The tokens are still",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "rationale",
-      "norm_label": "important: a failed sell is not a closed position. the tokens are still",
-      "source_file": "src/trader.ts",
-      "source_location": "L363"
     },
     {
       "id": "src_alerts",
@@ -3040,7 +3162,7 @@
       "node_kind": "heading",
       "norm_label": "exiting without them",
       "source_file": "README.md",
-      "source_location": "L375"
+      "source_location": "L380"
     },
     {
       "id": "readme_how_it_decides_what_is_a_buy_or_sell",
@@ -3052,7 +3174,7 @@
       "node_kind": "heading",
       "norm_label": "how it decides what is a \"buy\" or \"sell\"",
       "source_file": "README.md",
-      "source_location": "L334"
+      "source_location": "L339"
     },
     {
       "id": "readme_installing_for_a_friend_fresh_mac",
@@ -3064,7 +3186,7 @@
       "node_kind": "heading",
       "norm_label": "installing for a friend (fresh mac)",
       "source_file": "README.md",
-      "source_location": "L302"
+      "source_location": "L307"
     },
     {
       "id": "readme_safety_features_on_by_default",
@@ -3112,7 +3234,7 @@
       "node_kind": "heading",
       "norm_label": "troubleshooting",
       "source_file": "README.md",
-      "source_location": "L425"
+      "source_location": "L430"
     },
     {
       "id": "readme_useful_extras",
@@ -3136,7 +3258,7 @@
       "node_kind": "heading",
       "norm_label": "what it refuses to copy (quality gates)",
       "source_file": "README.md",
-      "source_location": "L351"
+      "source_location": "L356"
     },
     {
       "id": "readme_what_stuck_means",
@@ -3148,62 +3270,7 @@
       "node_kind": "heading",
       "norm_label": "what \"stuck\" means",
       "source_file": "README.md",
-      "source_location": "L414"
-    },
-    {
-      "id": "src_config",
-      "label": "config.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "config.ts",
-      "source_file": "src/config.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_config_quote_mints",
-      "label": "QUOTE_MINTS",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "quote_mints",
-      "source_file": "src/config.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_config_sol_mint",
-      "label": "SOL_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "sol_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_config_usdc_mint",
-      "label": "USDC_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "usdc_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_config_usdt_mint",
-      "label": "USDT_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "usdt_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L9"
+      "source_location": "L419"
     },
     {
       "id": "src_doctor",
@@ -3217,37 +3284,15 @@
       "source_location": "L1"
     },
     {
-      "id": "src_solprice",
-      "label": "solPrice.ts",
+      "id": "src_exitrules",
+      "label": "exitRules.ts",
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "solprice.ts",
-      "source_file": "src/solPrice.ts",
+      "norm_label": "exitrules.ts",
+      "source_file": "src/exitRules.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_watcher",
-      "label": "watcher.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "watcher.ts",
-      "source_file": "src/watcher.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "ref_solana_web3_js",
-      "label": "@solana/web3.js",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "concept",
-      "norm_label": "@solana/web3.js",
-      "source_file": "package.json",
-      "source_location": "L17"
     }
   ],
   "links": [
@@ -5089,127 +5134,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testsetupchecks",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L876",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testexitdecisions",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L877",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testexitsintrader",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L878",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testnotifyspeech",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L879",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testwalletgate",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L880",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testtokengate",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L881",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testgatesintrader",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L882",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testnotifysounds",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L883",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testshutdowndebounce",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L884",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testbalancecheckretriestransientfailure",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L885",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testwriteofffiltering",
+      "target": "test_logic_test_testenvisolation",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5221,7 +5146,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testabandonedfreesslot",
+      "target": "test_logic_test_testsetupchecks",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5233,7 +5158,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testsellusesonchainbalance",
+      "target": "test_logic_test_testexitdecisions",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5245,7 +5170,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testwatcherqueue",
+      "target": "test_logic_test_testexitsintrader",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5257,7 +5182,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testanalyzeswap",
+      "target": "test_logic_test_testnotifyspeech",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5269,7 +5194,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testratelimiter",
+      "target": "test_logic_test_testwalletgate",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5281,7 +5206,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testtrader",
+      "target": "test_logic_test_testtokengate",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5293,7 +5218,7 @@
     },
     {
       "source": "test_logic_test_main",
-      "target": "test_logic_test_testsummary",
+      "target": "test_logic_test_testgatesintrader",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -5301,6 +5226,138 @@
       "context": "call",
       "source_file": "test/logic-test.ts",
       "source_location": "L893",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testnotifysounds",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L894",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testshutdowndebounce",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L895",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testbalancecheckretriestransientfailure",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L896",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testwriteofffiltering",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L897",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testabandonedfreesslot",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L898",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testsellusesonchainbalance",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L899",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testwatcherqueue",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L900",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testanalyzeswap",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L901",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testratelimiter",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L902",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testtrader",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L903",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testsummary",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L904",
       "weight": 1.0
     },
     {
@@ -5312,7 +5369,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L431",
+      "source_location": "L425",
       "weight": 1.0
     },
     {
@@ -5324,7 +5381,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L448",
+      "source_location": "L442",
       "weight": 1.0
     },
     {
@@ -5336,7 +5393,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L449",
+      "source_location": "L443",
       "weight": 1.0
     },
     {
@@ -5348,7 +5405,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L89",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -5360,7 +5417,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L89",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -5372,7 +5429,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L516",
+      "source_location": "L510",
       "weight": 1.0
     },
     {
@@ -5384,7 +5441,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L532",
+      "source_location": "L526",
       "weight": 1.0
     },
     {
@@ -5396,7 +5453,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L533",
+      "source_location": "L527",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testenvisolation",
+      "target": "src_config_loadconfig",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L876",
       "weight": 1.0
     },
     {
@@ -5408,7 +5477,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L781",
+      "source_location": "L775",
       "weight": 1.0
     },
     {
@@ -5420,7 +5489,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L804",
+      "source_location": "L798",
       "weight": 1.0
     },
     {
@@ -5432,7 +5501,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L805",
+      "source_location": "L799",
       "weight": 1.0
     },
     {
@@ -5444,7 +5513,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L813",
+      "source_location": "L807",
       "weight": 1.0
     },
     {
@@ -5456,7 +5525,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L819",
+      "source_location": "L816",
       "weight": 1.0
     },
     {
@@ -5468,7 +5537,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L832",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -5480,7 +5549,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L683",
+      "source_location": "L677",
       "weight": 1.0
     },
     {
@@ -5492,7 +5561,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L685",
+      "source_location": "L679",
       "weight": 1.0
     },
     {
@@ -5504,7 +5573,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L699",
+      "source_location": "L693",
       "weight": 1.0
     },
     {
@@ -5516,7 +5585,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L285",
+      "source_location": "L279",
       "weight": 1.0
     },
     {
@@ -5528,7 +5597,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L308",
+      "source_location": "L302",
       "weight": 1.0
     },
     {
@@ -5540,7 +5609,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L573",
+      "source_location": "L567",
       "weight": 1.0
     },
     {
@@ -5552,7 +5621,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L591",
+      "source_location": "L585",
       "weight": 1.0
     },
     {
@@ -5564,7 +5633,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L602",
+      "source_location": "L596",
       "weight": 1.0
     },
     {
@@ -5576,7 +5645,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L110",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -5588,7 +5657,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L369",
+      "source_location": "L363",
       "weight": 1.0
     },
     {
@@ -5600,7 +5669,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L389",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -5612,7 +5681,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L390",
+      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -5624,7 +5693,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L739",
+      "source_location": "L733",
       "weight": 1.0
     },
     {
@@ -5636,7 +5705,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L752",
+      "source_location": "L746",
       "weight": 1.0
     },
     {
@@ -5648,7 +5717,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L760",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -5660,7 +5729,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L764",
+      "source_location": "L758",
       "weight": 1.0
     },
     {
@@ -5672,7 +5741,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L767",
+      "source_location": "L761",
       "weight": 1.0
     },
     {
@@ -5684,7 +5753,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L560",
+      "source_location": "L554",
       "weight": 1.0
     },
     {
@@ -5696,7 +5765,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L238",
+      "source_location": "L232",
       "weight": 1.0
     },
     {
@@ -5708,7 +5777,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L256",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -5720,7 +5789,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L269",
+      "source_location": "L263",
       "weight": 1.0
     },
     {
@@ -5732,7 +5801,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L278",
+      "source_location": "L272",
       "weight": 1.0
     },
     {
@@ -5744,7 +5813,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L652",
+      "source_location": "L646",
       "weight": 1.0
     },
     {
@@ -5756,7 +5825,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L664",
+      "source_location": "L658",
       "weight": 1.0
     },
     {
@@ -5768,7 +5837,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L126",
+      "source_location": "L120",
       "weight": 1.0
     },
     {
@@ -5780,7 +5849,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L128",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -5792,7 +5861,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L156",
+      "source_location": "L150",
       "weight": 1.0
     },
     {
@@ -5804,7 +5873,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L632",
+      "source_location": "L626",
       "weight": 1.0
     },
     {
@@ -5816,7 +5885,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L638",
+      "source_location": "L632",
       "weight": 1.0
     },
     {
@@ -5828,7 +5897,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L336",
+      "source_location": "L330",
       "weight": 1.0
     },
     {
@@ -5840,7 +5909,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L338",
+      "source_location": "L332",
       "weight": 1.0
     },
     {
@@ -5852,7 +5921,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L485",
+      "source_location": "L479",
       "weight": 1.0
     },
     {
@@ -7112,7 +7181,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L24",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -7124,7 +7193,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L24",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -7136,7 +7205,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L25",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -7148,7 +7217,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L26",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -7160,7 +7229,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L27",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -7172,7 +7241,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L28",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -7184,7 +7253,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L28",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -7196,7 +7265,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L29",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -7208,7 +7277,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L29",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -7220,7 +7289,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L30",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -7232,7 +7301,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L31",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -7244,7 +7313,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L32",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -7256,7 +7325,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -7268,7 +7337,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -7280,7 +7349,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -7292,7 +7361,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7304,7 +7373,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7316,7 +7385,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7328,7 +7397,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7340,7 +7409,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7352,7 +7421,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L36",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -7364,7 +7433,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L36",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -7376,7 +7445,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L36",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -7388,7 +7457,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L37",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -7400,7 +7469,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L38",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -7412,7 +7481,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L38",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -7424,7 +7493,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L39",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -7436,7 +7505,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L39",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -7448,7 +7517,19 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L39",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "test_test_env_test_wallet",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -8360,7 +8441,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L11",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -8372,7 +8453,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L12",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -8384,7 +8465,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L24",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -8396,7 +8477,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L25",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -8408,7 +8489,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L26",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -8420,7 +8501,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L27",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8432,7 +8513,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L28",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -8444,7 +8525,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L29",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -8456,7 +8537,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L30",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -8468,7 +8549,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L31",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -8480,7 +8561,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L32",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -8492,7 +8573,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -8504,7 +8585,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -8516,7 +8597,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L35",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -8528,7 +8609,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L36",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -8540,7 +8621,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L37",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -8552,7 +8633,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L38",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -8564,7 +8645,43 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "test/logic-test.ts",
-      "source_location": "L39",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "test_test_env",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "test_test_env",
+      "target": "ref_solana_web3_js",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/test-env.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "test_test_env",
+      "target": "ref_bs58",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/test-env.ts",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -9261,7 +9378,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L302",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -9272,7 +9389,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L334",
+      "source_location": "L339",
       "weight": 1.0
     },
     {
@@ -9283,7 +9400,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L351",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -9294,7 +9411,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L375",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -9305,7 +9422,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L414",
+      "source_location": "L419",
       "weight": 1.0
     },
     {
@@ -9316,7 +9433,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L425",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -10636,7 +10753,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L109",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -10647,7 +10764,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L125",
+      "source_location": "L119",
       "weight": 1.0
     },
     {
@@ -10658,7 +10775,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L237",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -10669,7 +10786,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L283",
+      "source_location": "L277",
       "weight": 1.0
     },
     {
@@ -10680,7 +10797,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L327",
+      "source_location": "L321",
       "weight": 1.0
     },
     {
@@ -10691,18 +10808,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L368",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test",
-      "target": "test_logic_test_testabandonedfreesslot",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "test/logic-test.ts",
-      "source_location": "L430",
+      "source_location": "L362",
       "weight": 1.0
     },
     {
@@ -10713,7 +10819,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L46",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -10724,7 +10830,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L48",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "test_logic_test_testabandonedfreesslot",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/logic-test.ts",
+      "source_location": "L424",
       "weight": 1.0
     },
     {
@@ -10735,7 +10852,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L484",
+      "source_location": "L478",
       "weight": 1.0
     },
     {
@@ -10746,7 +10863,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L515",
+      "source_location": "L509",
       "weight": 1.0
     },
     {
@@ -10757,7 +10874,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L558",
+      "source_location": "L552",
       "weight": 1.0
     },
     {
@@ -10768,7 +10885,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L571",
+      "source_location": "L565",
       "weight": 1.0
     },
     {
@@ -10779,7 +10896,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L589",
+      "source_location": "L583",
       "weight": 1.0
     },
     {
@@ -10790,7 +10907,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L615",
+      "source_location": "L609",
       "weight": 1.0
     },
     {
@@ -10801,7 +10918,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L650",
+      "source_location": "L644",
       "weight": 1.0
     },
     {
@@ -10812,7 +10929,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L682",
+      "source_location": "L676",
       "weight": 1.0
     },
     {
@@ -10823,7 +10940,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L737",
+      "source_location": "L731",
       "weight": 1.0
     },
     {
@@ -10834,7 +10951,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L777",
+      "source_location": "L771",
       "weight": 1.0
     },
     {
@@ -10845,7 +10962,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L812",
+      "source_location": "L806",
       "weight": 1.0
     },
     {
@@ -10856,7 +10973,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L87",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "test_logic_test_testenvisolation",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/logic-test.ts",
+      "source_location": "L875",
       "weight": 1.0
     },
     {
@@ -10867,7 +10995,29 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L875",
+      "source_location": "L885",
+      "weight": 1.0
+    },
+    {
+      "source": "test_test_env",
+      "target": "test_test_env_test_wallet",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/test-env.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "test_test_env",
+      "target": "test_test_env_test_env",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/test-env.ts",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -12007,7 +12157,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L454",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -12019,7 +12169,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L458",
+      "source_location": "L452",
       "weight": 1.0
     },
     {
@@ -12031,7 +12181,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L461",
+      "source_location": "L455",
       "weight": 1.0
     },
     {
@@ -12043,7 +12193,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L462",
+      "source_location": "L456",
       "weight": 1.0
     },
     {
@@ -12055,7 +12205,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L538",
+      "source_location": "L532",
       "weight": 1.0
     },
     {
@@ -12067,7 +12217,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L542",
+      "source_location": "L536",
       "weight": 1.0
     },
     {
@@ -12079,7 +12229,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L836",
+      "source_location": "L833",
       "weight": 1.0
     },
     {
@@ -12091,7 +12241,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L843",
+      "source_location": "L840",
       "weight": 1.0
     },
     {
@@ -12103,7 +12253,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L845",
+      "source_location": "L842",
       "weight": 1.0
     },
     {
@@ -12115,7 +12265,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L866",
+      "source_location": "L863",
       "weight": 1.0
     },
     {
@@ -12127,7 +12277,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L702",
+      "source_location": "L696",
       "weight": 1.0
     },
     {
@@ -12139,7 +12289,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L710",
+      "source_location": "L704",
       "weight": 1.0
     },
     {
@@ -12151,7 +12301,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L721",
+      "source_location": "L715",
       "weight": 1.0
     },
     {
@@ -12163,7 +12313,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L287",
+      "source_location": "L281",
       "weight": 1.0
     },
     {
@@ -12175,7 +12325,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L113",
+      "source_location": "L107",
       "weight": 1.0
     },
     {
@@ -12187,7 +12337,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L395",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
@@ -12199,7 +12349,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L399",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -12211,7 +12361,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L241",
+      "source_location": "L235",
       "weight": 1.0
     },
     {
@@ -12223,7 +12373,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L242",
+      "source_location": "L236",
       "weight": 1.0
     },
     {
@@ -12235,7 +12385,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L248",
+      "source_location": "L242",
       "weight": 1.0
     },
     {
@@ -12247,7 +12397,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L129",
+      "source_location": "L123",
       "weight": 1.0
     },
     {
@@ -12259,7 +12409,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L162",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -12271,7 +12421,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L163",
+      "source_location": "L157",
       "weight": 1.0
     },
     {
@@ -12283,7 +12433,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L207",
+      "source_location": "L201",
       "weight": 1.0
     },
     {
@@ -12295,7 +12445,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L210",
+      "source_location": "L204",
       "weight": 1.0
     },
     {
@@ -12307,7 +12457,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L340",
+      "source_location": "L334",
       "weight": 1.0
     },
     {
@@ -12319,7 +12469,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L345",
+      "source_location": "L339",
       "weight": 1.0
     },
     {
@@ -12331,7 +12481,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L360",
+      "source_location": "L354",
       "weight": 1.0
     },
     {
@@ -12343,7 +12493,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L488",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -12355,7 +12505,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L489",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -12367,7 +12517,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L494",
+      "source_location": "L488",
       "weight": 1.0
     },
     {
@@ -12379,7 +12529,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L497",
+      "source_location": "L491",
       "weight": 1.0
     },
     {
@@ -12391,7 +12541,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L503",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -12403,7 +12553,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L504",
+      "source_location": "L498",
       "weight": 1.0
     },
     {
@@ -12427,7 +12577,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L449",
+      "source_location": "L443",
       "weight": 1.0
     },
     {
@@ -12439,7 +12589,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L533",
+      "source_location": "L527",
       "weight": 1.0
     },
     {
@@ -12451,7 +12601,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L832",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -12463,7 +12613,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L390",
+      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -12475,10 +12625,10 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L156",
+      "source_location": "L150",
       "weight": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "415e750d5a20d764ad9ace109225eff0f1951606"
+  "built_at_commit": "8424d4418bb142d89d5f07233d517f9b716e0e6e"
 }
