@@ -13,6 +13,7 @@ import { loadConfig, SOL_MINT, USDC_MINT } from './config';
 import { JupiterClient, JupiterError } from './jupiter';
 import { soundFor, speechFor, speechArgs } from './notify';
 import { RateLimiter, sleep } from './rateLimiter';
+import { describeExitRules, exitRulesEnabled } from './exitRules';
 import { findPlaceholders } from './setupChecks';
 import { getSolPriceUsd } from './solPrice';
 import { fetchDexscreenerMarket } from './tokenMarket';
@@ -205,6 +206,17 @@ async function main(): Promise<void> {
         ok(`balance covers ${config.maxOpenPositions} × ${config.copyBuyAmountSol} SOL + ${config.minSolReserve} reserve`);
       }
     }
+  }
+  if (exitRulesEnabled(config)) {
+    ok(`exits on our own terms — ${describeExitRules(config)}, checked every ${config.exitCheckSeconds}s`);
+    if (config.takeProfitPercent > 0 && config.trailingStopPercent > 0) {
+      warn(
+        `TAKE_PROFIT_PERCENT=${config.takeProfitPercent} caps every winner, including the rare big one this ` +
+          'strategy depends on — the trailing stop alone usually does better'
+      );
+    }
+  } else {
+    warn('all exit rules are off — positions are only sold when the tracked wallet sells');
   }
   if (process.platform === 'darwin') {
     const missing = (['buy', 'sell', 'fail'] as const)

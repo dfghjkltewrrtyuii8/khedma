@@ -10,6 +10,7 @@ import { JupiterClient } from './jupiter';
 import { printSummary } from './pnl';
 import { PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
+import { describeExitRules, exitRulesEnabled } from './exitRules';
 import { decideShutdown } from './shutdownDebounce';
 import { tokenGateEnabled } from './tokenMarket';
 import { Trader } from './trader';
@@ -73,7 +74,8 @@ async function main(): Promise<void> {
       ? `wallet muted after ${config.walletMaxConsecutiveLosses} straight copied losses` +
         (config.walletMuteHours > 0 ? ` (for ${config.walletMuteHours}h)` : ' (until removed)')
       : 'wallet muting OFF';
-  console.log(`Filters: ${tokenGate}; ${walletGate}.\n`);
+  console.log(`Filters: ${tokenGate}; ${walletGate}.`);
+  console.log(`Exits:   ${describeExitRules(config)}.\n`);
 
   const connection = new Connection(config.heliusHttpsUrl, {
     wsEndpoint: config.heliusWssUrl,
@@ -140,6 +142,17 @@ async function main(): Promise<void> {
     printSummary(store, undefined, config.slippageBps, config).catch(() => {});
   }, config.summaryIntervalSeconds * 1000);
 
+  // Our own exits: price open positions and act without waiting for the
+  // tracked wallet. Costs one Jupiter call (~1.1s) per open position each
+  // time it runs, so with 4 positions a trade arriving mid-check waits a few
+  // seconds longer — raise EXIT_CHECK_SECONDS to trade responsiveness for
+  // that. Skipped entirely when every rule is off, so it then costs nothing.
+  const exitTimer = exitRulesEnabled(config)
+    ? setInterval(() => {
+        trader.checkExits().catch(() => {});
+      }, config.exitCheckSeconds * 1000)
+    : null;
+
   // ---- graceful shutdown ----
   // A second SIGINT arriving within FORCE_QUIT_DEBOUNCE_MS of the first is
   // treated as an accidental double-tap (key-repeat, an impatient double
@@ -168,6 +181,7 @@ async function main(): Promise<void> {
     console.log(`   (A second Ctrl+C only force-quits after ~${FORCE_QUIT_DEBOUNCE_MS / 1000}s — real positions get a fair chance to close first.)\n`);
 
     clearInterval(summaryTimer);
+    if (exitTimer) clearInterval(exitTimer);
     reportWatcherHealth(watcher);
     trader.beginShutdown();
     await watcher.stop();

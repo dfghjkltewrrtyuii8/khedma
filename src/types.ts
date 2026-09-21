@@ -16,6 +16,10 @@ export interface SwapEvent {
 
 export type PositionStatus = 'open' | 'closed' | 'stuck' | 'abandoned';
 
+// Which of OUR own rules closed a position, when it wasn't the tracked
+// wallet's sell that triggered it. Absent = we mirrored their exit.
+export type ExitRule = 'take-profit' | 'stop-loss' | 'trailing-stop';
+
 export interface Position {
   id: string;
   mint: string;
@@ -33,4 +37,6 @@ export interface Position {
   sellTxs: string[]; // real sell signatures
   stuckReason?: string; // why a sell permanently failed — tokens still in wallet!
   abandonedReason?: string; // why we stopped tracking it — wallet holds none of this token, so it was almost certainly sold outside the bot
+  peakValueSol?: number; // highest total value seen while priced, for the trailing stop
+  exitRule?: ExitRule; // set when one of our own exit rules closed it, not the tracked wallet
 }

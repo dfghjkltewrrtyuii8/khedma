@@ -51,6 +51,9 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
 - **Quality gates** refuse the trades that lost before: tokens too new or too
   thin to exit, and wallets on a losing streak. See
   [What it refuses to copy](#what-it-refuses-to-copy-quality-gates).
+- **It can exit without the tracked wallet** — a stop-loss and a trailing stop
+  that act on your position's own P&L, so you are not chained to their timing.
+  See [Exiting without them](#exiting-without-them).
 
 > ⚠️ **Risk note:** only trade with SOL you are fully prepared to lose. Very new
 > or thin tokens can lose their Jupiter route within seconds — the bot retries
@@ -159,6 +162,11 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `WALLET_MAX_CONSECUTIVE_LOSSES` | Mute a tracked wallet after this many copied losses in a row. Default `3`; `0` = never mute. |
 | `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
 | `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
+| `STOP_LOSS_PERCENT` | Sell if a position falls this far below what you paid. Default `30`; `0` = off. |
+| `TRAILING_STOP_PERCENT` | Sell if a position that has been in profit gives back this much from its own peak. Default `30`; `0` = off. |
+| `TAKE_PROFIT_PERCENT` | Sell as soon as a position is up this much. Default `0` (**off on purpose** — see below). |
+| `EXIT_CHECK_SECONDS` | How often open positions are priced to check those rules. Default `30`. Costs one Jupiter request per open position each time. |
+| `EXIT_REBUY_COOLDOWN_HOURS` | After a rule sells a token, ignore new buys of it for this long. Default `24`; `0` = allow immediately. |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
 | `SOUNDS` | macOS chime on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
@@ -364,6 +372,45 @@ moves:
 Both gates make the bot slower and pickier. That is the point: the trades
 they refuse are the ones that lost.
 
+## Exiting without them
+
+By default a copy-trading bot sells only when the wallet it copied sells. That
+chains your exit to theirs — *plus* the 5–15 seconds it takes to see and act on
+it. It is how the `ARJh` position ended at **−78%**: the tracked wallet got out
+at their price, and the bot followed them down.
+
+So the bot prices its own open positions every `EXIT_CHECK_SECONDS` and acts on
+its own P&L:
+
+- **Stop-loss** (`STOP_LOSS_PERCENT`, default 30) — sell if the position falls
+  that far below what you paid. This is the one that caps a disaster.
+- **Trailing stop** (`TRAILING_STOP_PERCENT`, default 30) — once a position has
+  actually been in profit, sell if it gives back that much from its own peak. A
+  10× that fades to 7× is banked at 7×; a position that was never in profit is
+  left to the stop-loss, so the two rules never double up.
+- **Take-profit** (`TAKE_PROFIT_PERCENT`, default **0 = off**).
+
+> ⚠️ **Why take-profit is off by default.** This strategy's returns come from
+> rare outliers. In dry-run, eight of nine positions lost and a single **+984%**
+> winner carried the entire set. A take-profit at +50% would have sold that
+> winner early and turned a profitable set into a losing one. Capping the upside
+> of an outlier-driven strategy is how you guarantee it loses. The trailing stop
+> does the job properly — it protects gains without putting a ceiling on them.
+
+Two details that keep this honest:
+
+- A position Jupiter **can't price** is left alone, never guessed at — an
+  invented value could fire a stop-loss on a number the bot made up.
+- After a rule sells a token, the bot **won't buy back into it** for
+  `EXIT_REBUY_COOLDOWN_HOURS` (default 24). Otherwise the tracked wallet's next
+  buy would put you straight back into what you just escaped.
+
+Exits show up in the P&L summary tagged with the rule that closed them, e.g.
+`[stop-loss]`, so you can tell your own exits from mirrored ones.
+
+Set all three to `0` to go back to only selling when the tracked wallet does —
+the periodic pricing is then skipped entirely and costs nothing.
+
 ## What "STUCK" means
 
 If a **real** sell fails 3 times in a row (for example the token lost its
@@ -392,5 +439,7 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
 | Bot seems idle | Normal — it only acts when a tracked wallet trades. The periodic summaries confirm it's alive. |
+| `could not price … for exit rules` | Jupiter can't quote that token right now, so the exit rules skip it rather than act on a made-up value. If it persists the token is probably dead — see STUCK below. |
+| Positions keep selling at a small loss | `STOP_LOSS_PERCENT` is tighter than the token's normal swings. Memecoins routinely move 30–50%; raise it, or set it to `0` while you watch. |
 | No sound on buys/sells | Run `npm run alerts` — it plays every alert and prints what it's using. `SOUNDS`/`SPEECH` must not be `false`, and the Mac can't be muted. Test directly: `afplay /System/Library/Sounds/Glass.aiff` and `say "Order filled"`. Your own sound file needs a full path starting with `/`. |
 | Chimes play but nothing is spoken | The voice in `SPEECH_VOICE` probably isn't installed — `npm run doctor` says so. List the ones you have with `say -v "?"`, or leave `SPEECH_VOICE` empty for the default. |

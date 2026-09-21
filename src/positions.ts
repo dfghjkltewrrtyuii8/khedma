@@ -4,7 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { Position, PositionStatus } from './types';
+import { ExitRule, Position, PositionStatus } from './types';
 
 export class PositionStore {
   private positions: Position[] = [];
@@ -78,6 +78,37 @@ export class PositionStore {
       position.closedAt = new Date().toISOString();
     }
     this.save();
+  }
+
+  // Remember the highest value a position has reached, so the trailing stop
+  // survives a restart instead of resetting its peak to whatever it is worth
+  // the moment the bot comes back up.
+  updatePeak(position: Position, peakValueSol: number): void {
+    if (position.peakValueSol !== undefined && peakValueSol <= position.peakValueSol) return;
+    position.peakValueSol = peakValueSol;
+    this.save();
+  }
+
+  // Record that one of OUR rules is closing this position, not the tracked
+  // wallet's sell. Written before the sell is attempted, so a sell that fails
+  // and goes stuck still shows why we were trying to get out.
+  noteExitRule(position: Position, rule: ExitRule): void {
+    position.exitRule = rule;
+    this.save();
+  }
+
+  // Positions this mint was closed out of by our own exit rule since `since`.
+  // Used to stop the bot buying straight back into something it just stopped
+  // out of, which would otherwise happen the moment the tracked wallet buys
+  // more of it.
+  ruleExitSince(mint: string, since: number): Position | undefined {
+    return this.positions.find(
+      (p) =>
+        p.mint === mint &&
+        p.exitRule !== undefined &&
+        p.status === 'closed' &&
+        Date.parse(p.closedAt ?? '') >= since
+    );
   }
 
   // A sell PERMANENTLY failed: the tokens are still sitting in the wallet.

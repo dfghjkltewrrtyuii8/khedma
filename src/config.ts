@@ -30,6 +30,12 @@ export interface Config {
   walletMaxConsecutiveLosses: number;
   walletMuteHours: number;
   maxTrackedWallets: number;
+  // Exits on our own terms — see exitRules.ts.
+  takeProfitPercent: number;
+  stopLossPercent: number;
+  trailingStopPercent: number;
+  exitCheckSeconds: number;
+  exitRebuyCooldownHours: number;
 }
 
 function fail(message: string): never {
@@ -105,12 +111,20 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     walletMaxConsecutiveLosses: numberEnv('WALLET_MAX_CONSECUTIVE_LOSSES', 3),
     walletMuteHours: numberEnv('WALLET_MUTE_HOURS', 24),
     maxTrackedWallets: numberEnv('MAX_TRACKED_WALLETS', 6),
+    takeProfitPercent: numberEnv('TAKE_PROFIT_PERCENT', 0),
+    stopLossPercent: numberEnv('STOP_LOSS_PERCENT', 30),
+    trailingStopPercent: numberEnv('TRAILING_STOP_PERCENT', 30),
+    exitCheckSeconds: numberEnv('EXIT_CHECK_SECONDS', 30),
+    exitRebuyCooldownHours: numberEnv('EXIT_REBUY_COOLDOWN_HOURS', 24),
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');
   if (config.rpcRequestsPerSecond <= 0) fail('RPC_REQUESTS_PER_SECOND must be greater than 0.');
   if (config.summaryIntervalSeconds <= 0) fail('SUMMARY_INTERVAL_SECONDS must be greater than 0.');
   if (config.maxTrackedWallets <= 0) fail('MAX_TRACKED_WALLETS must be greater than 0.');
+  if (config.exitCheckSeconds <= 0) fail('EXIT_CHECK_SECONDS must be greater than 0.');
+  if (config.stopLossPercent >= 100) fail('STOP_LOSS_PERCENT must be below 100 (100% would mean the position is already worthless).');
+  if (config.trailingStopPercent >= 100) fail('TRAILING_STOP_PERCENT must be below 100.');
   if (purpose === 'trade' && trackedWallets.length > config.maxTrackedWallets) {
     fail(
       `TRACKED_WALLETS has ${trackedWallets.length} addresses, more than MAX_TRACKED_WALLETS (${config.maxTrackedWallets}).\n` +

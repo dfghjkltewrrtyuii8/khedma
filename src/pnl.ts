@@ -92,7 +92,8 @@ function printGroup(
     console.log(`  Realized P&L (${closed.length} closed): ${formatSol(realized, solPriceUsd)}`);
     for (const p of closed) {
       console.log(
-        `    • ${shortAddress(p.mint)}: spent ${p.spentSol.toFixed(4)}, got back ${p.receivedSol.toFixed(4)} → ${formatSol(p.receivedSol - p.spentSol, solPriceUsd)}`
+        `    • ${shortAddress(p.mint)}: spent ${p.spentSol.toFixed(4)}, got back ${p.receivedSol.toFixed(4)} → ${formatSol(p.receivedSol - p.spentSol, solPriceUsd)}` +
+          (p.exitRule ? ` [${p.exitRule}]` : '')
       );
     }
 

@@ -10,6 +10,7 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { notify } from './notify';
 import { PositionStore } from './positions';
 import { sleep } from './rateLimiter';
+import { decideExit, exitRulesEnabled } from './exitRules';
 import { evaluateToken, fetchDexscreenerMarket, MarketSource, tokenGateEnabled } from './tokenMarket';
 import { Position, SwapEvent } from './types';
 import { walletMute } from './walletGate';
@@ -121,6 +122,17 @@ export class Trader {
     }
 
     // ---- quality gates: the cheap refusals happen BEFORE any Jupiter call ----
+    if (this.config.exitRebuyCooldownHours > 0) {
+      const since = Date.now() - this.config.exitRebuyCooldownHours * 3_600_000;
+      const stoppedOut = this.store.ruleExitSince(event.mint, since);
+      if (stoppedOut) {
+        console.log(
+          `   ↳ skip: we exited ${shortAddress(event.mint)} on our own ${stoppedOut.exitRule} within the last ` +
+            `${this.config.exitRebuyCooldownHours}h — not buying straight back in`
+        );
+        return;
+      }
+    }
     const mute = walletMute(this.store.all(), event.sourceWallet, Date.now(), this.config);
     if (mute.muted) {
       console.log(`   ↳ skip: 🔇 ${shortAddress(event.sourceWallet)} is muted — ${mute.reason}`);
@@ -374,6 +386,57 @@ export class Trader {
         `   🔇 ${shortAddress(position.sourceWallet)}: ${mute.reason}.\n` +
           '      Its open positions are still mirrored; new buys from it are skipped.'
       );
+    }
+  }
+
+  // ---------------------------------------------------------- own exits ---
+
+  // Price every open position and act on our own exit rules. Queued behind
+  // trade events on the same chain, so a stop-loss can never race a copied
+  // sell on the same position.
+  checkExits(): Promise<void> {
+    this.queue = this.queue.then(() => this.runExitChecks()).catch(() => {});
+    return this.queue;
+  }
+
+  private async runExitChecks(): Promise<void> {
+    if (this.shuttingDown || !exitRulesEnabled(this.config)) return;
+    // Only 'open' positions: a stuck one cannot be sold anyway, and an
+    // abandoned one holds nothing.
+    for (const position of this.store.byStatus('open')) {
+      if (this.shuttingDown) return;
+      const remaining = BigInt(position.tokenAmountRaw);
+      if (remaining <= 0n) continue;
+
+      let valueSol: number;
+      try {
+        const order = await this.jupiter.getOrder({
+          inputMint: position.mint,
+          outputMint: SOL_MINT,
+          amountRaw: remaining,
+          takerPubkey: null, // quote only — nothing is built, signed or balance-checked
+          slippageBps: this.config.slippageBps,
+        });
+        valueSol = Number(order.outAmountRaw) / 1e9;
+      } catch (error) {
+        // Unpriceable means unsellable too, so there is nothing to act on —
+        // and guessing a value here could fire a stop-loss on a number we
+        // made up. Say so and leave it alone.
+        const kind = (error as JupiterError).kind;
+        console.log(
+          `   ⚠️ could not price ${shortAddress(position.mint)} for exit rules` +
+            (kind === 'no-route' ? ' (no route — nothing will buy it right now)' : '')
+        );
+        continue;
+      }
+
+      const decision = decideExit(position, valueSol, this.config);
+      this.store.updatePeak(position, decision.peakValueSol);
+      if (decision.action === 'hold') continue;
+
+      console.log(`\n   🎯 EXIT RULE on ${shortAddress(position.mint)} — ${decision.reason}`);
+      this.store.noteExitRule(position, decision.rule);
+      await this.sellPosition(position, 1, decision.reason);
     }
   }
 

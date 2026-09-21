@@ -36,6 +36,7 @@ import * as bip39 from 'bip39';
 import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
 import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
+import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 
 const TRACKED = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1';
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -769,8 +770,112 @@ function testSetupChecks() {
   console.log('✅ setup checks: address-vs-key, phrase length/typos, Helius key or URL, wallet lists, placeholders, .env render');
 }
 
+// Our own exit rules, as pure arithmetic. The case that matters most is the
+// one that is NOT an exit: with take-profit off, a huge winner is held. This
+// strategy's returns come from rare outliers (the dry run: 8 losers and one
+// +984%), so a rule that caps the upside turns a winning set into a losing one.
+function testExitDecisions() {
+  const cfg = { takeProfitPercent: 0, stopLossPercent: 30, trailingStopPercent: 30 };
+  const base = { spentSol: 0.01, receivedSol: 0 };
+
+  assert(decideExit(base, 0.009, cfg).action === 'hold', '-10% is not an exit');
+  const sl = decideExit(base, 0.007, cfg);
+  assert(sl.action === 'exit' && sl.rule === 'stop-loss', 'exactly -30% trips the stop-loss');
+  assert(decideExit(base, 0.5, cfg).action === 'hold', 'with take-profit off, a 50x winner is HELD, never capped');
+
+  const tp = decideExit(base, 0.016, { ...cfg, takeProfitPercent: 50 });
+  assert(tp.action === 'exit' && tp.rule === 'take-profit', 'take-profit fires when switched on');
+
+  // Below cost a "drop from peak" is just the loss the stop-loss governs, so
+  // the trailing stop must stay disarmed or it exits everything twice as fast.
+  const under = decideExit({ spentSol: 0.01, receivedSol: 0, peakValueSol: 0.0095 }, 0.0085, cfg);
+  assert(under.action === 'hold', 'trailing stop does not arm on a position that was never in profit');
+  const tr = decideExit({ spentSol: 0.01, receivedSol: 0, peakValueSol: 0.05 }, 0.03, cfg);
+  assert(tr.action === 'exit' && tr.rule === 'trailing-stop', 'a runner that gives back 40% of its peak is exited');
+  assert(/peak of \+400/.test(tr.action === 'exit' ? tr.reason : ''), 'the reason names the peak it fell from');
+  assert(decideExit({ spentSol: 0.01, receivedSol: 0, peakValueSol: 0.02 }, 0.04, cfg).peakValueSol === 0.04, 'a new high becomes the peak');
+
+  // A position half-sold at a good price is not a loser just because the
+  // remainder is worth little: banked proceeds count toward P&L.
+  assert(decideExit({ spentSol: 0.01, receivedSol: 0.009 }, 0.0005, cfg).action === 'hold', 'partial sale proceeds count toward the P&L the rules judge');
+
+  assert(decideExit(base, 0.001, { takeProfitPercent: 0, stopLossPercent: 0, trailingStopPercent: 0 }).action === 'hold', 'all rules off = never exits on its own');
+  assert(decideExit({ spentSol: 0, receivedSol: 0 }, 0, cfg).action === 'hold', 'a zero-cost position never divides by zero');
+  assert(exitRulesEnabled(cfg) && !exitRulesEnabled({ takeProfitPercent: 0, stopLossPercent: 0, trailingStopPercent: 0 }), 'enabled flag');
+  assert(/stop-loss -30%/.test(describeExitRules(cfg)), 'banner describes the active rules');
+  console.log('✅ exit rules: stop-loss, trailing stop (armed only in profit), take-profit off never caps a winner');
+}
+
+// The rules inside the trader: a position that falls far enough is sold
+// without waiting for the tracked wallet, and the bot does not immediately buy
+// back into something it just stopped out of.
+async function testExitsInTrader(realLog: typeof console.log) {
+  const config = loadConfig();
+  config.maxOpenPositions = 10;
+  config.stopLossPercent = 30;
+  config.trailingStopPercent = 30;
+  config.takeProfitPercent = 0;
+  config.exitRebuyCooldownHours = 24;
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-exits-')));
+  const keypair = Keypair.generate();
+  let sellQuote = 12_000_000n; // what the remaining tokens are worth, in lamports
+  const orders: OrderParams[] = [];
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      orders.push(params);
+      const isBuy = params.inputMint === SOL_MINT;
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: isBuy ? 5_000n : sellQuote };
+    },
+    async execute() { throw new Error('must not execute in dry run'); },
+  };
+  const fakeConnection = { async getBalance() { return 10e9; } };
+  const trader = new Trader(config, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
+  const MINT_A = MEME_MINT;
+  const MINT_B = Keypair.generate().publicKey.toBase58();
+  const buy = (mint: string, signature: string) =>
+    trader.handleSwapEvent({ signature, sourceWallet: TRACKED, side: 'buy', mint, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    // --- stop-loss: bought for 0.01, now worth 0.006 (-40%) ---
+    await buy(MINT_A, 'x1');
+    assert(store.byStatus('open').length === 1, 'position opened');
+    sellQuote = 9_000_000n; // 0.009 = -10%, not enough
+    await trader.checkExits();
+    assert(store.byStatus('open').length === 1, '-10% is held');
+    assert(store.byStatus('open')[0].peakValueSol === 0.009, 'the peak is recorded as it is priced');
+    sellQuote = 6_000_000n; // 0.006 = -40%
+    await trader.checkExits();
+    const stopped = store.byStatus('closed')[0];
+    assert(store.byStatus('open').length === 0 && stopped?.exitRule === 'stop-loss', 'a -40% position is sold by the stop-loss, without the tracked wallet selling');
+
+    // --- and it does not buy straight back in ---
+    const before = orders.length;
+    await buy(MINT_A, 'x2');
+    assert(store.byStatus('open').length === 0 && orders.length === before, 'the mint we just stopped out of is not re-bought during the cooldown');
+
+    // --- trailing stop: a runner that gives back 40% of its peak ---
+    sellQuote = 12_000_000n;
+    await buy(MINT_B, 'x3');
+    sellQuote = 50_000_000n; // 0.05 = +400%
+    await trader.checkExits();
+    assert(store.byStatus('open').length === 1, 'a +400% winner is NOT capped (take-profit off)');
+    sellQuote = 30_000_000n; // 0.03 — still +200%, but 40% off the peak
+    await trader.checkExits();
+    const trailed = store.all().find((p) => p.mint === MINT_B)!;
+    assert(trailed.status === 'closed' && trailed.exitRule === 'trailing-stop', 'the runner is exited on the way back down, still in profit');
+    assert(trailed.receivedSol === 0.03, 'it banked the trailing-stop price');
+  } finally {
+    console.log = loud;
+  }
+  realLog('✅ exits in trader: stop-loss sells without the tracked wallet, no instant re-buy, trailing stop banks a runner');
+}
+
 async function main() {
   testSetupChecks();
+  testExitDecisions();
+  await testExitsInTrader(console.log);
   testNotifySpeech();
   testWalletGate();
   testTokenGate();
