@@ -1,5 +1,6 @@
-# Secrets — NEVER commit your real .env
+# Secrets — NEVER commit your real .env (nor the backups `npm run setup` keeps)
 .env
+.env.backup-*
 
 # Bot state (positions, P&L history)
 data/

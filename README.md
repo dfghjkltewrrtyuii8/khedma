@@ -40,6 +40,10 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
   run twice either way.
 - **P&L in SOL and USD** (live SOL price from CoinGecko, so it doesn't consume
   your Jupiter request budget), always split into SIMULATED vs REAL.
+- **A setup wizard and a preflight check.** `npm run setup` checks every value
+  before writing `.env` (and shows the wallet address it derives, so a wrong
+  key is caught before it's saved); `npm run doctor` tests keys, endpoints and
+  wallets before any money moves.
 - **Hard caps:** fixed SOL per buy, max simultaneous positions (stuck ones count),
   a minimum SOL reserve that real trades will never dip below, and a dust filter
   that ignores tiny tracked buys.
@@ -70,40 +74,73 @@ required** (the bot uses Node's built-in `fetch`). If you get
 <https://nodejs.org> (download the LTS installer, run it, then re-open Terminal
 and check again).
 
-### 2. Get the code and install dependencies
+### 2. Get the code
 
-If you haven't cloned this repository yet:
-
-```zsh
-cd ~
-git clone https://github.com/dfghjkltewrrtyuii8/khedma.git
-cd khedma
-```
-
-If you already have it, just go into the folder:
+**From a file someone sent you** (`khedmacopybot….tar.gz`, usually in Downloads):
 
 ```zsh
-cd ~/khedma
+mkdir -p ~/copybot
+tar -xzf "$(ls -t ~/Downloads/*copybot*.tar.gz | head -1)" -C ~/copybot
+cd ~/copybot
 ```
 
-Then install the dependencies (takes a minute):
+**Or from GitHub** (the bot lives on this branch — `main` is empty):
+
+```zsh
+git clone -b claude/solana-trading-bot-setup-ub4hfr https://github.com/dfghjkltewrrtyuii8/khedma.git ~/copybot
+cd ~/copybot
+```
+
+Then install the dependencies (takes a minute) and run the offline checks:
 
 ```zsh
 npm install
+npm test
 ```
 
-### 3. Create your .env file
+`npm test` should end with `All logic tests passed.`
+
+### 3. Run the setup wizard
 
 ```zsh
-cp .env.example .env
-open -e .env
+npm run setup
 ```
 
-That opens the file in TextEdit. Fill in each value (details below), then save
-with **Cmd+S** and close TextEdit.
+It asks for four things, checks each one as you paste it, and writes `.env`
+for you. Have them ready:
+
+| It asks for | Where to get it |
+|---|---|
+| Your Phantom **private key** or **recovery phrase** | Phantom → Settings → Manage Accounts → your account → Show Private Key (or Show Recovery Phrase). Typing is hidden. The wizard shows the wallet **address** it derives so you can check it matches Phantom before it's saved. |
+| Helius **API key** | Free account at <https://dashboard.helius.dev> → copy the API key. Paste the key alone or the full RPC URL. |
+| Jupiter **API key** | Free key at <https://portal.jup.ag>. **One key per bot** — a key is limited to 1 request/second, so two bots on one key starve each other. |
+| **Wallets to copy** | Up to 6 addresses, separated by commas or spaces. |
+
+Everything else starts at safe defaults, including `DRY_RUN=true`. Re-running
+the wizard keeps your current values (just press Return) and backs up the old
+`.env` first, so it can never wipe a finished setup.
+
+> 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
+> will never upload it. Don't paste it anywhere else, and don't screenshot it.
+
+### 4. Check everything before it runs
+
+```zsh
+npm run doctor
+```
+
+Read-only. It loads your key and shows the address, reads your balance from
+Helius, opens the WebSocket, makes one quote-only Jupiter request, checks
+Dexscreener and CoinGecko, and shows when each tracked wallet last traded (a
+wallet quiet for days has nothing to copy). Every line is ✅, ⚠️ or ❌ with the
+fix next to it. Fix the ❌ lines, run it again, then start the bot.
+
+#### Every setting (reference)
+
+Change any of these later with `open -e .env` (save with Cmd+S, then restart
+the bot). To change the wallet or a key, run `npm run setup` again.
 
 | Variable | What to put there |
-|---|---|
 | `PRIVATE_KEY_BASE58` | Your Phantom private key (Phantom → Settings → Manage Accounts → your account → Show Private Key). **Or** leave empty and use the mnemonic instead. |
 | `WALLET_MNEMONIC` | Your 12/24-word recovery phrase (only if not using the private key). Uses the standard path `m/44'/501'/0'/0'`. |
 | `HELIUS_HTTPS_URL` | Your Helius HTTPS endpoint (starts with `https://`). |
@@ -127,10 +164,7 @@ with **Cmd+S** and close TextEdit.
 | `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which sound for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
 | `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
 
-> 🔒 Your `.env` holds your private key. It is listed in `.gitignore`, so `git`
-> will never upload it. Don't paste it anywhere else, and don't screenshot it.
-
-### 4. Run the bot (dry-run)
+### 5. Run the bot (dry-run)
 
 ```zsh
 npm start
@@ -155,20 +189,22 @@ A P&L summary prints every 30 seconds (`SUMMARY_INTERVAL_SECONDS` in `.env`)
 and on shutdown. Positions survive restarts — they're saved in
 `data/positions.json`.
 
-### 5. Stopping the bot
+### 6. Stopping the bot
 
 Press **Ctrl+C once**. The bot immediately stops copying new trades, tries to
 close every open position (in dry-run, simulated; stuck ones get one more try),
 prints the final P&L summary, and exits. If you don't want to wait, press
 **Ctrl+C a second time** to force-quit — nothing is ever sold twice.
 
-### 6. Going live (only when you're ready)
+### 7. Going live (only when you're ready)
 
-After you've watched dry-run behave correctly for a while:
+After you've watched dry-run behave correctly for a while (at least a few
+days and 30 closed paper trades, with a positive total):
 
 1. Open `.env` again: `open -e .env`
 2. Change `DRY_RUN=true` to `DRY_RUN=false`, save, close.
-3. Start again: `npm start` — the banner will now say `🔴 MODE: REAL TRADING`.
+3. Run `npm run doctor` — it now warns if your balance can't cover your settings.
+4. Start again: `npm start` — the banner will now say `🔴 MODE: REAL TRADING`.
 
 Start with the small defaults. Simulated positions from dry-run stay in the
 history as SIMULATED; real trades are tracked separately.
@@ -236,6 +272,38 @@ rm -rf data
 
 ---
 
+## Installing for a friend (fresh Mac)
+
+Send them the code (the `.tar.gz` you were given, or the GitHub branch above)
+and these steps. They need their **own** wallet, Helius key and Jupiter key —
+never share yours: a shared Jupiter key starves both bots (1 request/second
+between them), and a shared wallet key is a shared wallet.
+
+Have ready before starting:
+
+1. A Phantom wallet holding **only** the SOL they are prepared to lose.
+2. A free Helius account → <https://dashboard.helius.dev> → the API key.
+3. A free Jupiter key → <https://portal.jup.ag>.
+4. The addresses of the wallets to copy (at most 6).
+
+Then, in Terminal (Cmd+Space, type `Terminal`, Return):
+
+```zsh
+node --version      # v18 or newer. If not: install the LTS from nodejs.org, then reopen Terminal.
+mkdir -p ~/copybot
+tar -xzf "$(ls -t ~/Downloads/*copybot*.tar.gz | head -1)" -C ~/copybot
+cd ~/copybot
+npm install
+npm test            # ends with "All logic tests passed."
+npm run setup       # the four questions above — each answer is checked before it's saved
+npm run doctor      # keys, network, wallets — fix any ❌ before going on
+npm start           # DRY RUN (paper trading). Ctrl+C once to stop.
+```
+
+Leave that Terminal window open while the bot runs. Watch it on paper for a
+few days before even thinking about `DRY_RUN=false`, and read the risk note at
+the top of this file first.
+
 ## How it decides what is a "buy" or "sell"
 
 For every confirmed transaction from a tracked wallet, the bot compares the
@@ -292,7 +360,9 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 
 | Symptom | Fix |
 |---|---|
-| `Config error: …` on startup | The message names the exact `.env` variable to fix. |
+| `Config error: …` on startup | The message names the exact `.env` variable to fix — or just run `npm run setup` again. |
+| `npm run doctor` shows ❌ | The `→` line under it is the fix. Run it again after fixing. |
+| `npm run setup` doesn't show what I paste for the key/phrase | Intentional — secrets are typed hidden. It tells you what it received ("a 24-word phrase") and the wallet address it derives. |
 | `Wallet error: …` | Private key/mnemonic is malformed — re-export from Phantom and paste carefully. |
 | `Could not reach Helius RPC` | Check `HELIUS_HTTPS_URL` (and that your Helius plan is active). |
 | Lots of `Jupiter 429` lines | Something else is using the same Jupiter key at the same time. The bot backs off automatically, but avoid running two bots on one free key. |

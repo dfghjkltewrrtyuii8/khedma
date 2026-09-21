@@ -31,6 +31,8 @@ import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
 import { soundFor } from '../src/notify';
+import { classifyWalletSecret, findPlaceholders, parseHeliusInput, parseWalletList, renderEnv } from '../src/setupChecks';
+import * as bip39 from 'bip39';
 import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
 import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
@@ -702,7 +704,48 @@ async function testGatesInTrader(realLog: typeof console.log) {
   realLog('✅ gates in trader: fresh/unknown tokens refused before Jupiter; muted wallet skips buys but still mirrors sells');
 }
 
+// The setup wizard's validators, offline: they encode the exact mistakes that
+// happened on first installs — a public ADDRESS pasted as the private key, a
+// phrase with the wrong word count, a Helius URL vs bare key, placeholders
+// left in .env — so the wizard can refuse them before anything is written.
+function testSetupChecks() {
+  const kp = Keypair.generate();
+  assert(classifyWalletSecret(bs58.encode(kp.secretKey)).kind === 'key', 'a 64-byte base58 secret is a private key');
+  const addr = classifyWalletSecret(kp.publicKey.toBase58());
+  assert(addr.kind === 'invalid' && /ADDRESS/.test(addr.reason), 'a public address is refused and named as such');
+  const phrase = bip39.generateMnemonic();
+  const m = classifyWalletSecret(`  ${phrase.toUpperCase()}  `);
+  assert(m.kind === 'mnemonic' && m.words === 12, 'a 12-word phrase is accepted regardless of case/spacing');
+  const short = classifyWalletSecret(phrase.split(' ').slice(0, 7).join(' '));
+  assert(short.kind === 'invalid' && /7 words/.test(short.reason), 'a phrase cut off by a line break is refused with the word count');
+  const typo = classifyWalletSecret(phrase.replace(/^\w+/, 'zzzz'));
+  assert(typo.kind === 'invalid' && /misspelled/.test(typo.reason), 'a phrase with a bad word is refused');
+  assert(classifyWalletSecret('').kind === 'invalid', 'empty input is refused');
+
+  const key = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+  const fromKey = parseHeliusInput(key)!;
+  assert(fromKey.https === `https://mainnet.helius-rpc.com/?api-key=${key}` && fromKey.wss.startsWith('wss://'), 'bare Helius key → both URLs');
+  assert(parseHeliusInput(`https://mainnet.helius-rpc.com/?api-key=${key}`)!.wss === fromKey.wss, 'full HTTPS URL → same endpoints');
+  assert(parseHeliusInput(`wss://mainnet.helius-rpc.com/?api-key=${key}`)!.https === fromKey.https, 'WSS URL → same endpoints');
+  assert(parseHeliusInput('hello') === null && parseHeliusInput('') === null, 'junk is rejected');
+
+  const w1 = Keypair.generate().publicKey.toBase58();
+  const w2 = Keypair.generate().publicKey.toBase58();
+  const list = parseWalletList(`${w1}, ${w2}\n${w1}  nope`);
+  assert(list.valid.length === 2 && list.valid[0] === w1 && list.invalid.length === 1 && list.invalid[0] === 'nope', 'wallet list: any separator, deduped, junk named');
+
+  const example = { PRIVATE_KEY_BASE58: '', WALLET_MNEMONIC: '', HELIUS_HTTPS_URL: 'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY_HERE', HELIUS_WSS_URL: 'wss://x/?api-key=YOUR_KEY_HERE', JUPITER_API_KEY: '', TRACKED_WALLETS: 'WalletAddress1,WalletAddress2' };
+  assert(findPlaceholders(example).length === 5, 'an untouched example file has 5 problems');
+  assert(findPlaceholders({ WALLET_MNEMONIC: phrase, HELIUS_HTTPS_URL: fromKey.https, HELIUS_WSS_URL: fromKey.wss, JUPITER_API_KEY: 'k', TRACKED_WALLETS: w1 }).length === 0, 'a completed file has none');
+
+  const env = renderEnv({ privateKeyBase58: '', walletMnemonic: phrase, heliusHttpsUrl: fromKey.https, heliusWssUrl: fromKey.wss, jupiterApiKey: 'jk', trackedWallets: [w1, w2], settings: { COPY_BUY_AMOUNT_SOL: '0.05', DRY_RUN: 'true' } });
+  assert(/^DRY_RUN=true$/m.test(env) && /^COPY_BUY_AMOUNT_SOL=0\.05$/m.test(env) && /^MAX_OPEN_POSITIONS=3$/m.test(env), 'rendered .env: chosen values in, defaults filled');
+  assert(env.includes(`TRACKED_WALLETS=${w1},${w2}`) && env.includes(`WALLET_MNEMONIC=${phrase}`), 'rendered .env carries wallets and secret');
+  console.log('✅ setup checks: address-vs-key, phrase length/typos, Helius key or URL, wallet lists, placeholders, .env render');
+}
+
 async function main() {
+  testSetupChecks();
   testWalletGate();
   testTokenGate();
   await testGatesInTrader(console.log);

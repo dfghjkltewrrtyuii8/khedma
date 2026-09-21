@@ -122,6 +122,7 @@ export async function fetchDexscreenerMarket(mint: string): Promise<TokenMarket 
     console.log(`   (token lookup failed: ${(error as Error).message})`);
     return null; // failures are not cached — the next candidate gets a fresh try
   }
+  if (cache.size >= 500) cache.delete(cache.keys().next().value as string); // oldest first
   cache.set(mint, { market, at: now });
   return market;
 }

@@ -7,7 +7,7 @@ import { Config } from './config';
 // Phantom's standard derivation path for the first Solana account.
 const DERIVATION_PATH = "m/44'/501'/0'/0'";
 
-export function loadKeypair(config: Config): Keypair {
+export function loadKeypair(config: Pick<Config, 'privateKeyBase58' | 'walletMnemonic'>): Keypair {
   if (config.privateKeyBase58) {
     let secretKey: Uint8Array;
     try {
