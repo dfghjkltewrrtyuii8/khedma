@@ -185,7 +185,7 @@ export class Trader {
         `   ✅ [DRY RUN] SIMULATED buy: ${expectedTokens.toLocaleString()} ${shortAddress(event.mint)} ` +
           `for ${this.config.copyBuyAmountSol} SOL (position ${position.id})`
       );
-      notify('Simulated buy', `${this.config.copyBuyAmountSol} SOL of ${shortAddress(event.mint)} (dry run)`, 'buy');
+      notify('Simulated buy', `${this.config.copyBuyAmountSol} SOL of ${shortAddress(event.mint)} (dry run)`, 'buy', true);
       return;
     }
 
@@ -219,7 +219,8 @@ export class Trader {
       notify(
         '🟢 BOUGHT',
         `${this.config.copyBuyAmountSol} SOL of ${shortAddress(event.mint)} — copied from ${shortAddress(event.sourceWallet)}`,
-        'buy'
+        'buy',
+        false
       );
     } catch (error) {
       console.error(`   ↳ REAL buy failed (no position opened): ${(error as Error).message}`);
@@ -319,7 +320,7 @@ export class Trader {
             `   ✅ [DRY RUN] SIMULATED sell: received ~${receivedSol.toFixed(4)} SOL` +
               (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open')
           );
-          notify('Simulated sell', `${shortAddress(position.mint)} for ~${receivedSol.toFixed(4)} SOL (dry run)`, 'sell');
+          notify('Simulated sell', `${shortAddress(position.mint)} for ~${receivedSol.toFixed(4)} SOL (dry run)`, 'sell', true);
           return true;
         }
 
@@ -336,7 +337,8 @@ export class Trader {
         notify(
           pnl >= 0 ? '🟢 SOLD (profit)' : '🔴 SOLD (loss)',
           `${shortAddress(position.mint)}: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(4)} SOL`,
-          'sell'
+          'sell',
+          false
         );
         return true;
       } catch (error) {
@@ -349,7 +351,7 @@ export class Trader {
     // IMPORTANT: a failed sell is NOT a closed position. The tokens are still
     // in the wallet (or, in dry-run, would be). Track it as stuck and say so.
     this.store.markStuck(position, lastError);
-    notify('⚠️ SELL FAILED — position stuck', `${shortAddress(position.mint)} — tokens still in your wallet`, 'fail');
+    notify('⚠️ SELL FAILED — position stuck', `${shortAddress(position.mint)} — tokens still in your wallet`, 'fail', position.dryRun);
     console.error(
       `\n   🔴 SELL FAILED after ${SELL_ATTEMPTS} attempts — position ${position.id} is now STUCK.\n` +
         `      Token ${position.mint}\n` +

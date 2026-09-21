@@ -39,7 +39,8 @@ Built with Node.js + TypeScript (run directly with `tsx`, no build step),
   ignored rather than cutting the close short. Sells are guaranteed not to
   run twice either way.
 - **P&L in SOL and USD** (live SOL price from CoinGecko, so it doesn't consume
-  your Jupiter request budget), always split into SIMULATED vs REAL.
+  your Jupiter request budget), always split into SIMULATED vs REAL — including
+  out loud: a paper fill is spoken as "Simulated. Order filled", never as a real one.
 - **A setup wizard and a preflight check.** `npm run setup` checks every value
   before writing `.env` (and shows the wallet address it derives, so a wrong
   key is caught before it's saved); `npm run doctor` tests keys, endpoints and
@@ -160,8 +161,11 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
-| `SOUNDS` | macOS sound on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
-| `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which sound for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
+| `SOUNDS` | macOS chime on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
+| `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which chime for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
+| `SPEECH` | Your Mac **says** what happened after the chime — "Order filled", "Order sold". Default `true`; `false` for chimes only. |
+| `SPEECH_BUY` / `SPEECH_SELL` / `SPEECH_FAIL` | What it says for each event. Defaults `Order filled` / `Order sold` / `Sell failed. Position stuck.` |
+| `SPEECH_VOICE` / `SPEECH_RATE` | Optional voice name (list them with `say -v "?"`) and speed in words per minute (80–500, normal ≈175). Empty = your Mac's default voice. |
 | `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
 
 ### 5. Run the bot (dry-run)
@@ -180,10 +184,18 @@ wallet trades, you'll see lines like:
    ✅ [DRY RUN] SIMULATED buy: 1,234 Ab3d…9kQz for 0.01 SOL (position pos-…)
 ```
 
-On a Mac you'll also *hear* it: **Glass** when a buy fills, **Hero** when a
-sell completes, **Basso** when a sell fails and the position is stuck — so
-you know what happened without looking at the screen. (`SOUNDS` and
-`SOUND_*` in `.env` change or silence them.)
+On a Mac you'll also *hear* it: a chime, then your Mac says what happened —
+**"Order filled"** on a buy, **"Order sold"** on a sell, **"Sell failed,
+position stuck"** when an exit fails. Dry-run trades are spoken as
+**"Simulated. Order filled"**, so paper can never be mistaken for real money.
+Hear them all right now, without waiting for a trade:
+
+```zsh
+npm run alerts
+```
+
+(`SOUNDS`, `SPEECH` and the `SOUND_*` / `SPEECH_*` settings in `.env` change
+or silence them.)
 
 A P&L summary prints every 30 seconds (`SUMMARY_INTERVAL_SECONDS` in `.env`)
 and on shutdown. Positions survive restarts — they're saved in
@@ -229,6 +241,13 @@ right now` instead of being valued at cost. That's usually a dead token.
 
 The 15-minute summary printed *while the bot runs* is deliberately not marked
 to market — during a run, the 1 request/second budget belongs to trading.
+
+Hear every alert without waiting for a trade (reads your `.env`, so what you
+hear is exactly what you'll hear live):
+
+```zsh
+npm run alerts
+```
 
 Check that the bot's logic is working (offline — no wallet, no network, no
 trades; uses a throwaway keypair and a temp folder):
@@ -373,4 +392,5 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
 | Bot seems idle | Normal — it only acts when a tracked wallet trades. The periodic summaries confirm it's alive. |
-| No sound on buys/sells | `SOUNDS` must not be `false` in `.env`, and the Mac can't be muted. Test a sound directly: `afplay /System/Library/Sounds/Glass.aiff`. Your own file needs a full path starting with `/`. |
+| No sound on buys/sells | Run `npm run alerts` — it plays every alert and prints what it's using. `SOUNDS`/`SPEECH` must not be `false`, and the Mac can't be muted. Test directly: `afplay /System/Library/Sounds/Glass.aiff` and `say "Order filled"`. Your own sound file needs a full path starting with `/`. |
+| Chimes play but nothing is spoken | The voice in `SPEECH_VOICE` probably isn't installed — `npm run doctor` says so. List the ones you have with `say -v "?"`, or leave `SPEECH_VOICE` empty for the default. |

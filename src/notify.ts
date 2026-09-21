@@ -1,19 +1,18 @@
-// Desktop notifications and sounds on macOS, so you don't have to watch the
-// terminal.
+// Desktop alerts on macOS, so you know what the bot did without watching the
+// terminal. Three independent switches in .env:
 //
-// Two independent channels, each with its own .env switch:
-//   NOTIFICATIONS=true  -> a banner via osascript (Notification Center)
-//   SOUNDS=true         -> a sound via afplay, DIFFERENT per event:
-//                          buy filled / sell done / sell FAILED (stuck)
+//   NOTIFICATIONS=true -> a banner in Notification Center
+//   SOUNDS=true        -> a short chime (afplay), a different one per event
+//   SPEECH=true        -> a spoken phrase (say): "Order filled", "Order sold"
 //
-// The sound goes through afplay rather than the notification's own
-// "sound name" so it still plays when Notification Center is muted or in Do
-// Not Disturb, and so a fill and a sale are audibly distinct without reading
-// the screen.
+// The chime plays first and the phrase follows it, so they never talk over
+// each other. Simulated (dry-run) trades are spoken as "Simulated order
+// filled" — hearing a paper trade as if it were real money is exactly the
+// confusion this project refuses to create.
 //
-// Both use execFile (no shell). Text is stripped of characters that would
-// break out of the AppleScript string. A notification or sound failing must
-// never interrupt trading, so every error is swallowed.
+// Everything goes through execFile (no shell, so nothing in .env can be
+// interpreted as a command) and is fire-and-forget: trading never waits on
+// audio, and audio that fails is never surfaced.
 
 import { execFile } from 'child_process';
 
@@ -27,11 +26,25 @@ const DEFAULT_SOUNDS: Record<NotifyKind, string> = {
   fail: 'Basso', // sell failed — position stuck
 };
 
-const ENV_KEYS: Record<NotifyKind, string> = {
+const DEFAULT_PHRASES: Record<NotifyKind, string> = {
+  buy: 'Order filled',
+  sell: 'Order sold',
+  fail: 'Sell failed. Position stuck.',
+};
+
+const SOUND_KEYS: Record<NotifyKind, string> = {
   buy: 'SOUND_BUY',
   sell: 'SOUND_SELL',
   fail: 'SOUND_FAIL',
 };
+
+const SPEECH_KEYS: Record<NotifyKind, string> = {
+  buy: 'SPEECH_BUY',
+  sell: 'SPEECH_SELL',
+  fail: 'SPEECH_FAIL',
+};
+
+const MAX_PHRASE_CHARS = 200;
 
 function sanitize(text: string): string {
   return text.replace(/["\\\n\r]/g, ' ').slice(0, 200);
@@ -49,21 +62,65 @@ function flagOff(env: NodeJS.ProcessEnv, name: string): boolean {
 // typo in .env can't quietly mute a real trade.
 export function soundFor(kind: NotifyKind, env: NodeJS.ProcessEnv = process.env): string | null {
   if (flagOff(env, 'SOUNDS')) return null;
-  const override = (env[ENV_KEYS[kind]] ?? '').trim();
+  const override = (env[SOUND_KEYS[kind]] ?? '').trim();
   const name = override || DEFAULT_SOUNDS[kind];
   if (name.startsWith('/')) return name;
   if (/^[A-Za-z0-9 _-]+$/.test(name)) return `/System/Library/Sounds/${name}.aiff`;
   return `/System/Library/Sounds/${DEFAULT_SOUNDS[kind]}.aiff`;
 }
 
-function playSound(file: string): void {
-  try {
-    execFile('afplay', [file], () => {
-      /* a missing or unplayable sound is never worth surfacing */
-    });
-  } catch {
-    /* ignore */
-  }
+// Pure: what the Mac should SAY for an event, or null for silence. As with
+// sounds, an empty or missing override falls back to the default phrase —
+// silence is only ever chosen deliberately, with SPEECH=false.
+export function speechFor(
+  kind: NotifyKind,
+  simulated: boolean,
+  env: NodeJS.ProcessEnv = process.env
+): string | null {
+  if (flagOff(env, 'SPEECH')) return null;
+  const override = (env[SPEECH_KEYS[kind]] ?? '').trim();
+  const phrase = (override || DEFAULT_PHRASES[kind]).slice(0, MAX_PHRASE_CHARS);
+  return simulated ? `Simulated. ${phrase}` : phrase;
+}
+
+// Pure: the voice/rate flags for `say`. Both are validated rather than passed
+// through: a value starting with "-" would become a flag, and a nonsense rate
+// makes `say` fail silently — in both cases the phrase is better spoken in the
+// default voice than not spoken at all.
+export function speechArgs(env: NodeJS.ProcessEnv = process.env): string[] {
+  const args: string[] = [];
+  const voice = (env.SPEECH_VOICE ?? '').trim();
+  if (/^[A-Za-z][A-Za-z ]{0,40}$/.test(voice)) args.push('-v', voice);
+  const rate = Number((env.SPEECH_RATE ?? '').trim());
+  if (Number.isInteger(rate) && rate >= 80 && rate <= 500) args.push('-r', String(rate));
+  return args;
+}
+
+// Resolves when the command finishes. Never rejects: a missing sound file or
+// an unavailable voice must not surface as an error mid-trade.
+function run(command: string, args: string[]): Promise<void> {
+  return new Promise((resolve) => {
+    try {
+      execFile(command, args, () => resolve());
+    } catch {
+      resolve();
+    }
+  });
+}
+
+// Chime, then speech — sequenced so the phrase isn't buried under the chime.
+async function playAlert(kind: NotifyKind, simulated: boolean): Promise<void> {
+  if (process.platform !== 'darwin') return;
+  const sound = soundFor(kind);
+  if (sound) await run('afplay', [sound]);
+  const phrase = speechFor(kind, simulated);
+  if (phrase) await run('say', [...speechArgs(), phrase]);
+}
+
+// Hear an alert on demand (npm run alerts), awaiting it so a preview plays one
+// at a time instead of three at once.
+export function previewAlert(kind: NotifyKind, simulated = false): Promise<void> {
+  return playAlert(kind, simulated);
 }
 
 function showBanner(title: string, message: string): void {
@@ -77,9 +134,8 @@ function showBanner(title: string, message: string): void {
   }
 }
 
-export function notify(title: string, message: string, kind: NotifyKind): void {
+export function notify(title: string, message: string, kind: NotifyKind, simulated = false): void {
   if (process.platform !== 'darwin') return;
-  const sound = soundFor(kind);
-  if (sound) playSound(sound);
+  void playAlert(kind, simulated); // deliberately not awaited — trading never waits on audio
   if (!flagOff(process.env, 'NOTIFICATIONS')) showBanner(title, message);
 }

@@ -30,7 +30,7 @@ import { JupiterOrder, OrderParams } from '../src/jupiter';
 import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
-import { soundFor } from '../src/notify';
+import { soundFor, speechFor, speechArgs } from '../src/notify';
 import { classifyWalletSecret, findPlaceholders, parseHeliusInput, parseWalletList, renderEnv } from '../src/setupChecks';
 import * as bip39 from 'bip39';
 import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
@@ -582,6 +582,31 @@ function testNotifySounds() {
   console.log('✅ notify sounds: distinct buy/sell/fail sounds, overridable, never silently muted by a typo');
 }
 
+// Spoken alerts: what the Mac says for each event. Same rules as the chimes
+// (a bad override falls back to the default, never to silence), plus the one
+// that matters most — a paper trade must never sound like real money.
+function testNotifySpeech() {
+  const none: NodeJS.ProcessEnv = {};
+  assert(speechFor('buy', false, none) === 'Order filled', 'default buy phrase');
+  assert(speechFor('sell', false, none) === 'Order sold', 'default sell phrase');
+  assert(/Sell failed/.test(speechFor('fail', false, none)!), 'default fail phrase');
+  assert(speechFor('buy', true, none) === 'Simulated. Order filled', 'a dry-run buy is spoken as simulated');
+  assert(speechFor('sell', true, none) !== speechFor('sell', false, none), 'paper and real never sound the same');
+  assert(speechFor('buy', false, { SPEECH_BUY: 'Bought it' }) === 'Bought it', 'phrase is overridable');
+  assert(speechFor('buy', false, { SPEECH_BUY: '   ' }) === 'Order filled', 'a blank override falls back to the default, not to silence');
+  assert(speechFor('buy', false, { SPEECH: 'false' }) === null, 'SPEECH=false silences');
+  assert(speechFor('buy', false, { SPEECH: 'false', SPEECH_BUY: 'x' }) === null, 'SPEECH=false wins over an override');
+  assert(speechFor('buy', false, { SPEECH_BUY: 'x'.repeat(500) })!.length === 200, 'a runaway phrase is capped');
+
+  assert(speechArgs({}).length === 0, 'no voice/rate set → default voice');
+  assert(speechArgs({ SPEECH_VOICE: 'Samantha' }).join(' ') === '-v Samantha', 'voice name passed through');
+  assert(speechArgs({ SPEECH_VOICE: 'Bad News' }).join(' ') === '-v Bad News', 'voice names with spaces work');
+  assert(speechArgs({ SPEECH_VOICE: '-rf /' }).length === 0, 'a value that would become a flag is refused');
+  assert(speechArgs({ SPEECH_RATE: '200' }).join(' ') === '-r 200', 'valid rate passed through');
+  assert(speechArgs({ SPEECH_RATE: '9000' }).length === 0 && speechArgs({ SPEECH_RATE: 'fast' }).length === 0, 'a nonsense rate is dropped, not passed to say');
+  console.log('✅ notify speech: spoken phrases per event, simulated never sounds real, voice/rate validated');
+}
+
 // Wallet gate: a wallet whose copies keep closing at a loss is muted for a
 // cooling-off window, derived purely from position history. Open positions
 // never count (no outcome yet), a win resets the streak, and both knobs have
@@ -746,6 +771,7 @@ function testSetupChecks() {
 
 async function main() {
   testSetupChecks();
+  testNotifySpeech();
   testWalletGate();
   testTokenGate();
   await testGatesInTrader(console.log);

@@ -4,13 +4,14 @@
 // Read-only and cheap: one Helius read per tracked wallet, one quote-only
 // Jupiter request, one Dexscreener lookup. Nothing is signed or sent.
 
+import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { Connection } from '@solana/web3.js';
 import dotenv from 'dotenv';
 import { loadConfig, SOL_MINT, USDC_MINT } from './config';
 import { JupiterClient, JupiterError } from './jupiter';
-import { soundFor } from './notify';
+import { soundFor, speechFor, speechArgs } from './notify';
 import { RateLimiter, sleep } from './rateLimiter';
 import { findPlaceholders } from './setupChecks';
 import { getSolPriceUsd } from './solPrice';
@@ -210,7 +211,31 @@ async function main(): Promise<void> {
       .map((kind) => soundFor(kind))
       .filter((file): file is string => file !== null && !fs.existsSync(file));
     if (missing.length > 0) warn(`sound file(s) not found: ${missing.join(', ')} — the default names are Glass, Hero, Basso`);
-    else ok('macOS notifications and sounds configured');
+    else ok('chimes configured');
+    const phrase = speechFor('buy', false);
+    if (phrase === null) {
+      ok('speech off (SPEECH=false)');
+    } else {
+      // A voice that isn't installed makes `say` fail silently — you'd hear
+      // nothing and never learn why, so check it here instead.
+      const wanted = (process.env.SPEECH_VOICE ?? '').trim();
+      const configured = speechArgs().includes('-v');
+      if (wanted && !configured) {
+        warn(`SPEECH_VOICE="${wanted}" is not a usable voice name — the default voice will be used instead`);
+      } else if (wanted) {
+        const installed = await new Promise<boolean>((resolve) => {
+          execFile('say', ['-v', '?'], (error, stdout) => {
+            if (error) return resolve(true); // can't tell — don't cry wolf
+            resolve(stdout.toLowerCase().includes(wanted.toLowerCase()));
+          });
+        });
+        if (installed) ok(`speech on, voice "${wanted}" — e.g. "${phrase}"`);
+        else warn(`voice "${wanted}" is not installed on this Mac — nothing would be spoken. List them: say -v "?"`);
+      } else {
+        ok(`speech on, default voice — e.g. "${phrase}"`);
+      }
+      console.log('     hear them all with: npm run alerts');
+    }
   }
 
   finish();

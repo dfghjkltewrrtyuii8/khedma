@@ -119,6 +119,12 @@ export const ENV_DEFAULTS: Record<string, string> = {
   SOUND_BUY: 'Glass',
   SOUND_SELL: 'Hero',
   SOUND_FAIL: 'Basso',
+  SPEECH: 'true',
+  SPEECH_BUY: 'Order filled',
+  SPEECH_SELL: 'Order sold',
+  SPEECH_FAIL: 'Sell failed. Position stuck.',
+  SPEECH_VOICE: '',
+  SPEECH_RATE: '',
   SUMMARY_INTERVAL_SECONDS: '30',
 };
 
@@ -178,6 +184,12 @@ export function renderEnv(v: EnvValues): string {
     line('SOUND_BUY'),
     line('SOUND_SELL'),
     line('SOUND_FAIL'),
+    line('SPEECH'),
+    line('SPEECH_BUY'),
+    line('SPEECH_SELL'),
+    line('SPEECH_FAIL'),
+    line('SPEECH_VOICE'),
+    line('SPEECH_RATE'),
     line('SUMMARY_INTERVAL_SECONDS'),
     '',
   ].join('\n');
