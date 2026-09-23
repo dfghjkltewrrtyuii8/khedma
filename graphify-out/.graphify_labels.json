@@ -1,13 +1,13 @@
 {
   "0": "package.json",
-  "1": "doctor.ts",
+  "1": "shortAddress",
   "2": "logic-test.ts",
   "3": "pnl.ts",
   "4": "PositionStore",
-  "5": "index.ts",
-  "6": "notify.ts",
+  "5": "trader.ts",
+  "6": "doctor.ts",
   "7": "compilerOptions",
   "8": "Solana Copy-Trading Bot",
-  "9": "watcher.ts",
-  "10": "WalletWatcher"
+  "9": "index.ts",
+  "10": "RateLimiter"
 }
