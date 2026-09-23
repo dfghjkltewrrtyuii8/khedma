@@ -213,7 +213,7 @@ async function main(): Promise<void> {
 
   console.log('\nSettings');
   if (config.dryRun) {
-    ok('DRY_RUN=true — paper trading, nothing will be sent');
+    ok(`DRY_RUN=true — paper trading, nothing will be sent (up to ${config.paperMaxOpenPositions} positions at once)`);
   } else {
     warn('DRY_RUN=false — REAL trading with REAL SOL from this wallet');
     if (balanceSol !== null) {

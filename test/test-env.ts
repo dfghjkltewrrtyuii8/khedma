@@ -32,6 +32,7 @@ const TEST_ENV: Record<string, string> = {
   DRY_RUN: 'true',
   COPY_BUY_AMOUNT_SOL: '0.01',
   MAX_OPEN_POSITIONS: '3',
+  PAPER_MAX_OPEN_POSITIONS: '10',
   MIN_TRACKED_BUY_SOL: '0.05',
   MIN_SOL_RESERVE: '0.05',
   SLIPPAGE_BPS: '300',

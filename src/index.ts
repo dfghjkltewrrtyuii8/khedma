@@ -74,12 +74,14 @@ async function main(): Promise<void> {
 
   if (config.dryRun) {
     console.log('\n🟢 MODE: DRY RUN (simulation only — no transactions will be sent).');
-    console.log('   Real quotes are fetched, trades are only recorded on paper.');
+    console.log(`   Real quotes are fetched, trades are only recorded on paper (up to ${config.paperMaxOpenPositions} at once).`);
     console.log('   To trade for real, set DRY_RUN=false in .env — only after');
     console.log('   watching the bot behave correctly here first.\n');
   } else {
     console.log('\n🔴 MODE: REAL TRADING — this bot will spend REAL SOL from your wallet.');
-    console.log(`   Each copied buy spends ${config.copyBuyAmountSol} SOL, max ${config.maxOpenPositions} positions.\n`);
+    console.log(`   Each copied buy spends ${config.copyBuyAmountSol} SOL, max ${config.maxOpenPositions} positions.`);
+    if (config.discovery) console.log(`   Wallets still on probation are copied on paper (up to ${config.paperMaxOpenPositions} at once).`);
+    console.log('');
   }
   const tokenGate = tokenGateEnabled(config)
     ? `token must be ≥ ${config.minTokenAgeMinutes} min old with ≥ $${config.minLiquidityUsd.toLocaleString('en-US')} liquidity`
@@ -211,9 +213,9 @@ async function main(): Promise<void> {
 
   // Our own exits: price open positions and act without waiting for the
   // tracked wallet. Costs one Jupiter call (~1.1s) per open position each
-  // time it runs, so with 4 positions a trade arriving mid-check waits a few
-  // seconds longer — raise EXIT_CHECK_SECONDS to trade responsiveness for
-  // that. Skipped entirely when every rule is off, so it then costs nothing.
+  // time it runs. A trade that arrives mid-sweep waits for at most the one
+  // call in progress — the sweep stops there and resumes next time. Skipped
+  // entirely when every rule is off, so it then costs nothing.
   const exitTimer = exitRulesEnabled(config)
     ? setInterval(() => {
         trader.checkExits().catch(() => {});

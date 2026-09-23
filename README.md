@@ -153,7 +153,8 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `TRACKED_WALLETS` | The wallet addresses to copy, separated by commas, no spaces needed. Example: `9xQe...WeR4,7dHb...pQr2` |
 | `DRY_RUN` | Leave as `true` for now. |
 | `COPY_BUY_AMOUNT_SOL` | SOL spent per copied buy. Default `0.01`. |
-| `MAX_OPEN_POSITIONS` | Max positions at once (stuck ones count). Default `3`. |
+| `MAX_OPEN_POSITIONS` | Max real-money positions at once (stuck ones count). Default `3`. |
+| `PAPER_MAX_OPEN_POSITIONS` | Max paper positions at once — paper risks nothing, so a low cap only wastes test data. Counted separately from real ones. Default `10`. |
 | `MIN_TRACKED_BUY_SOL` | Ignore tracked buys smaller than this (dust filter). Default `0.05`. |
 | `MIN_SOL_RESERVE` | Real trades never spend below this balance. Default `0.05`. |
 | `SLIPPAGE_BPS` | Max slippage in basis points (`300` = 3%). |
@@ -492,9 +493,13 @@ copy 10 seconds late can't have. Instead it takes tokens trending right now
 budget), reads their recent trades, and keeps wallets that:
 
 - bought **after the launch rush** (15+ minutes after the pool opened),
-- held **20 minutes to 6 hours**, then **sold at a profit** (+10% or more),
-- did it on **two or more** trending tokens (or +30% on one),
-- aren't bots (a dozen trades in one window) and aren't dust.
+- held **5 minutes to 6 hours**, then **sold at a profit** (+5% or more),
+- did it on **two or more** trending tokens (or +20% on one),
+- aren't bots (20+ trades in one window) and aren't dust.
+
+These are deliberately loose. Discovery only nominates; the paper record
+below is what decides, so it's better to let more wallets try out than to
+turn good ones away on a guess.
 
 **Discovery nominates; the paper record decides.** The free feed only covers
 each token's recent trades, so "profitable" means "over the last few hours" —

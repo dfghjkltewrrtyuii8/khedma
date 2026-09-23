@@ -45,16 +45,20 @@ export const DISCOVERY_RULES = {
   // page covered a median 1.8h, and 347 of ~450 wallets couldn't be judged
   // because their buy or sell fell outside it. $250 stretches that further.
   minTradeUsd: 250,
-  minPoolReserveUsd: 20_000, // enough depth that a copy can get back out
-  minPoolAgeMinutes: 40, // the rules below need a buy 15+ min in and a 20+ min hold, so younger pools can't qualify
+  minPoolReserveUsd: 10_000, // enough depth that a copy can get back out (a copy is a few dollars; $10k absorbs that)
+  minPoolAgeMinutes: 25, // the rules below need a buy 15+ min in and a 5+ min hold, so younger pools can't qualify
   sniperWindowMinutes: 15, // a first buy this soon after the pool opened is launch sniping — uncopyable
-  minHoldMinutes: 20, // quicker flips are over before a copy lands
+  // Quicker flips are over before a copy lands (a copy takes seconds). Was 20:
+  // in live runs it was the biggest rule that actually judged anyone, turning
+  // away 146–233 wallets a scan — too strict for what paper probation and
+  // rotation already check with real results.
+  minHoldMinutes: 5,
   maxHoldHours: 6, // longer than a session can follow
   minPositionUsd: 50, // below this it's noise
-  minReturnPct: 10, // a round trip that didn't clear this isn't evidence of skill
-  strongSingleReturnPct: 30, // a wallet seen on only one token must have done at least this well
-  maxTradesPerWalletPerPool: 12, // more in one window is a bot or market maker
-  maxCandidates: 5,
+  minReturnPct: 5, // a round trip that didn't clear this isn't evidence of skill (was 10)
+  strongSingleReturnPct: 20, // a wallet seen on only one token must have done at least this well (was 30)
+  maxTradesPerWalletPerPool: 20, // more in one window is a bot or market maker (was 12 — caught people scaling in and out)
+  maxCandidates: 8, // per run; the bench keeps at most 40 discovered wallets
 };
 
 export interface PoolInfo {
@@ -188,6 +192,11 @@ export function parsePoolTrades(body: unknown, baseMint: string): PoolTrade[] {
 
 // Pools worth reading: deep enough to exit, and old enough to be past the
 // launch rush. Busy pools are kept — minTradeUsd is what stretches their window.
+// "12 min" under an hour, "1.8h" above — a 5-minute hold shouldn't read as "0.1h".
+function holdText(ms: number): string {
+  return ms < 3_600_000 ? `${Math.round(ms / 60_000)} min` : `${(ms / 3_600_000).toFixed(1)}h`;
+}
+
 export function selectPools(pools: PoolInfo[], now: number, rules = DISCOVERY_RULES, rejects?: Tally): PoolInfo[] {
   return pools.filter((p) => {
     if (p.reserveUsd < rules.minPoolReserveUsd) {
@@ -257,7 +266,7 @@ export function findCandidates(
       h.returns.push(returnPct);
       h.pools.push(pool.address);
       h.evidence.push(
-        `${pool.name}: ${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(0)}%, held ${(holdMs / 3_600_000).toFixed(1)}h, ` +
+        `${pool.name}: ${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(0)}%, held ${holdText(holdMs)}, ` +
           `bought ${((firstBuy - pool.createdAt) / 3_600_000).toFixed(1)}h after launch`
       );
     }

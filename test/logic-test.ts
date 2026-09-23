@@ -1245,7 +1245,7 @@ async function testDiscovery(realLog: typeof console.log) {
   const trending = { data: [
     pool('P1', M1, 5 * H, 80_000, 60),
     pool('P2', M2, 8 * H, 150_000, 40),
-    pool('P3young', M3, 30 * M, 90_000, 40),     // too young: still launch rush
+    pool('P3young', M3, 20 * M, 90_000, 40),     // too young: still launch rush
     pool('P4thin', M4, 6 * H, 5_000, 40),        // too thin to exit
     pool('P5busy', M5, 6 * H, 90_000, 500),      // one page of trades = a few minutes
     pool('PSOL', SOL_MINT, 6 * H, 90_000, 40),   // "token" side is SOL — skipped
@@ -1259,7 +1259,7 @@ async function testDiscovery(realLog: typeof console.log) {
   const poolRejects: Record<string, number> = {};
   const usable = selectPools(parsed, NOW, undefined, poolRejects);
   assert(usable.map((p) => p.address).join() === 'P1,P2,P5busy', 'too-young and too-thin pools are skipped; busy pools are KEPT (the first live run lost 37 of 40 pools to a busy filter)');
-  assert(poolRejects['under 40 min old'] === 1 && poolRejects['under $20,000 liquidity'] === 1, 'and why');
+  assert(poolRejects['under 25 min old'] === 1 && poolRejects['under $10,000 liquidity'] === 1, 'and why');
 
   const [GOOD, SNIPER, LOSER, FLIPPER, BOT, ONEHIT, MEH, KNOWN, TINY, SAMEPUMP] = Array.from({ length: 10 }, () => Keypair.generate().publicKey.toBase58());
   const created1 = NOW - 5 * H, created2 = NOW - 8 * H;
@@ -1274,7 +1274,7 @@ async function testDiscovery(realLog: typeof console.log) {
     trade(GOOD, 'buy', M1, 1000, 200, created1 + 2 * H), trade(GOOD, 'sell', M1, 1000, 300, created1 + 3 * H),        // +50%
     trade(SNIPER, 'buy', M1, 5000, 500, created1 + 2 * M), trade(SNIPER, 'sell', M1, 5000, 1500, created1 + 1 * H),   // +200%, but 2 min after launch
     trade(LOSER, 'buy', M1, 1000, 200, created1 + 2 * H), trade(LOSER, 'sell', M1, 1000, 150, created1 + 3 * H),      // -25%
-    ...Array.from({ length: 13 }, (_, i) => trade(BOT, i % 2 ? 'sell' : 'buy', M1, 100, 60, created1 + 2 * H + i * M)), // a bot
+    ...Array.from({ length: 21 }, (_, i) => trade(BOT, i % 2 ? 'sell' : 'buy', M1, 100, 60, created1 + 2 * H + i * M)), // a bot
     trade(MEH, 'buy', M1, 1000, 200, created1 + 2 * H), trade(MEH, 'sell', M1, 1000, 224, created1 + 3 * H),          // +12%, one token
     trade(KNOWN, 'buy', M1, 1000, 200, created1 + 2 * H), trade(KNOWN, 'sell', M1, 1000, 400, created1 + 3 * H),      // already on our list
   ] };
@@ -1300,7 +1300,7 @@ async function testDiscovery(realLog: typeof console.log) {
   assert(found[0].evidence.some((e) => /\+50%, held 1\.0h, bought 2\.0h after launch/.test(e)), 'the reason for each pick is kept');
   const expectRejects: Record<string, number> = {
     'already known to the bot': 1, 'bot (too many trades)': 1, 'launch sniper': 1, 'lost money': 1,
-    'held under 20 min': 1, 'position under $50': 1, 'one token only, under +30%': 1,
+    'held under 5 min': 1, 'position under $50': 1, 'one token only, under +20%': 1,
     'same token as a better pick (one pump, not skill)': 1,
   };
   for (const [reason, n] of Object.entries(expectRejects)) {
@@ -1447,11 +1447,79 @@ async function testProbationInRealMode(realLog: typeof console.log) {
   realLog('✅ probation: discovered wallets trade on paper in real mode and never take a real-money slot');
 }
 
+// Paper and real money have separate caps. Paper risks nothing, so a low cap
+// only throws away test data — in live sessions "already at MAX_OPEN_POSITIONS"
+// was the most common reason a copy was skipped. And with more paper positions
+// open, an exit sweep must not hold up a copy that arrives in the middle of it.
+async function testPositionCapsAndSweepYield(realLog: typeof console.log) {
+  const base = { ...loadConfig(), maxOpenPositions: 1, paperMaxOpenPositions: 3 };
+  const buyEvent = (signature: string, mint = Keypair.generate().publicKey.toBase58()) =>
+    ({ signature, sourceWallet: TRACKED, side: 'buy' as const, mint, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+  const lines: string[] = [];
+  const swept: string[] = []; // mints priced by exit sweeps, in order
+  const priced = () => swept.length; // a function, so TypeScript doesn't narrow it between sweeps
+  let onSweepQuote: (() => void) | null = null;
+  const fakeJupiter = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> {
+      if (p.outputMint === SOL_MINT) {
+        swept.push(p.inputMint);
+        const hook = onSweepQuote;
+        onSweepQuote = null;
+        hook?.();
+      }
+      // buys get 5000 raw tokens; every position is worth exactly what it cost, so no exit rule fires
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: p.amountRaw, outAmountRaw: p.inputMint === SOL_MINT ? 5_000n : 10_000_000n };
+    },
+    async execute() { throw new Error('must not execute'); },
+  };
+  const connection = { async getBalance() { return 10e9; } } as any;
+  const loud = console.log, loudErr = console.error;
+  console.log = (...a: unknown[]) => { lines.push(`${swept.length}|${a.join(' ')}`); };
+  console.error = () => {};
+  try {
+    // --- paper: PAPER_MAX_OPEN_POSITIONS applies, not MAX_OPEN_POSITIONS ---
+    const paperStore = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-caps-')));
+    const paper = new Trader({ ...base, dryRun: true }, connection, Keypair.generate(), fakeJupiter as any, paperStore, okMarket);
+    for (const sig of ['a', 'b', 'c', 'd']) await paper.handleSwapEvent(buyEvent(sig));
+    const open = paperStore.byStatus('open');
+    assert(open.length === 3, `paper fills up to PAPER_MAX_OPEN_POSITIONS (3), not MAX_OPEN_POSITIONS (1) — got ${open.length}`);
+    assert(lines.some((l) => /skip: already at PAPER_MAX_OPEN_POSITIONS \(3,/.test(l)), 'the 4th paper copy is skipped, naming the paper setting');
+
+    // --- a trade arriving mid-sweep goes first ---
+    let tradeDone: Promise<void> | null = null;
+    onSweepQuote = () => { tradeDone = paper.handleSwapEvent(buyEvent('mid', open[0].mint)); };
+    await paper.checkExits();
+    await tradeDone;
+    assert(priced() === 1, `the sweep stopped after the quote in progress when a trade arrived (priced ${priced()})`);
+    assert(lines.some((l) => l.startsWith('1|') && /already hold a position/.test(l)), 'the waiting trade ran right after that one quote');
+    await paper.checkExits();
+    const firstChecked = swept[0];
+    assert(priced() === 4 && !swept.slice(1, 3).includes(firstChecked) && swept[3] === firstChecked,
+      'the next sweep prices the two it missed first, then the rest');
+    const beforeDouble = priced();
+    await Promise.all([paper.checkExits(), paper.checkExits()]);
+    assert(priced() === beforeDouble + 3, 'a sweep requested while one is waiting is not stacked on top');
+
+    // --- real money: MAX_OPEN_POSITIONS still applies, and paper doesn't count toward it ---
+    const realStore = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-caps-real-')));
+    realStore.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 5, sourceWallet: TRACKED, dryRun: true, spentSol: 0.01, tokenAmountRaw: '1' });
+    realStore.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 5, sourceWallet: TRACKED, dryRun: false, spentSol: 0.01, tokenAmountRaw: '1' });
+    const real = new Trader({ ...base, dryRun: false }, connection, Keypair.generate(), fakeJupiter as any, realStore, okMarket);
+    lines.length = 0;
+    await real.handleSwapEvent(buyEvent('r'));
+    assert(lines.some((l) => /skip: already at MAX_OPEN_POSITIONS \(1,/.test(l)), 'real money keeps its own, lower cap');
+  } finally {
+    console.log = loud; console.error = loudErr;
+  }
+  realLog('✅ position caps: paper has its own higher cap, real money keeps MAX_OPEN_POSITIONS; exit sweeps give way to waiting trades');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
   await testDiscoveryInRotation(console.log);
   await testProbationInRealMode(console.log);
+  await testPositionCapsAndSweepYield(console.log);
   await testWalletRotation(console.log);
   await testActiveWalletFilter(console.log);
   testCopyGap();

@@ -32,6 +32,14 @@ export class Trader {
   // Events are processed one at a time so two near-simultaneous trades can't
   // race past the position-count checks.
   private queue: Promise<void> = Promise.resolve();
+  // Trades waiting in (or running on) the queue. An exit sweep checks this
+  // between positions and stops early, so a copy never waits behind a long
+  // sweep — with 10 paper positions a full sweep is ~11s of Jupiter calls.
+  private pendingEvents = 0;
+  private exitSweepQueued = false;
+  // When each position was last priced, so a sweep cut short picks up where
+  // it stopped instead of re-checking the same ones first.
+  private lastExitCheck = new Map<string, number>();
   // With rotation on: the only wallets whose BUYS we copy. Sells are mirrored
   // from any wallet we hold a position from. null = copy every watched wallet.
   private activeWallets: Set<string> | null = null;
@@ -132,7 +140,13 @@ export class Trader {
   }
 
   handleSwapEvent(event: SwapEvent): Promise<void> {
-    this.queue = this.queue.then(() => this.processEvent(event)).catch(() => {});
+    this.pendingEvents++;
+    this.queue = this.queue
+      .then(() => this.processEvent(event))
+      .catch(() => {})
+      .finally(() => {
+        this.pendingEvents--;
+      });
     return this.queue;
   }
 
@@ -164,8 +178,14 @@ export class Trader {
       console.log(`   ↳ skip: we already hold a position in ${shortAddress(event.mint)} (${existing.status})`);
       return;
     }
-    if (this.store.atRiskCount(simulate) >= this.config.maxOpenPositions) {
-      console.log(`   ↳ skip: already at MAX_OPEN_POSITIONS (${this.config.maxOpenPositions}, stuck ones count too)`);
+    // Paper and real money have separate caps (and separate counts), so paper
+    // copies never crowd out a real one and a low real cap doesn't starve the
+    // paper test of data.
+    const [cap, capName] = simulate
+      ? [this.config.paperMaxOpenPositions, 'PAPER_MAX_OPEN_POSITIONS']
+      : [this.config.maxOpenPositions, 'MAX_OPEN_POSITIONS'];
+    if (this.store.atRiskCount(simulate) >= cap) {
+      console.log(`   ↳ skip: already at ${capName} (${cap}, stuck ones count too)`);
       return;
     }
     if (event.quoteSolEquivalent !== null && event.quoteSolEquivalent < this.config.minTrackedBuySol) {
@@ -464,16 +484,31 @@ export class Trader {
   // trade events on the same chain, so a stop-loss can never race a copied
   // sell on the same position.
   checkExits(): Promise<void> {
-    this.queue = this.queue.then(() => this.runExitChecks()).catch(() => {});
+    // One sweep at a time: if the last one is still waiting, don't stack another.
+    if (this.exitSweepQueued) return this.queue;
+    this.exitSweepQueued = true;
+    this.queue = this.queue
+      .then(() => {
+        this.exitSweepQueued = false;
+        return this.runExitChecks();
+      })
+      .catch(() => {});
     return this.queue;
   }
 
   private async runExitChecks(): Promise<void> {
     if (this.shuttingDown || !exitRulesEnabled(this.config)) return;
     // Only 'open' positions: a stuck one cannot be sold anyway, and an
-    // abandoned one holds nothing.
-    for (const position of this.store.byStatus('open')) {
+    // abandoned one holds nothing. Least recently checked first.
+    const due = this.store
+      .byStatus('open')
+      .sort((a, b) => (this.lastExitCheck.get(a.id) ?? 0) - (this.lastExitCheck.get(b.id) ?? 0));
+    const openIds = new Set(due.map((p) => p.id));
+    for (const id of this.lastExitCheck.keys()) if (!openIds.has(id)) this.lastExitCheck.delete(id);
+    for (const position of due) {
       if (this.shuttingDown) return;
+      if (this.pendingEvents > 0) return; // a trade is waiting — it goes first; the rest are checked next sweep
+      this.lastExitCheck.set(position.id, Date.now());
       const remaining = BigInt(position.tokenAmountRaw);
       if (remaining <= 0n) continue;
 

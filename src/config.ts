@@ -18,7 +18,11 @@ export interface Config {
   trackedWallets: PublicKey[];
   dryRun: boolean;
   copyBuyAmountSol: number;
-  maxOpenPositions: number;
+  maxOpenPositions: number; // real-money positions
+  // Paper positions. Paper risks nothing, so capping it low only throws away
+  // data: in live sessions "already at MAX_OPEN_POSITIONS" was the most common
+  // reason a copy was skipped. Real money still obeys maxOpenPositions.
+  paperMaxOpenPositions: number;
   minTrackedBuySol: number;
   minSolReserve: number;
   slippageBps: number;
@@ -125,6 +129,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     dryRun,
     copyBuyAmountSol: numberEnv('COPY_BUY_AMOUNT_SOL', 0.01),
     maxOpenPositions: numberEnv('MAX_OPEN_POSITIONS', 3),
+    paperMaxOpenPositions: numberEnv('PAPER_MAX_OPEN_POSITIONS', 10),
     minTrackedBuySol: numberEnv('MIN_TRACKED_BUY_SOL', 0.05),
     minSolReserve: numberEnv('MIN_SOL_RESERVE', 0.05),
     slippageBps: numberEnv('SLIPPAGE_BPS', 300),
@@ -150,6 +155,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
   if (config.rpcRequestsPerSecond <= 0) fail('RPC_REQUESTS_PER_SECOND must be greater than 0.');
   if (config.summaryIntervalSeconds <= 0) fail('SUMMARY_INTERVAL_SECONDS must be greater than 0.');
   if (config.maxTrackedWallets <= 0) fail('MAX_TRACKED_WALLETS must be greater than 0.');
+  if (config.paperMaxOpenPositions <= 0) fail('PAPER_MAX_OPEN_POSITIONS must be greater than 0.');
   if (config.exitCheckSeconds <= 0) fail('EXIT_CHECK_SECONDS must be greater than 0.');
   if (config.stopLossPercent >= 100) fail('STOP_LOSS_PERCENT must be below 100 (100% would mean the position is already worthless).');
   if (config.trailingStopPercent >= 100) fail('TRAILING_STOP_PERCENT must be below 100.');
