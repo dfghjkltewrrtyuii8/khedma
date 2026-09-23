@@ -18,7 +18,7 @@ import { findPlaceholders } from './setupChecks';
 import { getSolPriceUsd } from './solPrice';
 import { fetchDexscreenerMarket } from './tokenMarket';
 import { loadKeypair } from './wallet';
-import { shortAddress } from './watcher';
+import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } from './watcher';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -113,6 +113,12 @@ async function main(): Promise<void> {
     finish();
   }
   ok('.env present, no placeholders');
+  const web3Version = installedWeb3Version();
+  if (versionAtLeast(web3Version, MIN_WEB3_VERSION)) {
+    ok(`Solana library ${web3Version} — reads the current transaction format`);
+  } else {
+    bad(`Solana library ${web3Version} is too old (needs ${MIN_WEB3_VERSION}+) — most trades would be invisible`, 'run: npm install');
+  }
   const config = loadConfig(); // exits with its own precise message if a value is malformed
   ok(`${config.trackedWallets.length} tracked wallet(s), DRY_RUN=${config.dryRun}`);
 

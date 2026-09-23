@@ -26,6 +26,39 @@ const TX_FETCH_RETRY_DELAY_MS = 1_500;
 const STALE_MS = 45_000; // older than this and the trade is not worth copying
 const MAX_QUEUE = 40;
 
+// The newest transaction format we can read. Solana added version 1 in 2026;
+// asking for less makes the RPC refuse every trade sent in the newer format,
+// which is exactly how this bot once sat watching two busy wallets and saw
+// nothing. Raise this together with the @solana/web3.js version that can
+// parse the new format — asking for a version the library can't validate
+// just moves the failure from the RPC to the client.
+export const MAX_TX_VERSION = 1;
+const UNSUPPORTED_VERSION = /Transaction version \((\d+)\) is not supported/;
+
+// Asking for version 1 only helps if the installed library can parse it:
+// @solana/web3.js before 1.99.0 rejects a version-1 response client-side,
+// with an error that looks like any other glitch. Updating the code without
+// running `npm install` leaves exactly that library in place, so the bot
+// checks what is actually installed rather than what package.json asks for.
+export const MIN_WEB3_VERSION = '1.99.0';
+
+// Pure: is dotted version `a` at least `b`? (numeric parts only)
+export function versionAtLeast(a: string, b: string): boolean {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const x = pa[i] ?? 0;
+    const y = pb[i] ?? 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+}
+
+export function installedWeb3Version(): string {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return (require('@solana/web3.js/package.json') as { version: string }).version;
+}
+
 type SwapHandler = (event: SwapEvent) => Promise<void>;
 
 interface QueuedTx {
@@ -39,6 +72,9 @@ export interface WatcherStats {
   droppedStale: number;
   droppedOverflow: number;
   queued: number;
+  // Trades the network sent in a format too new for this build to read.
+  // Anything above zero means the bot is blind to some of what it watches.
+  unreadableFormat: number;
 }
 
 export class WalletWatcher {
@@ -50,6 +86,7 @@ export class WalletWatcher {
   private processed = 0;
   private droppedStale = 0;
   private droppedOverflow = 0;
+  private unreadableFormat = 0;
 
   constructor(
     private readonly connection: Connection,
@@ -101,6 +138,7 @@ export class WalletWatcher {
       droppedStale: this.droppedStale,
       droppedOverflow: this.droppedOverflow,
       queued: this.queue.length,
+      unreadableFormat: this.unreadableFormat,
     };
   }
 
@@ -137,7 +175,23 @@ export class WalletWatcher {
           await this.handleSignature(item.signature, item.wallet);
           this.processed += 1;
         } catch (error) {
-          console.error(`   ⚠️ Could not process tx ${item.signature.slice(0, 12)}…: ${(error as Error).message}`);
+          const message = (error as Error).message;
+          const tooNew = UNSUPPORTED_VERSION.exec(message);
+          if (tooNew) {
+            // Loud once, counted after: this is not a one-off glitch, it means
+            // every trade in that format is invisible until the bot is updated.
+            this.unreadableFormat += 1;
+            if (this.unreadableFormat === 1) {
+              console.error(
+                `\n   🚨 A tracked wallet traded using transaction format version ${tooNew[1]}, which this\n` +
+                  `      build can't read (it reads up to version ${MAX_TX_VERSION}). Those trades are INVISIBLE to\n` +
+                  '      the bot — it will look idle while missing them. Update the bot. The count\n' +
+                  '      appears in every 📊 Watcher line until you do.\n'
+              );
+            }
+          } else {
+            console.error(`   ⚠️ Could not process tx ${item.signature.slice(0, 12)}…: ${message}`);
+          }
         }
       }
     } finally {
@@ -152,7 +206,7 @@ export class WalletWatcher {
     for (let attempt = 1; attempt <= TX_FETCH_RETRIES; attempt++) {
       tx = await this.rpcLimiter.schedule('getParsedTransaction', () =>
         this.connection.getParsedTransaction(signature, {
-          maxSupportedTransactionVersion: 0,
+          maxSupportedTransactionVersion: MAX_TX_VERSION,
           commitment: 'confirmed',
         })
       );

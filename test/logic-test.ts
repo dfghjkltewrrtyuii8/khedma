@@ -15,7 +15,7 @@ import path from 'path';
 import bs58 from 'bs58';
 import { Keypair, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
 
-import { analyzeSwap, WalletWatcher } from '../src/watcher';
+import { analyzeSwap, installedWeb3Version, MAX_TX_VERSION, MIN_WEB3_VERSION, versionAtLeast, WalletWatcher } from '../src/watcher';
 import { RateLimiter } from '../src/rateLimiter';
 import { PositionStore } from '../src/positions';
 import { Trader } from '../src/trader';
@@ -909,8 +909,66 @@ function testWindowsAlerts() {
   console.log('✅ windows alerts: chimes + speech via a constant PowerShell script, .env values never on the command line');
 }
 
+// The watcher once sat on two busy wallets and saw nothing: Solana had added
+// transaction version 1, the bot asked for at most version 0, and the RPC
+// refused every trade in the new format. The only sign was one log line
+// before the bot looked idle. Pin both halves: it asks for version 1, and a
+// format it still can't read is COUNTED and surfaced, never quietly dropped.
+async function testTransactionVersions() {
+  let logCb: (l: { signature: string; err: unknown; logs: string[] }) => void = () => {};
+  const requested: unknown[] = [];
+  let refuseWith: string | null = null;
+  const fakeConnection = {
+    onLogs(_pk: unknown, cb: typeof logCb) { logCb = cb; return 1; },
+    async removeOnLogsListener() {},
+    async getParsedTransaction(_sig: string, opts: unknown) {
+      requested.push(opts);
+      if (refuseWith) throw new Error(refuseWith);
+      return { meta: null };
+    },
+  };
+  const watcher = new WalletWatcher(fakeConnection as any, [new PublicKey(TRACKED)], async () => {}, new RateLimiter(0));
+  const loudError = console.error;
+  const errors: string[] = [];
+  console.error = (...a: unknown[]) => { errors.push(a.join(' ')); };
+  try {
+    watcher.start();
+    logCb({ signature: 'v1-ok', err: null, logs: [] });
+    await new Promise((r) => setTimeout(r, 20));
+    assert((requested[0] as any)?.maxSupportedTransactionVersion === 1, 'the watcher asks for transaction version 1');
+    assert(MAX_TX_VERSION === 1, 'MAX_TX_VERSION is 1');
+
+    refuseWith = 'failed to get transaction: Transaction version (2) is not supported by the requesting client.';
+    for (const sig of ['v2-a', 'v2-b', 'v2-c']) logCb({ signature: sig, err: null, logs: [] });
+    while (watcher.stats().queued > 0) await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 20));
+    assert(watcher.stats().unreadableFormat === 3, 'every unreadable trade is counted, not silently dropped');
+    assert(errors.filter((e) => e.includes('INVISIBLE')).length === 1, 'the explanation is printed once, not once per trade');
+    assert(errors.some((e) => e.includes('version 2')), 'it names the format it could not read');
+    await watcher.stop();
+  } finally {
+    console.error = loudError;
+  }
+
+  // The parser doesn't care which format carried the trade: same shape, same answer.
+  const pre = { accountIndex: 1, mint: MEME_MINT, owner: TRACKED, uiTokenAmount: { amount: '0', decimals: 5, uiAmount: 0, uiAmountString: '0' } };
+  const post = { ...pre, uiTokenAmount: { ...pre.uiTokenAmount, amount: '500000' } };
+  const v1tx: any = {
+    version: 1,
+    transaction: { message: { accountKeys: [{ pubkey: new PublicKey(TRACKED), signer: true, writable: true }] } },
+    meta: { err: null, preBalances: [2_000_000_000], postBalances: [1_500_000_000], preTokenBalances: [pre], postTokenBalances: [post] },
+  };
+  const event = await analyzeSwap(v1tx, 'sig-v1', TRACKED);
+  assert(event?.side === 'buy' && event.mint === MEME_MINT, 'a version-1 transaction is analysed exactly like any other');
+  assert(versionAtLeast('1.99.0', '1.99.0') && versionAtLeast('1.100.2', '1.99.0') && versionAtLeast('2.0.0', '1.99.0'), 'newer or equal versions pass');
+  assert(!versionAtLeast('1.98.4', '1.99.0') && !versionAtLeast('1.9.9', '1.99.0'), 'older versions fail — compared as numbers, not text');
+  assert(versionAtLeast(installedWeb3Version(), MIN_WEB3_VERSION), `installed @solana/web3.js ${installedWeb3Version()} must be ${MIN_WEB3_VERSION}+ — run npm install`);
+  console.log('✅ transaction versions: asks for v1, unreadable formats are counted and shouted about, v1 swaps parse normally');
+}
+
 async function main() {
   testEnvIsolation();
+  await testTransactionVersions();
   testWindowsAlerts();
   testSetupChecks();
   testExitDecisions();

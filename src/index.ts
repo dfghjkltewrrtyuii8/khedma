@@ -16,7 +16,7 @@ import { tokenGateEnabled } from './tokenMarket';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
-import { shortAddress, WalletWatcher } from './watcher';
+import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 
 // Free-tier Jupiter = 1 request/second shared across everything, so we keep
 // ~1.1s between calls to stay safely under it.
@@ -48,6 +48,19 @@ async function main(): Promise<void> {
   console.log('╚══════════════════════════════════════════╝');
 
   const config = loadConfig();
+
+  // Refuse to run blind. With an older Solana library the watcher can't read
+  // the newest transaction format, so the bot would sit there looking idle
+  // while the wallets it copies are trading.
+  const web3Version = installedWeb3Version();
+  if (!versionAtLeast(web3Version, MIN_WEB3_VERSION)) {
+    console.error(
+      `\n❌ The Solana library installed here is ${web3Version}; this bot needs ${MIN_WEB3_VERSION} or newer to\n` +
+        '   read the transaction format Solana uses now. Without it, most trades would be invisible.\n' +
+        '   Fix: run   npm install   in this folder, then start again.\n'
+    );
+    process.exit(1);
+  }
 
   let keypair;
   try {
@@ -212,7 +225,10 @@ function reportWatcherHealth(watcher: WalletWatcher): void {
   console.log(
     `\n📊 Watcher: ${s.processed} transactions examined, ${s.queued} waiting` +
       (lost > 0 ? `, ${lost} skipped as stale (${s.droppedStale} timed out, ${s.droppedOverflow} overflowed)` : '') +
-      (rpcRetries > 0 ? `\n   ${rpcRetries} RPC rate-limit retries so far — lower RPC_REQUESTS_PER_SECOND or watch fewer wallets.` : '')
+      (rpcRetries > 0 ? `\n   ${rpcRetries} RPC rate-limit retries so far — lower RPC_REQUESTS_PER_SECOND or watch fewer wallets.` : '') +
+      (s.unreadableFormat > 0
+        ? `\n   🚨 ${s.unreadableFormat} trade(s) were in a transaction format this build can't read — they were MISSED. Update the bot.`
+        : '')
   );
 }
 
