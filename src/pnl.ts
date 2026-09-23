@@ -11,6 +11,7 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { PositionStore } from './positions';
 import { getSolPriceUsd } from './solPrice';
 import { Position } from './types';
+import { compareToSource, entryPhrase, summarizeComparisons } from './copyGap';
 import { WalletGateConfig, WalletMute, walletMute, walletRecords } from './walletGate';
 import { shortAddress } from './watcher';
 
@@ -25,6 +26,15 @@ function formatSol(sol: number, solPriceUsd: number | null): string {
   if (solPriceUsd === null) return `${solPart} (USD price unavailable)`;
   const usd = sol * solPriceUsd;
   return `${solPart} (${usd >= 0 ? '+' : '-'}$${Math.abs(usd).toFixed(2)})`;
+}
+
+// Rent a new token account locks up on Solana (rent-exempt minimum for a
+// 165-byte SPL token account). Refundable only if the empty account is later
+// closed, which this bot does not do.
+const TOKEN_ACCOUNT_RENT_SOL = 0.00203928;
+
+function signedPct(x: number): string {
+  return `${x >= 0 ? '+' : ''}${x.toFixed(0)}%`;
 }
 
 function heldPercent(position: Position): number {
@@ -70,12 +80,20 @@ async function markToMarket(
   return marks;
 }
 
+// "· them +40%" after a closed trade: what the tracked wallet's own trade in
+// the same token returned, once we've seen them sell.
+function theirSide(p: Position): string {
+  const c = compareToSource(p);
+  return c.theirReturnPct === null ? '' : ` · them ${signedPct(c.theirReturnPct)}`;
+}
+
 function printGroup(
   label: string,
   positions: Position[],
   solPriceUsd: number | null,
   marks: Map<string, Mark>,
-  muteOf: (wallet: string) => WalletMute
+  muteOf: (wallet: string) => WalletMute,
+  detailed = false
 ): void {
   if (positions.length === 0) return;
 
@@ -93,7 +111,8 @@ function printGroup(
     for (const p of closed) {
       console.log(
         `    • ${shortAddress(p.mint)}: spent ${p.spentSol.toFixed(4)}, got back ${p.receivedSol.toFixed(4)} → ${formatSol(p.receivedSol - p.spentSol, solPriceUsd)}` +
-          (p.exitRule ? ` [${p.exitRule}]` : '')
+          (p.exitRule ? ` [${p.exitRule}]` : '') +
+          theirSide(p)
       );
     }
 
@@ -104,6 +123,37 @@ function printGroup(
       const streak = r.consecutiveLosses >= 2 ? `, ${r.consecutiveLosses} losses in a row` : '';
       const muted = muteOf(r.wallet).muted ? ' — 🔇 MUTED' : '';
       console.log(`    • ${shortAddress(r.wallet)}: ${r.closed} closed, ${r.wins}W/${r.losses}L, net ${formatSol(r.netSol, solPriceUsd)}${streak}${muted}`);
+      const cmp = summarizeComparisons(positions.filter((p) => p.sourceWallet === r.wallet));
+      if (cmp.comparable > 0 && cmp.ourAvgPct !== null && cmp.theirAvgPct !== null) {
+        console.log(
+          `        same tokens, ${cmp.comparable} compared: you ${signedPct(cmp.ourAvgPct)} avg vs them ${signedPct(cmp.theirAvgPct)}` +
+            (cmp.entryGapAvgPct !== null ? ` · ${entryPhrase(cmp.entryGapAvgPct)}` : '')
+        );
+      } else if (cmp.entryGapAvgPct !== null) {
+        console.log(`        ${entryPhrase(cmp.entryGapAvgPct)} (their exits not seen yet)`);
+      }
+      if (cmp.verdict) console.log(`        → ${cmp.verdict}`);
+    }
+
+    // Paper trades are priced from quotes and pay no costs. Real ones do, and
+    // at small sizes the fixed part dominates — say so next to the numbers.
+    if (positions.some((p) => p.dryRun)) {
+      const avgSpent = closed.reduce((a, p) => a + p.spentSol, 0) / closed.length;
+      if (avgSpent > 0) {
+        console.log(
+          `  Not in these paper numbers: a real trade also locks ~${TOKEN_ACCOUNT_RENT_SOL.toFixed(4)} SOL of token-account rent ` +
+            `per new token, plus network fees — about ${((TOKEN_ACCOUNT_RENT_SOL / avgSpent) * 100).toFixed(0)}% of a ` +
+            `${avgSpent.toFixed(4)} SOL position before the price moves at all.`
+        );
+      }
+    }
+
+    // Look at what actually happened. Only on demand (npm run summary /
+    // shutdown), so the 30-second print stays short.
+    if (detailed) {
+      const recent = [...closed].sort((a, b) => Date.parse(b.closedAt ?? '') - Date.parse(a.closedAt ?? '')).slice(0, 8);
+      console.log('  Charts (most recent first):');
+      for (const p of recent) console.log(`    • ${shortAddress(p.mint)}  https://dexscreener.com/solana/${p.mint}`);
     }
   }
 
@@ -156,7 +206,8 @@ export async function printSummary(
   store: PositionStore,
   jupiter?: JupiterClient,
   slippageBps = 300,
-  walletGate?: WalletGateConfig
+  walletGate?: WalletGateConfig,
+  detailed = false
 ): Promise<void> {
   const positions = [...store.all()];
   // Mute status is judged over ALL positions (simulated + real), exactly as
@@ -177,8 +228,8 @@ export async function printSummary(
   if (positions.length === 0) {
     console.log('No positions yet.');
   } else {
-    printGroup('SIMULATED (dry-run — no real money moved)', positions.filter((p) => p.dryRun), solPriceUsd, marks, muteOf);
-    printGroup('REAL (actual on-chain trades)', positions.filter((p) => !p.dryRun), solPriceUsd, marks, muteOf);
+    printGroup('SIMULATED (dry-run — no real money moved)', positions.filter((p) => p.dryRun), solPriceUsd, marks, muteOf, detailed);
+    printGroup('REAL (actual on-chain trades)', positions.filter((p) => !p.dryRun), solPriceUsd, marks, muteOf, detailed);
   }
   console.log('═════════════════════════════════════════════\n');
 }

@@ -22,6 +22,9 @@ const BALANCE_SETTLE_ATTEMPTS = 4;
 const BALANCE_SETTLE_DELAY_MS = 1_500;
 const BALANCE_CHECK_ATTEMPTS = 3;
 const BALANCE_CHECK_RETRY_DELAY_MS = 1_500;
+// Their sells are attributed to our position on the same token only within
+// this window, so a months-old position can't absorb an unrelated trade.
+const SOURCE_ATTRIBUTION_MS = 48 * 3_600_000;
 
 export class Trader {
   private shuttingDown = false;
@@ -83,6 +86,35 @@ export class Trader {
     }
     console.log('   ⚠️ Could not read the delivered token amount; falling back to the quoted figure.');
     return quoted;
+  }
+
+  // What the tracked wallet paid on the buy we're copying. Omitted when its
+  // trade size couldn't be estimated, rather than recorded as a guess.
+  private sourceBuyFields(event: SwapEvent): { sourceBuySol?: number; sourceBuyTokensRaw?: string } {
+    if (event.quoteSolEquivalent === null || !(event.quoteSolEquivalent > 0) || event.tokenDeltaRaw <= 0n) return {};
+    return { sourceBuySol: event.quoteSolEquivalent, sourceBuyTokensRaw: event.tokenDeltaRaw.toString() };
+  }
+
+  private async solBalanceLamports(): Promise<number | null> {
+    try {
+      return await this.connection.getBalance(this.keypair.publicKey);
+    } catch {
+      return null;
+    }
+  }
+
+  // The SOL a real sell actually put back in the wallet — proceeds minus the
+  // network fee, after real slippage — instead of the quote. Recording the
+  // quote made every real sell look slightly better than it was.
+  private async settledSolReceived(beforeLamports: number | null, quotedSol: number): Promise<number> {
+    if (beforeLamports === null) return quotedSol;
+    for (let attempt = 1; attempt <= BALANCE_SETTLE_ATTEMPTS; attempt++) {
+      const after = await this.solBalanceLamports();
+      if (after !== null && after > beforeLamports) return (after - beforeLamports) / 1e9;
+      await sleep(BALANCE_SETTLE_DELAY_MS);
+    }
+    console.log('   ⚠️ Could not read the SOL this sell returned; recording the quoted figure.');
+    return quotedSol;
   }
 
   handleSwapEvent(event: SwapEvent): Promise<void> {
@@ -189,6 +221,7 @@ export class Trader {
         mint: event.mint,
         decimals: event.decimals,
         sourceWallet: event.sourceWallet,
+        ...this.sourceBuyFields(event),
         dryRun: true,
         spentSol: this.config.copyBuyAmountSol,
         tokenAmountRaw: order.outAmountRaw.toString(),
@@ -216,6 +249,7 @@ export class Trader {
         mint: event.mint,
         decimals: event.decimals,
         sourceWallet: event.sourceWallet,
+        ...this.sourceBuyFields(event),
         dryRun: false,
         spentSol: this.config.copyBuyAmountSol,
         tokenAmountRaw: receivedRaw.toString(),
@@ -242,6 +276,13 @@ export class Trader {
   // --------------------------------------------------------------- sells ---
 
   private async maybeCopySell(event: SwapEvent): Promise<void> {
+    // Record what THEY got for it first — even if we've already exited on our
+    // own stop-loss. That's how the summary learns whether our exit helped.
+    const copied = this.store.latestByMintAndSource(event.mint, event.sourceWallet, Date.now() - SOURCE_ATTRIBUTION_MS);
+    if (copied && event.quoteSolEquivalent !== null && event.quoteSolEquivalent > 0) {
+      this.store.recordSourceSell(copied, event.quoteSolEquivalent, event.tokenDeltaRaw);
+    }
+
     const position = this.store.findOpenByMintAndSource(event.mint, event.sourceWallet);
     if (!position) {
       console.log(`   ↳ no open position from this wallet in ${shortAddress(event.mint)} — nothing to mirror`);
@@ -323,9 +364,10 @@ export class Trader {
           takerPubkey: this.orderTaker(position.dryRun),
           slippageBps: this.config.slippageBps,
         });
-        const receivedSol = Number(order.outAmountRaw) / 1e9;
+        const quotedSol = Number(order.outAmountRaw) / 1e9;
 
         if (position.dryRun) {
+          const receivedSol = quotedSol;
           this.store.recordSell(position, sellRaw, receivedSol);
           this.announceMuteIfTriggered(position);
           console.log(
@@ -337,11 +379,13 @@ export class Trader {
         }
 
         if (!order.transactionBase64) throw new Error('Jupiter order came back without a transaction to sign');
+        const solBefore = await this.solBalanceLamports();
         const signature = await this.signAndExecute(order.transactionBase64, order.requestId);
+        const receivedSol = await this.settledSolReceived(solBefore, quotedSol);
         this.store.recordSell(position, sellRaw, receivedSol, signature);
         this.announceMuteIfTriggered(position);
         console.log(
-          `   ✅ REAL sell confirmed: ~${receivedSol.toFixed(4)} SOL` +
+          `   ✅ REAL sell confirmed: ${receivedSol.toFixed(4)} SOL received (quoted ${quotedSol.toFixed(4)})` +
             (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open') +
             `\n      https://solscan.io/tx/${signature}`
         );

@@ -31,6 +31,8 @@ import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
 import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
+import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
+import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
 const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -966,8 +968,133 @@ async function testTransactionVersions() {
   console.log('✅ transaction versions: asks for v1, unreadable formats are counted and shouted about, v1 swaps parse normally');
 }
 
+// Timing or wallet: the comparison that answers why a copy lost. Pure
+// arithmetic over what they paid/got and what we paid/got for the same token.
+function testCopyGap() {
+  const base = {
+    id: 'x', mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED, dryRun: true, openedAt: new Date().toISOString(),
+    sellTxs: [] as string[], tokenAmountRaw: '0',
+  };
+  // They paid 1 SOL for 1,000,000 units; we paid 0.01 for 8,000 (25% more per unit).
+  // They sold everything for 1.5 SOL (+50%); we got back 0.009 (-10%).
+  const lateButGoodPick: Position = {
+    ...base, status: 'closed', spentSol: 0.01, initialTokenAmountRaw: '8000', receivedSol: 0.009,
+    sourceBuySol: 1, sourceBuyTokensRaw: '1000000', sourceSellSol: 1.5, sourceSellTokensRaw: '1000000',
+  };
+  const c = compareToSource(lateButGoodPick);
+  assert(Math.round(c.entryGapPct!) === 25, `entry gap should be +25%, got ${c.entryGapPct}`);
+  assert(Math.round(c.theirReturnPct!) === 50, `their return should be +50%, got ${c.theirReturnPct}`);
+  assert(Math.round(c.ourReturnPct!) === -10, `our return should be -10%, got ${c.ourReturnPct}`);
+
+  const timing = summarizeComparisons(Array(5).fill(lateButGoodPick));
+  assert(timing.comparable === 5 && /picks are fine/.test(timing.verdict ?? '') && /timing/.test(timing.verdict ?? ''),
+    `5 trades where they won and we lost → verdict names timing (got: ${timing.verdict})`);
+
+  const badPick: Position = { ...lateButGoodPick, sourceSellSol: 0.6 }; // they lost 40%
+  const wallet = summarizeComparisons(Array(5).fill(badPick));
+  assert(/LOST on these same tokens too/.test(wallet.verdict ?? '') && /no speed upgrade/.test(wallet.verdict ?? ''),
+    `5 trades where they lost too → verdict blames the wallet, not speed (got: ${wallet.verdict})`);
+
+  assert(summarizeComparisons(Array(4).fill(lateButGoodPick)).verdict === null, 'no verdict from fewer than 5 trades');
+  const unknown = compareToSource({ ...base, status: 'closed', spentSol: 0.01, initialTokenAmountRaw: '8000', receivedSol: 0.009 });
+  assert(unknown.theirReturnPct === null && unknown.entryGapPct === null, 'missing source data gives nulls, never a guess');
+  const stillHolding = compareToSource({ ...lateButGoodPick, sourceSellSol: undefined, sourceSellTokensRaw: undefined });
+  assert(stillHolding.theirReturnPct === null && stillHolding.entryGapPct !== null, 'before they sell: entry gap known, their return not yet');
+  assert(entryPhrase(25) === 'your entry price was 25% above theirs' && entryPhrase(-8) === 'your entry price was 8% below theirs', 'entry wording says above/below correctly');
+  console.log('✅ copy gap: separates "their pick lost" from "we arrived late", no verdict on thin data');
+}
+
+// The trader keeps what the tracked wallet paid when we copy it, and keeps
+// their sells even when they arrive AFTER our own stop-loss already closed us —
+// that's the case that tells you whether the stop-loss helped.
+async function testSourceTracking(realLog: typeof console.log) {
+  const config = loadConfig();
+  config.maxOpenPositions = 10;
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-source-')));
+  let sellQuote = 12_000_000n;
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      const isBuy = params.inputMint === SOL_MINT;
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: isBuy ? 5_000n : sellQuote };
+    },
+    async execute() { throw new Error('must not execute in dry run'); },
+  };
+  const trader = new Trader(config, { async getBalance() { return 10e9; } } as any, Keypair.generate(), fakeJupiter as any, store, okMarket);
+  const MINT_B = Keypair.generate().publicKey.toBase58();
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    await trader.handleSwapEvent({ signature: 'b1', sourceWallet: TRACKED, side: 'buy', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1_000_000n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    const pos = store.byStatus('open')[0];
+    assert(pos.sourceBuySol === 0.5 && pos.sourceBuyTokensRaw === '1000000', 'what they paid is recorded when we copy the buy');
+
+    sellQuote = 6_000_000n; // -40% → our stop-loss closes us first
+    await trader.checkExits();
+    assert(pos.status === 'closed' && pos.exitRule === 'stop-loss', 'our stop-loss closed it before they sold');
+
+    // ...and only then do they sell, for 0.8 SOL.
+    await trader.handleSwapEvent({ signature: 's1', sourceWallet: TRACKED, side: 'sell', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1_000_000n, ownerPreTokenRaw: 1_000_000n, quoteSolEquivalent: 0.8 });
+    assert(pos.sourceSellSol === 0.8 && pos.sourceSellTokensRaw === '1000000', 'their later sell is still recorded on the closed position');
+    assert(Math.round(compareToSource(pos).theirReturnPct!) === 60, 'their return on the same token is computable (+60%)');
+
+    // A copied buy whose size couldn't be estimated records nothing rather than a guess.
+    await trader.handleSwapEvent({ signature: 'b2', sourceWallet: TRACKED, side: 'buy', mint: MINT_B, decimals: 5, tokenDeltaRaw: 10n, ownerPreTokenRaw: 0n, quoteSolEquivalent: null });
+    const unknown = store.all().find((p) => p.mint === MINT_B)!;
+    assert(unknown && unknown.sourceBuySol === undefined, 'unknown trade size → no source data recorded');
+  } finally {
+    console.log = loud;
+  }
+  realLog('✅ source tracking: their entry and exit are kept, including exits that come after our own stop-loss');
+}
+
+// A REAL sell must record the SOL that actually arrived, not the quote. Uses a
+// genuinely serialized, signable transaction so the whole real path runs.
+async function testRealSellRecordsActualSol(realLog: typeof console.log) {
+  const config = loadConfig();
+  const keypair = Keypair.generate();
+  const tx = new VersionedTransaction(
+    new TransactionMessage({
+      payerKey: keypair.publicKey,
+      recentBlockhash: '11111111111111111111111111111111',
+      instructions: [SystemProgram.transfer({ fromPubkey: keypair.publicKey, toPubkey: Keypair.generate().publicKey, lamports: 1 })],
+    }).compileToV0Message()
+  );
+  const txBase64 = Buffer.from(tx.serialize()).toString('base64');
+  const BEFORE = 1_000_000_000;
+  let executed = false;
+  const fakeJupiter = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> {
+      return { requestId: 'r', transactionBase64: txBase64, inAmountRaw: p.amountRaw, outAmountRaw: 12_000_000n }; // quoted 0.012
+    },
+    async execute() { executed = true; return { signature: 'realsig' }; },
+  };
+  const fakeConnection = {
+    async getBalance() { return executed ? BEFORE + 11_500_000 : BEFORE; }, // 0.0115 actually arrived
+    async getParsedTokenAccountsByOwner() {
+      return { value: [{ account: { data: { parsed: { info: { tokenAmount: { amount: '5000' } } } } } }] };
+    },
+  };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-realsell-')));
+  const trader = new Trader({ ...config, dryRun: false }, fakeConnection as any, keypair, fakeJupiter as any, store, okMarket);
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    const pos = store.openPosition({ mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED, dryRun: false, spentSol: 0.01, tokenAmountRaw: '5000' });
+    const ok = await trader.sellPosition(pos, 1, 'test');
+    assert(ok && executed && pos.status === 'closed', 'the real sell went through');
+    assert(Math.abs(pos.receivedSol - 0.0115) < 1e-12, `records the 0.0115 SOL that arrived, not the 0.012 quoted (got ${pos.receivedSol})`);
+    assert(pos.sellTxs[0] === 'realsig', 'the signature is kept');
+  } finally {
+    console.log = loud;
+  }
+  realLog('✅ real sells: record the SOL that actually arrived (after fees and slippage), not the quote');
+}
+
 async function main() {
   testEnvIsolation();
+  testCopyGap();
+  await testSourceTracking(console.log);
+  await testRealSellRecordsActualSol(console.log);
   await testTransactionVersions();
   testWindowsAlerts();
   testSetupChecks();

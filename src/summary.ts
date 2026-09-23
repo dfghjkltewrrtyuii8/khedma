@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   // Only build a Jupiter client when there is something to price.
   const openCount = store.byStatus('open').length;
   const jupiter = openCount > 0 ? new JupiterClient(config.jupiterApiKey, new RateLimiter(JUPITER_MIN_GAP_MS)) : undefined;
-  await printSummary(store, jupiter, config.slippageBps, config);
+  await printSummary(store, jupiter, config.slippageBps, config, true);
 }
 
 main().catch((error) => {

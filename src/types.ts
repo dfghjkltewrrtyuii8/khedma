@@ -39,4 +39,12 @@ export interface Position {
   abandonedReason?: string; // why we stopped tracking it — wallet holds none of this token, so it was almost certainly sold outside the bot
   peakValueSol?: number; // highest total value seen while priced, for the trailing stop
   exitRule?: ExitRule; // set when one of our own exit rules closed it, not the tracked wallet
+  // What the TRACKED wallet paid and got for this token: its buy that we
+  // copied, and every sell of it we saw afterwards (including ones that came
+  // after we had already exited). Lets the summary say whether a loss was
+  // their pick or our timing. See copyGap.ts.
+  sourceBuySol?: number;
+  sourceBuyTokensRaw?: string;
+  sourceSellSol?: number;
+  sourceSellTokensRaw?: string;
 }

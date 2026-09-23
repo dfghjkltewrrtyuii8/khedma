@@ -111,6 +111,28 @@ export class PositionStore {
     );
   }
 
+  // The most recent position we opened on this token copying this wallet, if
+  // opened since `since` — whatever its status now. Their sells often arrive
+  // after our own stop-loss has already closed ours; this is how those still
+  // get attributed.
+  latestByMintAndSource(mint: string, sourceWallet: string, since: number): Position | undefined {
+    let latest: Position | undefined;
+    for (const p of this.positions) {
+      if (p.mint !== mint || p.sourceWallet !== sourceWallet) continue;
+      const opened = Date.parse(p.openedAt);
+      if (!(opened >= since)) continue;
+      if (!latest || opened >= Date.parse(latest.openedAt)) latest = p;
+    }
+    return latest;
+  }
+
+  // Accumulate what the tracked wallet received selling this token.
+  recordSourceSell(position: Position, sol: number, tokensRaw: bigint): void {
+    position.sourceSellSol = (position.sourceSellSol ?? 0) + sol;
+    position.sourceSellTokensRaw = (BigInt(position.sourceSellTokensRaw ?? '0') + tokensRaw).toString();
+    this.save();
+  }
+
   // A sell PERMANENTLY failed: the tokens are still sitting in the wallet.
   // This is deliberately NOT "closed" — we never record fake P&L.
   markStuck(position: Position, reason: string): void {

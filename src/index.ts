@@ -207,7 +207,7 @@ async function main(): Promise<void> {
 
     // Anything that could not be closed above is priced here, so the final
     // report shows what the leftovers are actually worth.
-    await printSummary(store, jupiter, config.slippageBps, config);
+    await printSummary(store, jupiter, config.slippageBps, config, true);
     console.log('Goodbye. 👋');
     process.exit(0);
   };
