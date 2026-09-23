@@ -573,7 +573,7 @@
       "file_type": "code",
       "norm_label": "fetchjson",
       "source_file": "src/discovery.ts",
-      "source_location": "L287"
+      "source_location": "L309"
     },
     {
       "id": "src_discovery_poolinfo",
@@ -612,7 +612,7 @@
       "file_type": "code",
       "norm_label": "ratelimited",
       "source_file": "src/discovery.ts",
-      "source_location": "L299"
+      "source_location": "L321"
     },
     {
       "id": "src_discovery_tally",
@@ -1034,7 +1034,7 @@
       "file_type": "code",
       "norm_label": "testdiscoveryinrotation()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1364"
+      "source_location": "L1367"
     },
     {
       "id": "test_logic_test_testwalletrotation",
@@ -2258,7 +2258,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1447"
+      "source_location": "L1450"
     },
     {
       "id": "test_logic_test_okmarket",
@@ -2354,7 +2354,7 @@
       "file_type": "code",
       "norm_label": "testprobationinrealmode()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1417"
+      "source_location": "L1420"
     },
     {
       "id": "test_logic_test_testrealsellrecordsactualsol",
@@ -2474,7 +2474,7 @@
       "file_type": "code",
       "norm_label": "fetchgeckoterminal()",
       "source_file": "src/discovery.ts",
-      "source_location": "L289"
+      "source_location": "L311"
     },
     {
       "id": "src_discovery_printdiscoveryreport",
@@ -2486,7 +2486,7 @@
       "file_type": "code",
       "norm_label": "printdiscoveryreport()",
       "source_file": "src/discovery.ts",
-      "source_location": "L411"
+      "source_location": "L433"
     },
     {
       "id": "src_doctor_ago",
@@ -3074,7 +3074,7 @@
       "file_type": "code",
       "norm_label": "discoverwallets()",
       "source_file": "src/discovery.ts",
-      "source_location": "L325"
+      "source_location": "L347"
     },
     {
       "id": "src_discovery_fetchpolitely",
@@ -3086,7 +3086,7 @@
       "file_type": "code",
       "norm_label": "fetchpolitely()",
       "source_file": "src/discovery.ts",
-      "source_location": "L304"
+      "source_location": "L326"
     },
     {
       "id": "src_discovery_findcandidates",
@@ -4833,7 +4833,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L345",
+      "source_location": "L367",
       "weight": 1.0
     },
     {
@@ -4845,7 +4845,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L349",
+      "source_location": "L371",
       "weight": 1.0
     },
     {
@@ -4857,7 +4857,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L367",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
@@ -4869,7 +4869,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L379",
+      "source_location": "L401",
       "weight": 1.0
     },
     {
@@ -4881,7 +4881,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L407",
+      "source_location": "L429",
       "weight": 1.0
     },
     {
@@ -4893,7 +4893,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L316",
+      "source_location": "L338",
       "weight": 1.0
     },
     {
@@ -4917,7 +4917,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L266",
+      "source_location": "L267",
       "weight": 1.0
     },
     {
@@ -4929,7 +4929,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/discovery.ts",
-      "source_location": "L267",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -7497,7 +7497,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1448",
+      "source_location": "L1451",
       "weight": 1.0
     },
     {
@@ -7509,7 +7509,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1449",
+      "source_location": "L1452",
       "weight": 1.0
     },
     {
@@ -7521,7 +7521,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1450",
+      "source_location": "L1453",
       "weight": 1.0
     },
     {
@@ -7533,7 +7533,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1451",
+      "source_location": "L1454",
       "weight": 1.0
     },
     {
@@ -7545,7 +7545,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1452",
+      "source_location": "L1455",
       "weight": 1.0
     },
     {
@@ -7557,7 +7557,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1453",
+      "source_location": "L1456",
       "weight": 1.0
     },
     {
@@ -7569,7 +7569,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1454",
+      "source_location": "L1457",
       "weight": 1.0
     },
     {
@@ -7581,7 +7581,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1455",
+      "source_location": "L1458",
       "weight": 1.0
     },
     {
@@ -7593,7 +7593,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1456",
+      "source_location": "L1459",
       "weight": 1.0
     },
     {
@@ -7605,7 +7605,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1457",
+      "source_location": "L1460",
       "weight": 1.0
     },
     {
@@ -7617,7 +7617,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1458",
+      "source_location": "L1461",
       "weight": 1.0
     },
     {
@@ -7629,7 +7629,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1459",
+      "source_location": "L1462",
       "weight": 1.0
     },
     {
@@ -7641,7 +7641,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1460",
+      "source_location": "L1463",
       "weight": 1.0
     },
     {
@@ -7653,7 +7653,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1461",
+      "source_location": "L1464",
       "weight": 1.0
     },
     {
@@ -7665,7 +7665,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1462",
+      "source_location": "L1465",
       "weight": 1.0
     },
     {
@@ -7677,7 +7677,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1463",
+      "source_location": "L1466",
       "weight": 1.0
     },
     {
@@ -7689,7 +7689,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1464",
+      "source_location": "L1467",
       "weight": 1.0
     },
     {
@@ -7701,7 +7701,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1465",
+      "source_location": "L1468",
       "weight": 1.0
     },
     {
@@ -7713,7 +7713,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1466",
+      "source_location": "L1469",
       "weight": 1.0
     },
     {
@@ -7725,7 +7725,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1467",
+      "source_location": "L1470",
       "weight": 1.0
     },
     {
@@ -7737,7 +7737,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1468",
+      "source_location": "L1471",
       "weight": 1.0
     },
     {
@@ -7749,7 +7749,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1469",
+      "source_location": "L1472",
       "weight": 1.0
     },
     {
@@ -7761,7 +7761,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1470",
+      "source_location": "L1473",
       "weight": 1.0
     },
     {
@@ -7773,7 +7773,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1471",
+      "source_location": "L1474",
       "weight": 1.0
     },
     {
@@ -7785,7 +7785,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1472",
+      "source_location": "L1475",
       "weight": 1.0
     },
     {
@@ -7797,7 +7797,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1473",
+      "source_location": "L1476",
       "weight": 1.0
     },
     {
@@ -7809,7 +7809,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1474",
+      "source_location": "L1477",
       "weight": 1.0
     },
     {
@@ -7821,7 +7821,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1475",
+      "source_location": "L1478",
       "weight": 1.0
     },
     {
@@ -7833,7 +7833,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1476",
+      "source_location": "L1479",
       "weight": 1.0
     },
     {
@@ -8061,7 +8061,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1288",
+      "source_location": "L1289",
       "weight": 1.0
     },
     {
@@ -8073,7 +8073,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1294",
+      "source_location": "L1295",
       "weight": 1.0
     },
     {
@@ -8085,7 +8085,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1321",
+      "source_location": "L1324",
       "weight": 1.0
     },
     {
@@ -8097,7 +8097,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1366",
+      "source_location": "L1369",
       "weight": 1.0
     },
     {
@@ -8109,7 +8109,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1373",
+      "source_location": "L1376",
       "weight": 1.0
     },
     {
@@ -8121,7 +8121,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1374",
+      "source_location": "L1377",
       "weight": 1.0
     },
     {
@@ -8313,7 +8313,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1418",
+      "source_location": "L1421",
       "weight": 1.0
     },
     {
@@ -8325,7 +8325,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1419",
+      "source_location": "L1422",
       "weight": 1.0
     },
     {
@@ -8337,7 +8337,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1429",
+      "source_location": "L1432",
       "weight": 1.0
     },
     {
@@ -13699,40 +13699,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/discovery.ts",
-      "source_location": "L287",
-      "weight": 1.0
-    },
-    {
-      "source": "src_discovery",
-      "target": "src_discovery_fetchgeckoterminal",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/discovery.ts",
-      "source_location": "L289",
-      "weight": 1.0
-    },
-    {
-      "source": "src_discovery",
-      "target": "src_discovery_ratelimited",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/discovery.ts",
-      "source_location": "L299",
-      "weight": 1.0
-    },
-    {
-      "source": "src_discovery",
-      "target": "src_discovery_fetchpolitely",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/discovery.ts",
-      "source_location": "L304",
+      "source_location": "L309",
       "weight": 1.0
     },
     {
@@ -13748,13 +13715,46 @@
     },
     {
       "source": "src_discovery",
+      "target": "src_discovery_fetchgeckoterminal",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/discovery.ts",
+      "source_location": "L311",
+      "weight": 1.0
+    },
+    {
+      "source": "src_discovery",
+      "target": "src_discovery_ratelimited",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/discovery.ts",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "src_discovery",
+      "target": "src_discovery_fetchpolitely",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/discovery.ts",
+      "source_location": "L326",
+      "weight": 1.0
+    },
+    {
+      "source": "src_discovery",
       "target": "src_discovery_discoverwallets",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/discovery.ts",
-      "source_location": "L325",
+      "source_location": "L347",
       "weight": 1.0
     },
     {
@@ -13765,7 +13765,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/discovery.ts",
-      "source_location": "L411",
+      "source_location": "L433",
       "weight": 1.0
     },
     {
@@ -15327,7 +15327,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1364",
+      "source_location": "L1367",
       "weight": 1.0
     },
     {
@@ -15338,7 +15338,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1417",
+      "source_location": "L1420",
       "weight": 1.0
     },
     {
@@ -15349,7 +15349,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1447",
+      "source_location": "L1450",
       "weight": 1.0
     },
     {
@@ -17756,7 +17756,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1382",
+      "source_location": "L1385",
       "weight": 1.0
     },
     {
@@ -17768,7 +17768,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1385",
+      "source_location": "L1388",
       "weight": 1.0
     },
     {
@@ -17780,7 +17780,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1385",
+      "source_location": "L1388",
       "weight": 1.0
     },
     {
@@ -17792,7 +17792,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1388",
+      "source_location": "L1391",
       "weight": 1.0
     },
     {
@@ -17804,7 +17804,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1389",
+      "source_location": "L1392",
       "weight": 1.0
     },
     {
@@ -17816,7 +17816,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1391",
+      "source_location": "L1394",
       "weight": 1.0
     },
     {
@@ -17828,7 +17828,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1392",
+      "source_location": "L1395",
       "weight": 1.0
     },
     {
@@ -17840,7 +17840,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1393",
+      "source_location": "L1396",
       "weight": 1.0
     },
     {
@@ -17852,7 +17852,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1410",
+      "source_location": "L1413",
       "weight": 1.0
     },
     {
@@ -17864,7 +17864,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1411",
+      "source_location": "L1414",
       "weight": 1.0
     },
     {
@@ -17876,7 +17876,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1411",
+      "source_location": "L1414",
       "weight": 1.0
     },
     {
@@ -17984,7 +17984,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1431",
+      "source_location": "L1434",
       "weight": 1.0
     },
     {
@@ -17996,7 +17996,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1435",
+      "source_location": "L1438",
       "weight": 1.0
     },
     {
@@ -18008,7 +18008,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1436",
+      "source_location": "L1439",
       "weight": 1.0
     },
     {
@@ -18572,7 +18572,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1429",
+      "source_location": "L1432",
       "weight": 1.0
     },
     {
@@ -18625,5 +18625,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "92e77b9692392f2ac7392c5411ed7cdeef57b1ec"
+  "built_at_commit": "5118d5d15c298fa63fbe9b0b771578ba75dd60b6"
 }
