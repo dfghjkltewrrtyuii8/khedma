@@ -224,7 +224,7 @@ export function findCandidates(
   rejects?: Tally,
   nearMisses?: Candidate[]
 ): Candidate[] {
-  const hits = new Map<string, { returns: number[]; evidence: string[] }>();
+  const hits = new Map<string, { returns: number[]; evidence: string[]; pools: string[] }>();
 
   for (const pool of pools) {
     const byWallet = new Map<string, PoolTrade[]>();
@@ -252,9 +252,10 @@ export function findCandidates(
       const returnPct = (avgSell / avgBuy - 1) * 100;
       if (!(returnPct >= 0)) { reject('lost money'); continue; }
       if (!(returnPct >= rules.minReturnPct)) { reject(`gained under +${rules.minReturnPct}%`); continue; }
-      if (!hits.has(wallet)) hits.set(wallet, { returns: [], evidence: [] });
+      if (!hits.has(wallet)) hits.set(wallet, { returns: [], evidence: [], pools: [] });
       const h = hits.get(wallet)!;
       h.returns.push(returnPct);
+      h.pools.push(pool.address);
       h.evidence.push(
         `${pool.name}: ${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(0)}%, held ${(holdMs / 3_600_000).toFixed(1)}h, ` +
           `bought ${((firstBuy - pool.createdAt) / 3_600_000).toFixed(1)}h after launch`
@@ -264,22 +265,43 @@ export function findCandidates(
 
   const all = [...hits.entries()]
     .filter(([wallet]) => isPersonalWallet(wallet) || (bump(rejects, 'not a personal wallet'), false))
-    .map(([wallet, h]) => ({ wallet, pools: h.returns.length, medianReturnPct: median(h.returns), evidence: h.evidence }));
+    .map(([wallet, h]) => ({ wallet, pools: h.returns.length, medianReturnPct: median(h.returns), evidence: h.evidence, hitPools: h.pools }));
   const proven = all
     .filter((c) => c.pools >= 2)
     .sort((a, b) => b.pools - a.pools || b.medianReturnPct - a.medianReturnPct);
   // Few wallets complete profitable round trips on two trending tokens inside
   // a few hours. So a single-token wallet may fill the remaining places, but
   // only with a clearly strong result — and it still has to prove itself on paper.
+  //
+  // And at most ONE per token. When a token pumps, everyone who held it looks
+  // skilled: a live run returned five wallets, all from the same token, all of
+  // whom sold within the same half hour — one pump, not five traders. So only
+  // the best wallet from each token gets a place.
+  const takenTokens = new Set<string>();
   const single = all
     .filter((c) => c.pools === 1 && c.medianReturnPct >= rules.strongSingleReturnPct)
-    .sort((a, b) => b.medianReturnPct - a.medianReturnPct);
+    .sort((a, b) => b.medianReturnPct - a.medianReturnPct)
+    .filter((c) => {
+      const token = c.hitPools[0];
+      if (takenTokens.has(token)) {
+        bump(rejects, 'same token as a better pick (one pump, not skill)');
+        return false;
+      }
+      takenTokens.add(token);
+      return true;
+    });
   const weakSingles = all
     .filter((c) => c.pools === 1 && c.medianReturnPct < rules.strongSingleReturnPct)
     .sort((a, b) => b.medianReturnPct - a.medianReturnPct);
   for (let i = 0; i < weakSingles.length; i++) bump(rejects, `one token only, under +${rules.strongSingleReturnPct}%`);
-  if (nearMisses) nearMisses.push(...weakSingles.slice(0, NEAR_MISSES_SHOWN));
-  return [...proven, ...single].slice(0, rules.maxCandidates);
+  if (nearMisses) {
+    nearMisses.push(
+      ...weakSingles.slice(0, NEAR_MISSES_SHOWN).map(({ wallet, pools, medianReturnPct, evidence }) => ({ wallet, pools, medianReturnPct, evidence }))
+    );
+  }
+  return [...proven, ...single]
+    .slice(0, rules.maxCandidates)
+    .map(({ wallet, pools, medianReturnPct, evidence }) => ({ wallet, pools, medianReturnPct, evidence }));
 }
 
 // ------------------------------------------------------------- network ---

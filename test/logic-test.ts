@@ -1261,7 +1261,7 @@ async function testDiscovery(realLog: typeof console.log) {
   assert(usable.map((p) => p.address).join() === 'P1,P2,P5busy', 'too-young and too-thin pools are skipped; busy pools are KEPT (the first live run lost 37 of 40 pools to a busy filter)');
   assert(poolRejects['under 40 min old'] === 1 && poolRejects['under $20,000 liquidity'] === 1, 'and why');
 
-  const [GOOD, SNIPER, LOSER, FLIPPER, BOT, ONEHIT, MEH, KNOWN, TINY] = Array.from({ length: 9 }, () => Keypair.generate().publicKey.toBase58());
+  const [GOOD, SNIPER, LOSER, FLIPPER, BOT, ONEHIT, MEH, KNOWN, TINY, SAMEPUMP] = Array.from({ length: 10 }, () => Keypair.generate().publicKey.toBase58());
   const created1 = NOW - 5 * H, created2 = NOW - 8 * H;
   const trade = (wallet: string, side: 'buy' | 'sell', base: string, tokens: number, usd: number, at: number) => ({
     type: 'trade', attributes: {
@@ -1282,6 +1282,7 @@ async function testDiscovery(realLog: typeof console.log) {
     trade(GOOD, 'buy', M2, 500, 100, created2 + 1 * H), trade(GOOD, 'sell', M2, 500, 130, created2 + 2.5 * H),        // +30%
     trade(FLIPPER, 'buy', M2, 1000, 200, created2 + 1 * H), trade(FLIPPER, 'sell', M2, 1000, 300, created2 + 1 * H + 3 * M), // 3-minute flip
     trade(ONEHIT, 'buy', M2, 1000, 100, created2 + 2 * H), trade(ONEHIT, 'sell', M2, 1000, 160, created2 + 3 * H),    // +60%, one token
+    trade(SAMEPUMP, 'buy', M2, 1000, 100, created2 + 2.1 * H), trade(SAMEPUMP, 'sell', M2, 1000, 150, created2 + 3 * H), // +50%, same token, same exit
     trade(TINY, 'buy', M2, 100, 20, created2 + 2 * H), trade(TINY, 'sell', M2, 100, 40, created2 + 3 * H),            // $20 — noise
     { type: 'trade', attributes: { tx_from_address: GOOD, kind: 'buy', volume_in_usd: '5', block_timestamp: iso(NOW) } }, // unreadable amounts — skipped
   ] };
@@ -1292,6 +1293,7 @@ async function testDiscovery(realLog: typeof console.log) {
   const byPool = new Map([['P1', t1], ['P2', parsePoolTrades(trades2, M2)]]);
   const walletRejects: Record<string, number> = {};
   const found = findCandidates(usable, byPool, new Set([KNOWN]), undefined, walletRejects);
+  assert(!found.some((c) => c.wallet === SAMEPUMP), 'a second wallet riding the same one-token pump is left out');
   assert(found.map((c) => c.wallet).join() === [GOOD, ONEHIT].join(),
     `keeps the repeat winner and the strong one-off; rejects sniper, loser, flipper, bot, +12% one-off, dust and already-known (got ${found.map((c) => c.wallet.slice(0, 4)).join(',')})`);
   assert(found[0].pools === 2 && Math.round(found[0].medianReturnPct) === 40, 'the repeat winner ranks first, median +40% across two tokens');
@@ -1299,6 +1301,7 @@ async function testDiscovery(realLog: typeof console.log) {
   const expectRejects: Record<string, number> = {
     'already known to the bot': 1, 'bot (too many trades)': 1, 'launch sniper': 1, 'lost money': 1,
     'held under 20 min': 1, 'position under $50': 1, 'one token only, under +30%': 1,
+    'same token as a better pick (one pump, not skill)': 1,
   };
   for (const [reason, n] of Object.entries(expectRejects)) {
     assert(walletRejects[reason] === n, `every rejected wallet is counted under its reason: "${reason}" expected ${n}, got ${walletRejects[reason]}`);
