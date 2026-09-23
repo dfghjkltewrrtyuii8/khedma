@@ -134,17 +134,43 @@
       "source_location": "L20"
     },
     {
-      "id": "src_shutdowndebounce_shutdowndecision",
-      "label": "ShutdownDecision",
+      "id": "src_watcher_queuedtx",
+      "label": "QueuedTx",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "shutdowndecision",
-      "source_file": "src/shutdownDebounce.ts",
-      "source_location": "L8"
+      "norm_label": "queuedtx",
+      "source_file": "src/watcher.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_watcher_swaphandler",
+      "label": "SwapHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "swaphandler",
+      "source_file": "src/watcher.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_watcher_watcherstats",
+      "label": "WatcherStats",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "watcherstats",
+      "source_file": "src/watcher.ts",
+      "source_location": "L37"
     },
     {
       "id": "src_watcher_walletwatcher",
@@ -153,7 +179,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": "walletwatcher",
       "source_file": "src/watcher.ts",
@@ -186,43 +212,43 @@
       "source_location": "L12"
     },
     {
-      "id": "src_exitrules_exitcandidate",
-      "label": "ExitCandidate",
+      "id": "src_jupiter_jupiterorder",
+      "label": "JupiterOrder",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "exitcandidate",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L27"
+      "norm_label": "jupiterorder",
+      "source_file": "src/jupiter.ts",
+      "source_location": "L20"
     },
     {
-      "id": "src_exitrules_exitconfig",
-      "label": "ExitConfig",
+      "id": "src_jupiter_orderparams",
+      "label": "OrderParams",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "exitconfig",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L22"
+      "norm_label": "orderparams",
+      "source_file": "src/jupiter.ts",
+      "source_location": "L28"
     },
     {
-      "id": "src_exitrules_exitdecision",
-      "label": "ExitDecision",
+      "id": "src_shutdowndebounce_shutdowndecision",
+      "label": "ShutdownDecision",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "exitdecision",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L33"
+      "norm_label": "shutdowndecision",
+      "source_file": "src/shutdownDebounce.ts",
+      "source_location": "L8"
     },
     {
       "id": "src_positions_positionstore",
@@ -355,82 +381,104 @@
       "source_location": "L27"
     },
     {
-      "id": "src_jupiter_jupiterorder",
-      "label": "JupiterOrder",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "jupiterorder",
-      "source_file": "src/jupiter.ts",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_jupiter_orderparams",
-      "label": "OrderParams",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "orderparams",
-      "source_file": "src/jupiter.ts",
-      "source_location": "L28"
-    },
-    {
       "id": "src_notify_notifykind",
       "label": "NotifyKind",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "notifykind",
       "source_file": "src/notify.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_exitrules_exitcandidate",
+      "label": "ExitCandidate",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitcandidate",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_exitrules_exitconfig",
+      "label": "ExitConfig",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitconfig",
+      "source_file": "src/exitRules.ts",
       "source_location": "L22"
     },
     {
-      "id": "src_watcher_queuedtx",
-      "label": "QueuedTx",
+      "id": "src_exitrules_exitdecision",
+      "label": "ExitDecision",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "queuedtx",
-      "source_file": "src/watcher.ts",
-      "source_location": "L31"
+      "norm_label": "exitdecision",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L33"
     },
     {
-      "id": "src_watcher_swaphandler",
-      "label": "SwapHandler",
+      "id": "src_config_fail",
+      "label": "fail()",
       "_callable": true,
-      "_callable_class": true,
       "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "swaphandler",
-      "source_file": "src/watcher.ts",
-      "source_location": "L29"
+      "norm_label": "fail()",
+      "source_file": "src/config.ts",
+      "source_location": "L41"
     },
     {
-      "id": "src_watcher_watcherstats",
-      "label": "WatcherStats",
+      "id": "src_config_loadconfig",
+      "label": "loadConfig()",
       "_callable": true,
-      "_callable_class": true,
       "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
+      "community": 1,
+      "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "watcherstats",
-      "source_file": "src/watcher.ts",
-      "source_location": "L37"
+      "norm_label": "loadconfig()",
+      "source_file": "src/config.ts",
+      "source_location": "L64"
+    },
+    {
+      "id": "src_config_numberenv",
+      "label": "numberEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "numberenv()",
+      "source_file": "src/config.ts",
+      "source_location": "L53"
+    },
+    {
+      "id": "src_config_requireenv",
+      "label": "requireEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "requireenv()",
+      "source_file": "src/config.ts",
+      "source_location": "L47"
     },
     {
       "id": "src_jupiter_jupiterclient_constructor",
@@ -613,6 +661,18 @@
       "source_location": "L6"
     },
     {
+      "id": "src_solprice_getsolpriceusd",
+      "label": "getSolPriceUsd()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "getsolpriceusd()",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L16"
+    },
+    {
       "id": "src_summary_main",
       "label": "main()",
       "_callable": true,
@@ -623,18 +683,6 @@
       "norm_label": "main()",
       "source_file": "src/summary.ts",
       "source_location": "L16"
-    },
-    {
-      "id": "src_tokenmarket_tokengateenabled",
-      "label": "tokenGateEnabled()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "tokengateenabled()",
-      "source_file": "src/tokenMarket.ts",
-      "source_location": "L29"
     },
     {
       "id": "src_walletgate_isloss",
@@ -661,64 +709,16 @@
       "source_location": "L43"
     },
     {
-      "id": "src_watcher_shortaddress",
-      "label": "shortAddress()",
+      "id": "src_watcher_walletwatcher_constructor",
+      "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
       "community_name": "trader.ts",
       "file_type": "code",
-      "norm_label": "shortaddress()",
+      "norm_label": ".constructor()",
       "source_file": "src/watcher.ts",
-      "source_location": "L180"
-    },
-    {
-      "id": "test_logic_test_testratelimiter",
-      "label": "testRateLimiter()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "testratelimiter()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L103"
-    },
-    {
-      "id": "test_logic_test_testwalletgate",
-      "label": "testWalletGate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "testwalletgate()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L609"
-    },
-    {
-      "id": "src_index_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "src/index.ts",
-      "source_location": "L45"
-    },
-    {
-      "id": "src_index_quietenrpcretrylogs",
-      "label": "quietenRpcRetryLogs()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "quietenrpcretrylogs()",
-      "source_file": "src/index.ts",
-      "source_location": "L30"
+      "source_location": "L54"
     },
     {
       "id": "src_index_reportwatcherhealth",
@@ -726,35 +726,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": "reportwatcherhealth()",
       "source_file": "src/index.ts",
       "source_location": "L209"
-    },
-    {
-      "id": "src_shutdowndebounce_decideshutdown",
-      "label": "decideShutdown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "decideshutdown()",
-      "source_file": "src/shutdownDebounce.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_watcher_walletwatcher_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L54"
     },
     {
       "id": "src_watcher_walletwatcher_drain",
@@ -762,7 +738,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".drain()",
       "source_file": "src/watcher.ts",
@@ -774,7 +750,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".enqueue()",
       "source_file": "src/watcher.ts",
@@ -786,7 +762,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".handlesignature()",
       "source_file": "src/watcher.ts",
@@ -798,7 +774,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".remembersignature()",
       "source_file": "src/watcher.ts",
@@ -810,7 +786,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".start()",
       "source_file": "src/watcher.ts",
@@ -822,7 +798,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".stats()",
       "source_file": "src/watcher.ts",
@@ -834,23 +810,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": ".stop()",
       "source_file": "src/watcher.ts",
       "source_location": "L85"
-    },
-    {
-      "id": "test_logic_test_testshutdowndebounce",
-      "label": "testShutdownDebounce()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "testshutdowndebounce()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L552"
     },
     {
       "id": "test_logic_test_testwatcherqueue",
@@ -858,7 +822,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 10,
-      "community_name": "main",
+      "community_name": "WalletWatcher",
       "file_type": "code",
       "norm_label": "testwatcherqueue()",
       "source_file": "test/logic-test.ts",
@@ -1033,6 +997,18 @@
       "source_location": "L146"
     },
     {
+      "id": "src_wallet_loadkeypair",
+      "label": "loadKeypair()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "loadkeypair()",
+      "source_file": "src/wallet.ts",
+      "source_location": "L10"
+    },
+    {
       "id": "test_logic_test_testsetupchecks",
       "label": "testSetupChecks()",
       "_callable": true,
@@ -1045,64 +1021,208 @@
       "source_location": "L731"
     },
     {
-      "id": "src_exitrules_decideexit",
-      "label": "decideExit()",
+      "id": "src_shutdowndebounce_decideshutdown",
+      "label": "decideShutdown()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "decideexit()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L46"
+      "norm_label": "decideshutdown()",
+      "source_file": "src/shutdownDebounce.ts",
+      "source_location": "L10"
     },
     {
-      "id": "src_exitrules_describeexitrules",
-      "label": "describeExitRules()",
+      "id": "src_tokenmarket_summarizepairs",
+      "label": "summarizePairs()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "describeexitrules()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L105"
+      "norm_label": "summarizepairs()",
+      "source_file": "src/tokenMarket.ts",
+      "source_location": "L92"
     },
     {
-      "id": "src_exitrules_exitrulesenabled",
-      "label": "exitRulesEnabled()",
+      "id": "src_watcher_analyzeswap",
+      "label": "analyzeSwap()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "exitrulesenabled()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L37"
+      "norm_label": "analyzeswap()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L185"
     },
     {
-      "id": "src_exitrules_pct",
-      "label": "pct()",
+      "id": "test_logic_test_main",
+      "label": "main()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "pct()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L41"
-    },
-    {
-      "id": "test_logic_test_testexitdecisions",
-      "label": "testExitDecisions()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "exitRules.ts",
-      "file_type": "code",
-      "norm_label": "testexitdecisions()",
+      "norm_label": "main()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L771"
+      "source_location": "L885"
+    },
+    {
+      "id": "test_logic_test_maketx",
+      "label": "makeTx()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "maketx()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L42"
+    },
+    {
+      "id": "test_logic_test_okmarket",
+      "label": "okMarket()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "okmarket()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L40"
+    },
+    {
+      "id": "test_logic_test_testanalyzeswap",
+      "label": "testAnalyzeSwap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testanalyzeswap()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L81"
+    },
+    {
+      "id": "test_logic_test_testbalancecheckretriestransientfailure",
+      "label": "testBalanceCheckRetriesTransientFailure()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testbalancecheckretriestransientfailure()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L509"
+    },
+    {
+      "id": "test_logic_test_testenvisolation",
+      "label": "testEnvIsolation()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testenvisolation()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L875"
+    },
+    {
+      "id": "test_logic_test_testnotifysounds",
+      "label": "testNotifySounds()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testnotifysounds()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L565"
+    },
+    {
+      "id": "test_logic_test_testratelimiter",
+      "label": "testRateLimiter()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testratelimiter()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L103"
+    },
+    {
+      "id": "test_logic_test_testsellusesonchainbalance",
+      "label": "testSellUsesOnChainBalance()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testsellusesonchainbalance()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L362"
+    },
+    {
+      "id": "test_logic_test_testshutdowndebounce",
+      "label": "testShutdownDebounce()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testshutdowndebounce()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L552"
+    },
+    {
+      "id": "test_logic_test_testtokengate",
+      "label": "testTokenGate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testtokengate()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L644"
+    },
+    {
+      "id": "test_logic_test_testwalletgate",
+      "label": "testWalletGate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "testwalletgate()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L609"
+    },
+    {
+      "id": "src_index_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "src/index.ts",
+      "source_location": "L45"
+    },
+    {
+      "id": "src_index_quietenrpcretrylogs",
+      "label": "quietenRpcRetryLogs()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "quietenrpcretrylogs()",
+      "source_file": "src/index.ts",
+      "source_location": "L30"
     },
     {
       "id": "src_positions_positionstore_all",
@@ -1297,6 +1417,18 @@
       "source_location": "L86"
     },
     {
+      "id": "src_tokenmarket_tokengateenabled",
+      "label": "tokenGateEnabled()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "tokengateenabled()",
+      "source_file": "src/tokenMarket.ts",
+      "source_location": "L29"
+    },
+    {
       "id": "src_trader_trader_announcemuteiftriggered",
       "label": ".announceMuteIfTriggered()",
       "_callable": true,
@@ -1465,6 +1597,18 @@
       "source_location": "L57"
     },
     {
+      "id": "src_watcher_shortaddress",
+      "label": "shortAddress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "shortaddress()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L180"
+    },
+    {
       "id": "src_writeoff_main",
       "label": "main()",
       "_callable": true,
@@ -1477,30 +1621,6 @@
       "source_location": "L18"
     },
     {
-      "id": "test_logic_test_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L912"
-    },
-    {
-      "id": "test_logic_test_okmarket",
-      "label": "okMarket()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "okmarket()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L40"
-    },
-    {
       "id": "test_logic_test_testabandonedfreesslot",
       "label": "testAbandonedFreesSlot()",
       "_callable": true,
@@ -1511,18 +1631,6 @@
       "norm_label": "testabandonedfreesslot()",
       "source_file": "test/logic-test.ts",
       "source_location": "L424"
-    },
-    {
-      "id": "test_logic_test_testbalancecheckretriestransientfailure",
-      "label": "testBalanceCheckRetriesTransientFailure()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "testbalancecheckretriestransientfailure()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L509"
     },
     {
       "id": "test_logic_test_testexitsintrader",
@@ -1559,18 +1667,6 @@
       "norm_label": "testmarktomarket()",
       "source_file": "test/logic-test.ts",
       "source_location": "L277"
-    },
-    {
-      "id": "test_logic_test_testsellusesonchainbalance",
-      "label": "testSellUsesOnChainBalance()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": "testsellusesonchainbalance()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L362"
     },
     {
       "id": "test_logic_test_testsummary",
@@ -1633,18 +1729,6 @@
       "source_location": "L44"
     },
     {
-      "id": "src_tokenmarket_summarizepairs",
-      "label": "summarizePairs()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "tokenMarket.ts",
-      "file_type": "code",
-      "norm_label": "summarizepairs()",
-      "source_file": "src/tokenMarket.ts",
-      "source_location": "L92"
-    },
-    {
       "id": "src_tokenmarket_usd",
       "label": "usd()",
       "_callable": true,
@@ -1669,24 +1753,12 @@
       "source_location": "L33"
     },
     {
-      "id": "test_logic_test_testtokengate",
-      "label": "testTokenGate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "tokenMarket.ts",
-      "file_type": "code",
-      "norm_label": "testtokengate()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L644"
-    },
-    {
       "id": "src_alerts_main",
       "label": "main()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "src/alerts.ts",
@@ -1698,11 +1770,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "flagoff()",
       "source_file": "src/notify.ts",
-      "source_location": "L56"
+      "source_location": "L53"
     },
     {
       "id": "src_notify_notify",
@@ -1710,11 +1782,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "notify()",
       "source_file": "src/notify.ts",
-      "source_location": "L220"
+      "source_location": "L137"
     },
     {
       "id": "src_notify_playalert",
@@ -1722,11 +1794,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "playalert()",
       "source_file": "src/notify.ts",
-      "source_location": "L190"
+      "source_location": "L112"
     },
     {
       "id": "src_notify_previewalert",
@@ -1734,11 +1806,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "previewalert()",
       "source_file": "src/notify.ts",
-      "source_location": "L205"
+      "source_location": "L122"
     },
     {
       "id": "src_notify_run",
@@ -1746,11 +1818,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "run()",
       "source_file": "src/notify.ts",
-      "source_location": "L174"
+      "source_location": "L101"
     },
     {
       "id": "src_notify_sanitize",
@@ -1758,11 +1830,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "sanitize()",
       "source_file": "src/notify.ts",
-      "source_location": "L52"
+      "source_location": "L49"
     },
     {
       "id": "src_notify_showbanner",
@@ -1770,11 +1842,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "showbanner()",
       "source_file": "src/notify.ts",
-      "source_location": "L209"
+      "source_location": "L126"
     },
     {
       "id": "src_notify_soundfor",
@@ -1782,11 +1854,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "soundfor()",
       "source_file": "src/notify.ts",
-      "source_location": "L66"
+      "source_location": "L63"
     },
     {
       "id": "src_notify_speechargs",
@@ -1794,11 +1866,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "speechargs()",
       "source_file": "src/notify.ts",
-      "source_location": "L93"
+      "source_location": "L90"
     },
     {
       "id": "src_notify_speechfor",
@@ -1806,83 +1878,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "speechfor()",
       "source_file": "src/notify.ts",
-      "source_location": "L78"
-    },
-    {
-      "id": "src_notify_windowsalertinvocation",
-      "label": "windowsAlertInvocation()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "windowsalertinvocation()",
-      "source_file": "src/notify.ts",
-      "source_location": "L149"
-    },
-    {
-      "id": "src_notify_windowssoundfor",
-      "label": "windowsSoundFor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "windowssoundfor()",
-      "source_file": "src/notify.ts",
-      "source_location": "L140"
-    },
-    {
-      "id": "src_watcher_analyzeswap",
-      "label": "analyzeSwap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "analyzeswap()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L185"
-    },
-    {
-      "id": "test_logic_test_maketx",
-      "label": "makeTx()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "maketx()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L42"
-    },
-    {
-      "id": "test_logic_test_testanalyzeswap",
-      "label": "testAnalyzeSwap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "testanalyzeswap()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L81"
-    },
-    {
-      "id": "test_logic_test_testnotifysounds",
-      "label": "testNotifySounds()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "testnotifysounds()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L565"
+      "source_location": "L75"
     },
     {
       "id": "test_logic_test_testnotifyspeech",
@@ -1890,71 +1890,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "testnotifyspeech()",
       "source_file": "test/logic-test.ts",
       "source_location": "L583"
-    },
-    {
-      "id": "test_logic_test_testwindowsalerts",
-      "label": "testWindowsAlerts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "testwindowsalerts()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L890"
-    },
-    {
-      "id": "src_config_fail",
-      "label": "fail()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "fail()",
-      "source_file": "src/config.ts",
-      "source_location": "L41"
-    },
-    {
-      "id": "src_config_loadconfig",
-      "label": "loadConfig()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "loadconfig()",
-      "source_file": "src/config.ts",
-      "source_location": "L64"
-    },
-    {
-      "id": "src_config_numberenv",
-      "label": "numberEnv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "numberenv()",
-      "source_file": "src/config.ts",
-      "source_location": "L53"
-    },
-    {
-      "id": "src_config_requireenv",
-      "label": "requireEnv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "requireenv()",
-      "source_file": "src/config.ts",
-      "source_location": "L47"
     },
     {
       "id": "src_doctor_ago",
@@ -2053,6 +1993,54 @@
       "source_location": "L38"
     },
     {
+      "id": "src_exitrules_decideexit",
+      "label": "decideExit()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "decideexit()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_exitrules_describeexitrules",
+      "label": "describeExitRules()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "describeexitrules()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "src_exitrules_exitrulesenabled",
+      "label": "exitRulesEnabled()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitrulesenabled()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_exitrules_pct",
+      "label": "pct()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "pct()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L41"
+    },
+    {
       "id": "src_setupchecks_findplaceholders",
       "label": "findPlaceholders()",
       "_callable": true,
@@ -2063,18 +2051,6 @@
       "norm_label": "findplaceholders()",
       "source_file": "src/setupChecks.ts",
       "source_location": "L86"
-    },
-    {
-      "id": "src_solprice_getsolpriceusd",
-      "label": "getSolPriceUsd()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "getsolpriceusd()",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L16"
     },
     {
       "id": "src_tokenmarket_fetchdexscreenermarket",
@@ -2089,28 +2065,16 @@
       "source_location": "L110"
     },
     {
-      "id": "src_wallet_loadkeypair",
-      "label": "loadKeypair()",
+      "id": "test_logic_test_testexitdecisions",
+      "label": "testExitDecisions()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "loadkeypair()",
-      "source_file": "src/wallet.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "test_logic_test_testenvisolation",
-      "label": "testEnvIsolation()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "testenvisolation()",
+      "norm_label": "testexitdecisions()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L875"
+      "source_location": "L771"
     },
     {
       "id": "package",
@@ -2421,6 +2385,61 @@
       "source_location": "L26"
     },
     {
+      "id": "src_config",
+      "label": "config.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "config.ts",
+      "source_file": "src/config.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_config_quote_mints",
+      "label": "QUOTE_MINTS",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "quote_mints",
+      "source_file": "src/config.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_config_sol_mint",
+      "label": "SOL_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "sol_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_config_usdc_mint",
+      "label": "USDC_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "usdc_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_config_usdt_mint",
+      "label": "USDT_MINT",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "usdt_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L9"
+    },
+    {
       "id": "src_index",
       "label": "index.ts",
       "_origin": "ast",
@@ -2476,6 +2495,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_solprice",
+      "label": "solPrice.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "solprice.ts",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_summary",
       "label": "summary.ts",
       "_origin": "ast",
@@ -2520,6 +2550,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_watcher",
+      "label": "watcher.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "code",
+      "norm_label": "watcher.ts",
+      "source_file": "src/watcher.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_solana_web3_js",
+      "label": "@solana/web3.js",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "trader.ts",
+      "file_type": "concept",
+      "norm_label": "@solana/web3.js",
+      "source_file": "package.json",
+      "source_location": "L17"
+    },
+    {
       "id": "src_trader_rationale_363",
       "label": "IMPORTANT: a failed sell is NOT a closed position. The tokens are still",
       "_origin": "ast",
@@ -2529,17 +2581,6 @@
       "norm_label": "important: a failed sell is not a closed position. the tokens are still",
       "source_file": "src/trader.ts",
       "source_location": "L363"
-    },
-    {
-      "id": "src_shutdowndebounce",
-      "label": "shutdownDebounce.ts",
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "shutdowndebounce.ts",
-      "source_file": "src/shutdownDebounce.ts",
-      "source_location": "L1"
     },
     {
       "id": "src_setup",
@@ -2652,15 +2693,103 @@
       "source_location": "L83"
     },
     {
-      "id": "src_exitrules",
-      "label": "exitRules.ts",
+      "id": "src_wallet",
+      "label": "wallet.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "wallet.ts",
+      "source_file": "src/wallet.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_bip39",
+      "label": "bip39",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "concept",
+      "norm_label": "bip39",
+      "source_file": "package.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "ref_ed25519_hd_key",
+      "label": "ed25519-hd-key",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "concept",
+      "norm_label": "ed25519-hd-key",
+      "source_file": "package.json",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_shutdowndebounce",
+      "label": "shutdownDebounce.ts",
       "_origin": "ast",
       "community": 3,
-      "community_name": "exitRules.ts",
+      "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "exitrules.ts",
-      "source_file": "src/exitRules.ts",
+      "norm_label": "shutdowndebounce.ts",
+      "source_file": "src/shutdownDebounce.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "test_logic_test",
+      "label": "logic-test.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "logic-test.ts",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_test_env",
+      "label": "test-env.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test-env.ts",
+      "source_file": "test/test-env.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_test_env_test_env",
+      "label": "TEST_ENV",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test_env",
+      "source_file": "test/test-env.ts",
+      "source_location": "L23"
+    },
+    {
+      "id": "test_test_env_test_wallet",
+      "label": "TEST_WALLET",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "code",
+      "norm_label": "test_wallet",
+      "source_file": "test/test-env.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "ref_bs58",
+      "label": "bs58",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "logic-test.ts",
+      "file_type": "concept",
+      "norm_label": "bs58",
+      "source_file": "package.json",
+      "source_location": "L19"
     },
     {
       "id": "src_writeoff",
@@ -2700,7 +2829,7 @@
       "label": "alerts.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "alerts.ts",
       "source_file": "src/alerts.ts",
@@ -2711,7 +2840,7 @@
       "label": "SEQUENCE",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "sequence",
       "source_file": "src/alerts.ts",
@@ -2722,7 +2851,7 @@
       "label": "notify.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "notify.ts",
       "source_file": "src/notify.ts",
@@ -2733,132 +2862,44 @@
       "label": "DEFAULT_PHRASES",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "default_phrases",
       "source_file": "src/notify.ts",
-      "source_location": "L32"
+      "source_location": "L29"
     },
     {
       "id": "src_notify_default_sounds",
       "label": "DEFAULT_SOUNDS",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "default_sounds",
       "source_file": "src/notify.ts",
-      "source_location": "L26"
+      "source_location": "L23"
     },
     {
       "id": "src_notify_sound_keys",
       "label": "SOUND_KEYS",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "sound_keys",
       "source_file": "src/notify.ts",
-      "source_location": "L38"
+      "source_location": "L35"
     },
     {
       "id": "src_notify_speech_keys",
       "label": "SPEECH_KEYS",
       "_origin": "ast",
       "community": 6,
-      "community_name": "logic-test.ts",
+      "community_name": "notify.ts",
       "file_type": "code",
       "norm_label": "speech_keys",
       "source_file": "src/notify.ts",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_notify_windows_alert_script",
-      "label": "WINDOWS_ALERT_SCRIPT",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "windows_alert_script",
-      "source_file": "src/notify.ts",
-      "source_location": "L118"
-    },
-    {
-      "id": "src_notify_windows_alert_script_b64",
-      "label": "WINDOWS_ALERT_SCRIPT_B64",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "windows_alert_script_b64",
-      "source_file": "src/notify.ts",
-      "source_location": "L134"
-    },
-    {
-      "id": "src_notify_windows_default_sounds",
-      "label": "WINDOWS_DEFAULT_SOUNDS",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "windows_default_sounds",
-      "source_file": "src/notify.ts",
-      "source_location": "L112"
-    },
-    {
-      "id": "test_logic_test",
-      "label": "logic-test.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "logic-test.ts",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "test_test_env",
-      "label": "test-env.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "test-env.ts",
-      "source_file": "test/test-env.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "test_test_env_test_env",
-      "label": "TEST_ENV",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "test_env",
-      "source_file": "test/test-env.ts",
-      "source_location": "L23"
-    },
-    {
-      "id": "test_test_env_test_wallet",
-      "label": "TEST_WALLET",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "test_wallet",
-      "source_file": "test/test-env.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "ref_bs58",
-      "label": "bs58",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "concept",
-      "norm_label": "bs58",
-      "source_file": "package.json",
-      "source_location": "L19"
+      "source_location": "L41"
     },
     {
       "id": "tsconfig",
@@ -3008,7 +3049,7 @@
       "label": "README.md",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "page",
       "norm_label": "readme.md",
@@ -3020,7 +3061,7 @@
       "label": "1. Check that Node.js is installed",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "1. check that node.js is installed",
@@ -3032,7 +3073,7 @@
       "label": "2. Get the code",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "2. get the code",
@@ -3044,7 +3085,7 @@
       "label": "3. Run the setup wizard",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "3. run the setup wizard",
@@ -3056,7 +3097,7 @@
       "label": "4. Check everything before it runs",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "4. check everything before it runs",
@@ -3068,7 +3109,7 @@
       "label": "5. Run the bot (dry-run)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "5. run the bot (dry-run)",
@@ -3080,7 +3121,7 @@
       "label": "6. Stopping the bot",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "6. stopping the bot",
@@ -3092,7 +3133,7 @@
       "label": "7. Going live (only when you're ready)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "7. going live (only when you're ready)",
@@ -3104,7 +3145,7 @@
       "label": "Every setting (reference)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "every setting (reference)",
@@ -3116,31 +3157,31 @@
       "label": "Exiting without them",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "exiting without them",
       "source_file": "README.md",
-      "source_location": "L444"
+      "source_location": "L380"
     },
     {
       "id": "readme_how_it_decides_what_is_a_buy_or_sell",
       "label": "How it decides what is a \"buy\" or \"sell\"",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "how it decides what is a \"buy\" or \"sell\"",
       "source_file": "README.md",
-      "source_location": "L403"
+      "source_location": "L339"
     },
     {
       "id": "readme_installing_for_a_friend_fresh_mac",
       "label": "Installing for a friend (fresh Mac)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "installing for a friend (fresh mac)",
@@ -3152,7 +3193,7 @@
       "label": "Safety features (on by default)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "safety features (on by default)",
@@ -3164,7 +3205,7 @@
       "label": "Setup (Mac, Terminal, step by step)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "setup (mac, terminal, step by step)",
@@ -3176,7 +3217,7 @@
       "label": "Solana Copy-Trading Bot",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "solana copy-trading bot",
@@ -3188,19 +3229,19 @@
       "label": "Troubleshooting",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "troubleshooting",
       "source_file": "README.md",
-      "source_location": "L494"
+      "source_location": "L430"
     },
     {
       "id": "readme_useful_extras",
       "label": "Useful extras",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "useful extras",
@@ -3212,91 +3253,24 @@
       "label": "What it refuses to copy (quality gates)",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "what it refuses to copy (quality gates)",
       "source_file": "README.md",
-      "source_location": "L420"
+      "source_location": "L356"
     },
     {
       "id": "readme_what_stuck_means",
       "label": "What \"STUCK\" means",
       "_origin": "ast",
       "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
+      "community_name": "Setup (Mac, Terminal, step by step)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "what \"stuck\" means",
       "source_file": "README.md",
-      "source_location": "L483"
-    },
-    {
-      "id": "readme_windows_powershell",
-      "label": "Windows (PowerShell)",
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "Solana Copy-Trading Bot",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "windows (powershell)",
-      "source_file": "README.md",
-      "source_location": "L341"
-    },
-    {
-      "id": "src_config",
-      "label": "config.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "config.ts",
-      "source_file": "src/config.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_config_quote_mints",
-      "label": "QUOTE_MINTS",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "quote_mints",
-      "source_file": "src/config.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_config_sol_mint",
-      "label": "SOL_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "sol_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_config_usdc_mint",
-      "label": "USDC_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "usdc_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_config_usdt_mint",
-      "label": "USDT_MINT",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "usdt_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L9"
+      "source_location": "L419"
     },
     {
       "id": "src_doctor",
@@ -3310,73 +3284,30 @@
       "source_location": "L1"
     },
     {
-      "id": "src_solprice",
-      "label": "solPrice.ts",
+      "id": "src_exitrules",
+      "label": "exitRules.ts",
       "_origin": "ast",
       "community": 9,
       "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "solprice.ts",
-      "source_file": "src/solPrice.ts",
+      "norm_label": "exitrules.ts",
+      "source_file": "src/exitRules.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_wallet",
-      "label": "wallet.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "wallet.ts",
-      "source_file": "src/wallet.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_watcher",
-      "label": "watcher.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "code",
-      "norm_label": "watcher.ts",
-      "source_file": "src/watcher.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "ref_bip39",
-      "label": "bip39",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "concept",
-      "norm_label": "bip39",
-      "source_file": "package.json",
-      "source_location": "L18"
-    },
-    {
-      "id": "ref_ed25519_hd_key",
-      "label": "ed25519-hd-key",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "concept",
-      "norm_label": "ed25519-hd-key",
-      "source_file": "package.json",
-      "source_location": "L21"
-    },
-    {
-      "id": "ref_solana_web3_js",
-      "label": "@solana/web3.js",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "doctor.ts",
-      "file_type": "concept",
-      "norm_label": "@solana/web3.js",
-      "source_file": "package.json",
-      "source_location": "L17"
     }
   ],
   "links": [
+    {
+      "source": "src_alerts_main",
+      "target": "src_notify_soundfor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/alerts.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
     {
       "source": "src_alerts_main",
       "target": "src_notify_speechfor",
@@ -3386,7 +3317,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/alerts.ts",
-      "source_location": "L26",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -3398,7 +3329,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/alerts.ts",
-      "source_location": "L30",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -3715,7 +3646,7 @@
     },
     {
       "source": "src_doctor_main",
-      "target": "src_notify_windowssoundfor",
+      "target": "src_notify_soundfor",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -3739,18 +3670,6 @@
     },
     {
       "source": "src_doctor_main",
-      "target": "src_notify_soundfor",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/doctor.ts",
-      "source_location": "L234",
-      "weight": 1.0
-    },
-    {
-      "source": "src_doctor_main",
       "target": "src_notify_speechargs",
       "relation": "calls",
       "_origin": "ast",
@@ -3758,7 +3677,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L245",
+      "source_location": "L234",
       "weight": 1.0
     },
     {
@@ -4082,7 +4001,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L222",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -4094,7 +4013,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L224",
+      "source_location": "L140",
       "weight": 1.0
     },
     {
@@ -4106,31 +4025,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L224",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_playalert",
-      "target": "src_notify_windowsalertinvocation",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/notify.ts",
-      "source_location": "L192",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_playalert",
-      "target": "src_notify_run",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/notify.ts",
-      "source_location": "L193",
+      "source_location": "L140",
       "weight": 1.0
     },
     {
@@ -4142,7 +4037,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L197",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify_playalert",
+      "target": "src_notify_run",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/notify.ts",
+      "source_location": "L115",
       "weight": 1.0
     },
     {
@@ -4154,7 +4061,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L199",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -4166,7 +4073,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L200",
+      "source_location": "L117",
       "weight": 1.0
     },
     {
@@ -4178,7 +4085,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L206",
+      "source_location": "L123",
       "weight": 1.0
     },
     {
@@ -4190,7 +4097,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L210",
+      "source_location": "L127",
       "weight": 1.0
     },
     {
@@ -4202,7 +4109,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L67",
+      "source_location": "L64",
       "weight": 1.0
     },
     {
@@ -4214,43 +4121,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/notify.ts",
-      "source_location": "L83",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_windowsalertinvocation",
-      "target": "src_notify_windowssoundfor",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/notify.ts",
-      "source_location": "L154",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_windowsalertinvocation",
-      "target": "src_notify_speechfor",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/notify.ts",
-      "source_location": "L155",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify_windowssoundfor",
-      "target": "src_notify_flagoff",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/notify.ts",
-      "source_location": "L141",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -5270,19 +5141,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L913",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_main",
-      "target": "test_logic_test_testwindowsalerts",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L914",
+      "source_location": "L886",
       "weight": 1.0
     },
     {
@@ -5294,7 +5153,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L915",
+      "source_location": "L887",
       "weight": 1.0
     },
     {
@@ -5306,7 +5165,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L916",
+      "source_location": "L888",
       "weight": 1.0
     },
     {
@@ -5318,7 +5177,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L917",
+      "source_location": "L889",
       "weight": 1.0
     },
     {
@@ -5330,7 +5189,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L918",
+      "source_location": "L890",
       "weight": 1.0
     },
     {
@@ -5342,7 +5201,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L919",
+      "source_location": "L891",
       "weight": 1.0
     },
     {
@@ -5354,7 +5213,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L920",
+      "source_location": "L892",
       "weight": 1.0
     },
     {
@@ -5366,7 +5225,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L921",
+      "source_location": "L893",
       "weight": 1.0
     },
     {
@@ -5378,7 +5237,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L922",
+      "source_location": "L894",
       "weight": 1.0
     },
     {
@@ -5390,7 +5249,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L923",
+      "source_location": "L895",
       "weight": 1.0
     },
     {
@@ -5402,7 +5261,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L924",
+      "source_location": "L896",
       "weight": 1.0
     },
     {
@@ -5414,7 +5273,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L925",
+      "source_location": "L897",
       "weight": 1.0
     },
     {
@@ -5426,7 +5285,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L926",
+      "source_location": "L898",
       "weight": 1.0
     },
     {
@@ -5438,7 +5297,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L927",
+      "source_location": "L899",
       "weight": 1.0
     },
     {
@@ -5450,7 +5309,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L928",
+      "source_location": "L900",
       "weight": 1.0
     },
     {
@@ -5462,7 +5321,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L929",
+      "source_location": "L901",
       "weight": 1.0
     },
     {
@@ -5474,7 +5333,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L930",
+      "source_location": "L902",
       "weight": 1.0
     },
     {
@@ -5486,7 +5345,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L931",
+      "source_location": "L903",
       "weight": 1.0
     },
     {
@@ -5498,7 +5357,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L932",
+      "source_location": "L904",
       "weight": 1.0
     },
     {
@@ -6054,30 +5913,6 @@
       "weight": 1.0
     },
     {
-      "source": "test_logic_test_testwindowsalerts",
-      "target": "src_notify_windowssoundfor",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L892",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test_testwindowsalerts",
-      "target": "src_notify_windowsalertinvocation",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L900",
-      "weight": 1.0
-    },
-    {
       "source": "test_logic_test_testwriteofffiltering",
       "target": "src_positions_positionstore",
       "relation": "calls",
@@ -6246,18 +6081,6 @@
       "weight": 1.0
     },
     {
-      "source": "src_alerts",
-      "target": "src_notify_windowssoundfor",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/alerts.ts",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
       "source": "src_doctor",
       "target": "src_config_loadconfig",
       "relation": "imports",
@@ -6344,18 +6167,6 @@
     {
       "source": "src_doctor",
       "target": "src_notify_speechfor",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/doctor.ts",
-      "source_location": "L14",
-      "weight": 1.0
-    },
-    {
-      "source": "src_doctor",
-      "target": "src_notify_windowssoundfor",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -7532,42 +7343,6 @@
     {
       "source": "test_logic_test",
       "target": "src_notify_speechfor",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L27",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test",
-      "target": "src_notify_windows_alert_script",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L27",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test",
-      "target": "src_notify_windowsalertinvocation",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L27",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test",
-      "target": "src_notify_windowssoundfor",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -9608,24 +9383,13 @@
     },
     {
       "source": "readme_solana_copy_trading_bot",
-      "target": "readme_windows_powershell",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": "L341",
-      "weight": 1.0
-    },
-    {
-      "source": "readme_solana_copy_trading_bot",
       "target": "readme_how_it_decides_what_is_a_buy_or_sell",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L403",
+      "source_location": "L339",
       "weight": 1.0
     },
     {
@@ -9636,7 +9400,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L420",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -9647,7 +9411,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L444",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -9658,7 +9422,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L483",
+      "source_location": "L419",
       "weight": 1.0
     },
     {
@@ -9669,7 +9433,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L494",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -10070,68 +9834,13 @@
     },
     {
       "source": "src_notify",
-      "target": "src_notify_windows_default_sounds",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L112",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
-      "target": "src_notify_windows_alert_script",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L118",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
-      "target": "src_notify_windows_alert_script_b64",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L134",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
-      "target": "src_notify_windowssoundfor",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L140",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
-      "target": "src_notify_windowsalertinvocation",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L149",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
       "target": "src_notify_run",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L174",
+      "source_location": "L101",
       "weight": 1.0
     },
     {
@@ -10142,7 +9851,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L190",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -10153,7 +9862,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L205",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -10164,18 +9873,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L209",
-      "weight": 1.0
-    },
-    {
-      "source": "src_notify",
-      "target": "src_notify_notifykind",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/notify.ts",
-      "source_location": "L22",
+      "source_location": "L126",
       "weight": 1.0
     },
     {
@@ -10186,7 +9884,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L220",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "src_notify",
+      "target": "src_notify_notifykind",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/notify.ts",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -10197,7 +9906,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L26",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -10208,7 +9917,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L32",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -10219,7 +9928,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L38",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -10230,7 +9939,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L44",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -10241,7 +9950,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L52",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -10252,7 +9961,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L56",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -10263,7 +9972,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L66",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -10274,7 +9983,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L78",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -10285,7 +9994,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/notify.ts",
-      "source_location": "L93",
+      "source_location": "L90",
       "weight": 1.0
     },
     {
@@ -11280,24 +10989,13 @@
     },
     {
       "source": "test_logic_test",
-      "target": "test_logic_test_testwindowsalerts",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "test/logic-test.ts",
-      "source_location": "L890",
-      "weight": 1.0
-    },
-    {
-      "source": "test_logic_test",
       "target": "test_logic_test_main",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L912",
+      "source_location": "L885",
       "weight": 1.0
     },
     {
@@ -12932,5 +12630,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "aca0dd7442f36c91a43c471f9536f35a002dbe95"
+  "built_at_commit": "8424d4418bb142d89d5f07233d517f9b716e0e6e"
 }
