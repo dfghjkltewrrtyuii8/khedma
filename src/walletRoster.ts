@@ -328,10 +328,18 @@ export class Rotation {
 }
 
 // For `npm run summary`: the full roster, with reasons.
-export function printRoster(roster: WalletRoster): void {
+export function printRoster(roster: WalletRoster, positions?: readonly Position[], cfg?: RotationConfig): void {
   const label = (w: string) => shortAddress(w) + (roster.isDiscovered(w) ? '*' : '');
   console.log('── WALLET ROTATION ──');
   console.log(`  Copying now: ${roster.active().map(label).join(', ') || 'none'}`);
+  // A drop already earned is applied when the bot next starts; say so here
+  // rather than listing the wallet as if it will keep being copied.
+  if (positions && cfg) {
+    for (const w of roster.active()) {
+      const reason = dropReason(positions, w, cfg);
+      if (reason) console.log(`    ${shortAddress(w)} will be dropped when rotation next runs — ${reason}`);
+    }
+  }
   const bench = roster.bench();
   console.log(`  Bench, next up first: ${bench.length ? bench.map(label).join(', ') : 'empty'}`);
   if (roster.all().some((w) => roster.isDiscovered(w))) {

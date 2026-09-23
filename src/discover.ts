@@ -9,6 +9,7 @@
 
 import { loadConfig } from './config';
 import { discoverWallets, printDiscoveryReport } from './discovery';
+import { PositionStore } from './positions';
 import { printRoster, WalletRoster } from './walletRoster';
 
 async function main(): Promise<void> {
@@ -27,7 +28,9 @@ async function main(): Promise<void> {
     console.log('Note: rotation is off (no BENCH_WALLETS and DISCOVERY=false), so the bot will not use these yet.');
     console.log('Set DISCOVERY=true in .env to have it rotate through them and keep finding more.\n');
   }
-  printRoster(roster);
+  const store = new PositionStore();
+  store.load();
+  printRoster(roster, store.all(), config);
 }
 
 main().catch((error) => {

@@ -1252,10 +1252,14 @@ async function testDiscovery(realLog: typeof console.log) {
     pool('PODD', mint(), 6 * H, 90_000, 40, mint()), // quoted in some other token — skipped
     { id: 'broken' },                             // malformed — skipped
   ] };
-  const parsed = parseTrendingPools(trending);
+  const parseRejects: Record<string, number> = {};
+  const parsed = parseTrendingPools(trending, parseRejects);
   assert(parsed.length === 5 && !parsed.some((p) => p.address === 'PSOL' || p.address === 'PODD'), 'pools quoted in SOL/USDC only, memecoin on the base side');
-  const usable = selectPools(parsed, NOW);
-  assert(usable.map((p) => p.address).join() === 'P1,P2', 'too-young, too-thin and too-busy pools are skipped');
+  assert(parseRejects['SOL/USDC on the token side'] === 1 && parseRejects['priced in another token'] === 1 && parseRejects.unreadable === 1, 'every left-out pool is counted with its reason');
+  const poolRejects: Record<string, number> = {};
+  const usable = selectPools(parsed, NOW, undefined, poolRejects);
+  assert(usable.map((p) => p.address).join() === 'P1,P2,P5busy', 'too-young and too-thin pools are skipped; busy pools are KEPT (the first live run lost 37 of 40 pools to a busy filter)');
+  assert(poolRejects['under 40 min old'] === 1 && poolRejects['under $20,000 liquidity'] === 1, 'and why');
 
   const [GOOD, SNIPER, LOSER, FLIPPER, BOT, ONEHIT, MEH, KNOWN, TINY] = Array.from({ length: 9 }, () => Keypair.generate().publicKey.toBase58());
   const created1 = NOW - 5 * H, created2 = NOW - 8 * H;
@@ -1286,11 +1290,19 @@ async function testDiscovery(realLog: typeof console.log) {
   assert(parsePoolTrades(trades2, M2).length === trades2.data.length - 1, 'a trade with unreadable amounts is skipped, not guessed');
 
   const byPool = new Map([['P1', t1], ['P2', parsePoolTrades(trades2, M2)]]);
-  const found = findCandidates(usable, byPool, new Set([KNOWN]));
+  const walletRejects: Record<string, number> = {};
+  const found = findCandidates(usable, byPool, new Set([KNOWN]), undefined, walletRejects);
   assert(found.map((c) => c.wallet).join() === [GOOD, ONEHIT].join(),
     `keeps the repeat winner and the strong one-off; rejects sniper, loser, flipper, bot, +12% one-off, dust and already-known (got ${found.map((c) => c.wallet.slice(0, 4)).join(',')})`);
   assert(found[0].pools === 2 && Math.round(found[0].medianReturnPct) === 40, 'the repeat winner ranks first, median +40% across two tokens');
   assert(found[0].evidence.some((e) => /\+50%, held 1\.0h, bought 2\.0h after launch/.test(e)), 'the reason for each pick is kept');
+  const expectRejects: Record<string, number> = {
+    'already known to the bot': 1, 'bot (too many trades)': 1, 'launch sniper': 1, 'lost money': 1,
+    'held under 20 min': 1, 'position under $50': 1, 'one token only, under +30%': 1,
+  };
+  for (const [reason, n] of Object.entries(expectRejects)) {
+    assert(walletRejects[reason] === n, `every rejected wallet is counted under its reason: "${reason}" expected ${n}, got ${walletRejects[reason]}`);
+  }
 
   // The whole run against a fake API: routing, pacing, counts, and a clear
   // problem report when a response can't be read — never a silent zero.
@@ -1301,19 +1313,25 @@ async function testDiscovery(realLog: typeof console.log) {
     if (url.includes('trending_pools?page=2')) return { data: [] };
     if (url.includes('/pools/P1/trades')) return trades1;
     if (url.includes('/pools/P2/trades')) return trades2;
+    if (url.includes('/pools/P5busy/trades')) return { data: [] };
+    if (url.includes('/networks/solana/pools?page=1&sort=h24_volume_usd_desc')) return { data: [pool('P1', M1, 5 * H, 80_000, 60)] }; // already trending: not scanned twice
     throw new Error('unexpected url ' + url);
   };
   let pauses = 0;
   const report = await discoverWallets(new Set([KNOWN]), NOW, fakeFetch, async () => { pauses++; });
   assert(report.candidates.map((c) => c.wallet).join() === [GOOD, ONEHIT].join(), 'end to end: same two candidates');
-  assert(report.poolsFetched === 8 && report.poolsUsable === 2 && report.poolsScanned === 2 && report.problems.length === 0, 'report counts');
+  assert(report.poolsFetched === 9 && report.poolsReadable === 5 && report.poolsUsable === 3 && report.poolsScanned === 3 && report.problems.length === 0,
+    `report counts (got fetched ${report.poolsFetched}, readable ${report.poolsReadable}, usable ${report.poolsUsable}, scanned ${report.poolsScanned}, problems ${report.problems.join('; ')})`);
+  assert(urls.filter((u) => u.includes('/pools/P1/trades')).length === 1, 'a pool on both lists is scanned once');
+  assert(report.windowHours.length === 2 && Math.round(report.windowHours[1]) === 2, 'how much time each pool\'s trades covered is measured');
+  assert(report.walletRejects['launch sniper'] === 1, 'the end-to-end report carries the rejection breakdown');
   assert(urls.every((u) => u.startsWith('https://api.geckoterminal.com/api/v2/networks/solana/')) && pauses === urls.length, 'every call is to GeckoTerminal and paced');
   assert(urls.some((u) => u.includes('trade_volume_in_usd_greater_than=')), 'dust trades are filtered at the source');
 
   const changed = await discoverWallets(new Set(), NOW, async (u) => (u.includes('page=1') ? { data: [{ id: 'x', attributes: { name: 'weird' } }] } : { data: [] }), async () => {});
   assert(changed.candidates.length === 0 && changed.problems.some((p) => /changed its response format/.test(p)), 'an unreadable response is reported, not a silent zero');
   const down = await discoverWallets(new Set(), NOW, async () => { throw new Error('GeckoTerminal HTTP 503'); }, async () => {});
-  assert(down.problems.length === 2 && down.problems[0].includes('503'), 'network failures are reported, never thrown');
+  assert(down.problems.length === 3 && down.problems[0].includes('503') && down.problems[2].startsWith('top pools'), 'network failures are reported per request, never thrown');
   realLog('✅ discovery: keeps post-launch repeat winners; rejects snipers, bots, flippers, losers; reports broken responses');
 }
 

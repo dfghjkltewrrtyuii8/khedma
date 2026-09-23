@@ -28,7 +28,7 @@ async function main(): Promise<void> {
     const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
     const roster = new WalletRoster(pool, config.trackedWallets.length);
     roster.load();
-    printRoster(roster);
+    printRoster(roster, store.all(), config);
   }
 }
 

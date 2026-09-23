@@ -29,13 +29,18 @@ const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 // Tuning. Chosen from this bot's own failures, not from theory — see the
 // comment on each.
 export const DISCOVERY_RULES = {
-  trendingPages: 2, // 20 pools per page
-  maxPoolsScanned: 15, // one API call each
+  trendingPages: 2, // 20 pools per page — what's moving right now
+  topPoolPages: 1, // plus the day's biggest pools by volume — older, where multi-hour holds show up
+  maxPoolsScanned: 20, // one API call each
   pauseMs: 2_500, // the free API allows ~30 calls/min; stay well under
-  minTradeUsd: 25, // ignore dust and bot noise (also stretches the time window each page covers)
+  // Only trades this big are read. The free feed returns a pool's last ~300
+  // trades; on a busy pool, small trades fill that in minutes and hide every
+  // multi-hour hold. Reading only $150+ trades makes one page span hours —
+  // and serious traders trade that size anyway. (First live run used $25 and
+  // rejected busy pools instead: it kept 3 of 40 pools and found no one.)
+  minTradeUsd: 150,
   minPoolReserveUsd: 20_000, // enough depth that a copy can get back out
-  minPoolAgeMinutes: 60, // younger pools are still launch-rush trading
-  maxTradesPerHour: 150, // busier than this and one page of trades covers too little time to see a 30-minute hold
+  minPoolAgeMinutes: 40, // the rules below need a buy 15+ min in and a 20+ min hold, so younger pools can't qualify
   sniperWindowMinutes: 15, // a first buy this soon after the pool opened is launch sniping — uncopyable
   minHoldMinutes: 20, // quicker flips are over before a copy lands
   maxHoldHours: 6, // longer than a session can follow
@@ -70,11 +75,22 @@ export interface Candidate {
   evidence: string[]; // one line per token, e.g. "WIF: +34%, held 1.8h, bought 2.1h after launch"
 }
 
+// Why things were left out, counted — so a run that finds nobody says which
+// rule did it, instead of leaving it to guesswork.
+export type Tally = Record<string, number>;
+const bump = (tally: Tally | undefined, reason: string) => {
+  if (tally) tally[reason] = (tally[reason] ?? 0) + 1;
+};
+
 export interface DiscoveryReport {
   poolsFetched: number;
+  poolsReadable: number;
   poolsUsable: number;
   poolsScanned: number;
   tradesParsed: number;
+  windowHours: number[]; // how much time each scanned pool's trades actually covered
+  poolRejects: Tally;
+  walletRejects: Tally;
   candidates: Candidate[];
   problems: string[];
 }
@@ -87,7 +103,7 @@ const num = (value: unknown): number | null => {
 };
 const stripNetwork = (id: unknown): string | null => (typeof id === 'string' && id ? id.replace(/^solana_/, '') : null);
 
-export function parseTrendingPools(body: unknown): PoolInfo[] {
+export function parseTrendingPools(body: unknown, rejects?: Tally): PoolInfo[] {
   const data = (body as { data?: unknown })?.data;
   if (!Array.isArray(data)) return [];
   const pools: PoolInfo[] = [];
@@ -98,9 +114,18 @@ export function parseTrendingPools(body: unknown): PoolInfo[] {
     const quoteMint = stripNetwork(item?.relationships?.quote_token?.data?.id);
     const createdAt = Date.parse(a.pool_created_at ?? '');
     const reserveUsd = num(a.reserve_in_usd);
-    if (!address || !baseMint || !Number.isFinite(createdAt) || reserveUsd === null) continue;
-    if (QUOTE_MINTS.has(baseMint)) continue; // the "token" side is SOL/USDC — not a memecoin pool
-    if (quoteMint && !QUOTE_MINTS.has(quoteMint)) continue; // the bot only copies swaps against SOL/USDC/USDT
+    if (!address || !baseMint || !Number.isFinite(createdAt) || reserveUsd === null) {
+      bump(rejects, 'unreadable');
+      continue;
+    }
+    if (QUOTE_MINTS.has(baseMint)) {
+      bump(rejects, 'SOL/USDC on the token side'); // not a memecoin pool
+      continue;
+    }
+    if (quoteMint && !QUOTE_MINTS.has(quoteMint)) {
+      bump(rejects, 'priced in another token'); // the bot only copies swaps against SOL/USDC/USDT
+      continue;
+    }
     const tx = a.transactions ?? {};
     const count = (w: any) => (w ? (num(w.buys) ?? 0) + (num(w.sells) ?? 0) : null);
     const h1 = count(tx.h1);
@@ -150,15 +175,20 @@ export function parsePoolTrades(body: unknown, baseMint: string): PoolTrade[] {
 
 // ------------------------------------------------------------ analysis ---
 
-// Pools worth reading: deep enough, past the launch rush, and quiet enough that
-// one page of trades spans hours rather than minutes.
-export function selectPools(pools: PoolInfo[], now: number, rules = DISCOVERY_RULES): PoolInfo[] {
-  return pools.filter(
-    (p) =>
-      p.reserveUsd >= rules.minPoolReserveUsd &&
-      now - p.createdAt >= rules.minPoolAgeMinutes * 60_000 &&
-      (p.tradesPerHour === null || p.tradesPerHour <= rules.maxTradesPerHour)
-  );
+// Pools worth reading: deep enough to exit, and old enough to be past the
+// launch rush. Busy pools are kept — minTradeUsd is what stretches their window.
+export function selectPools(pools: PoolInfo[], now: number, rules = DISCOVERY_RULES, rejects?: Tally): PoolInfo[] {
+  return pools.filter((p) => {
+    if (p.reserveUsd < rules.minPoolReserveUsd) {
+      bump(rejects, `under $${rules.minPoolReserveUsd.toLocaleString('en-US')} liquidity`);
+      return false;
+    }
+    if (now - p.createdAt < rules.minPoolAgeMinutes * 60_000) {
+      bump(rejects, `under ${rules.minPoolAgeMinutes} min old`);
+      return false;
+    }
+    return true;
+  });
 }
 
 function isPersonalWallet(address: string): boolean {
@@ -179,7 +209,8 @@ export function findCandidates(
   pools: PoolInfo[],
   tradesByPool: Map<string, PoolTrade[]>,
   exclude: Set<string>,
-  rules = DISCOVERY_RULES
+  rules = DISCOVERY_RULES,
+  rejects?: Tally
 ): Candidate[] {
   const hits = new Map<string, { returns: number[]; evidence: string[] }>();
 
@@ -190,22 +221,25 @@ export function findCandidates(
       byWallet.get(t.wallet)!.push(t);
     }
     for (const [wallet, trades] of byWallet) {
-      if (exclude.has(wallet)) continue;
-      if (trades.length > rules.maxTradesPerWalletPerPool) continue; // bot / market maker
+      const reject = (reason: string) => bump(rejects, reason);
+      if (exclude.has(wallet)) { reject('already known to the bot'); continue; }
+      if (trades.length > rules.maxTradesPerWalletPerPool) { reject('bot (too many trades)'); continue; }
       const buys = trades.filter((t) => t.side === 'buy');
-      if (buys.length === 0) continue;
+      if (buys.length === 0) { reject('only sold (bought before the window)'); continue; }
       const firstBuy = Math.min(...buys.map((t) => t.at));
       const sells = trades.filter((t) => t.side === 'sell' && t.at > firstBuy);
-      if (sells.length === 0) continue; // no completed round trip in the window
-      if (firstBuy - pool.createdAt < rules.sniperWindowMinutes * 60_000) continue; // launch sniping
+      if (sells.length === 0) { reject('bought, not sold yet'); continue; }
+      if (firstBuy - pool.createdAt < rules.sniperWindowMinutes * 60_000) { reject('launch sniper'); continue; }
       const holdMs = Math.min(...sells.map((t) => t.at)) - firstBuy;
-      if (holdMs < rules.minHoldMinutes * 60_000 || holdMs > rules.maxHoldHours * 3_600_000) continue;
+      if (holdMs < rules.minHoldMinutes * 60_000) { reject(`held under ${rules.minHoldMinutes} min`); continue; }
+      if (holdMs > rules.maxHoldHours * 3_600_000) { reject(`held over ${rules.maxHoldHours} h`); continue; }
       const buyUsd = buys.reduce((a, t) => a + t.usd, 0);
-      if (buyUsd < rules.minPositionUsd) continue;
+      if (buyUsd < rules.minPositionUsd) { reject(`position under $${rules.minPositionUsd}`); continue; }
       const avgBuy = buyUsd / buys.reduce((a, t) => a + t.tokenAmount, 0);
       const avgSell = sells.reduce((a, t) => a + t.usd, 0) / sells.reduce((a, t) => a + t.tokenAmount, 0);
       const returnPct = (avgSell / avgBuy - 1) * 100;
-      if (!(returnPct >= rules.minReturnPct)) continue;
+      if (!(returnPct >= 0)) { reject('lost money'); continue; }
+      if (!(returnPct >= rules.minReturnPct)) { reject(`gained under +${rules.minReturnPct}%`); continue; }
       if (!hits.has(wallet)) hits.set(wallet, { returns: [], evidence: [] });
       const h = hits.get(wallet)!;
       h.returns.push(returnPct);
@@ -217,7 +251,7 @@ export function findCandidates(
   }
 
   const all = [...hits.entries()]
-    .filter(([wallet]) => isPersonalWallet(wallet))
+    .filter(([wallet]) => isPersonalWallet(wallet) || (bump(rejects, 'not a personal wallet'), false))
     .map(([wallet, h]) => ({ wallet, pools: h.returns.length, medianReturnPct: median(h.returns), evidence: h.evidence }));
   const proven = all
     .filter((c) => c.pools >= 2)
@@ -228,6 +262,7 @@ export function findCandidates(
   const single = all
     .filter((c) => c.pools === 1 && c.medianReturnPct >= rules.strongSingleReturnPct)
     .sort((a, b) => b.medianReturnPct - a.medianReturnPct);
+  for (const c of all) if (c.pools === 1 && c.medianReturnPct < rules.strongSingleReturnPct) bump(rejects, `one token only, under +${rules.strongSingleReturnPct}%`);
   return [...proven, ...single].slice(0, rules.maxCandidates);
 }
 
@@ -254,27 +289,37 @@ export async function discoverWallets(
   pause: (ms: number) => Promise<void> = sleep,
   rules = DISCOVERY_RULES
 ): Promise<DiscoveryReport> {
-  const report: DiscoveryReport = { poolsFetched: 0, poolsUsable: 0, poolsScanned: 0, tradesParsed: 0, candidates: [], problems: [] };
+  const report: DiscoveryReport = {
+    poolsFetched: 0, poolsReadable: 0, poolsUsable: 0, poolsScanned: 0, tradesParsed: 0,
+    windowHours: [], poolRejects: {}, walletRejects: {}, candidates: [], problems: [],
+  };
   const pools: PoolInfo[] = [];
   let pagesRead = 0;
-  for (let page = 1; page <= rules.trendingPages; page++) {
+  const listings = [
+    ...Array.from({ length: rules.trendingPages }, (_, i) => ({ label: `trending pools page ${i + 1}`, url: `${BASE_URL}/networks/solana/trending_pools?page=${i + 1}` })),
+    ...Array.from({ length: rules.topPoolPages }, (_, i) => ({ label: `top pools page ${i + 1}`, url: `${BASE_URL}/networks/solana/pools?page=${i + 1}&sort=h24_volume_usd_desc` })),
+  ];
+  for (const listing of listings) {
     try {
-      const body = await fetchJson(`${BASE_URL}/networks/solana/trending_pools?page=${page}`);
+      const body = await fetchJson(listing.url);
       pagesRead += 1;
-      const parsed = parseTrendingPools(body);
       const raw = Array.isArray((body as any)?.data) ? (body as any).data.length : 0;
       report.poolsFetched += raw;
-      pools.push(...parsed.filter((p) => !pools.some((q) => q.address === p.address)));
+      for (const p of parseTrendingPools(body, report.poolRejects)) {
+        if (pools.some((q) => q.address === p.address)) continue; // on both lists
+        pools.push(p);
+      }
     } catch (error) {
-      report.problems.push(`trending pools page ${page}: ${(error as Error).message}`);
+      report.problems.push(`${listing.label}: ${(error as Error).message}`);
     }
     await pause(rules.pauseMs);
   }
+  report.poolsReadable = pools.length;
   if (pagesRead > 0 && report.poolsFetched > 0 && pools.length === 0) {
     report.problems.push('trending pools came back but none could be read — GeckoTerminal may have changed its response format');
   }
 
-  const usable = selectPools(pools, now, rules);
+  const usable = selectPools(pools, now, rules, report.poolRejects);
   report.poolsUsable = usable.length;
   const tradesByPool = new Map<string, PoolTrade[]>();
   let tradePagesWithData = 0;
@@ -287,6 +332,10 @@ export async function discoverWallets(
       if (Array.isArray((body as any)?.data) && (body as any).data.length > 0) tradePagesWithData += 1;
       tradesByPool.set(pool.address, trades);
       report.tradesParsed += trades.length;
+      if (trades.length > 1) {
+        const times = trades.map((t) => t.at);
+        report.windowHours.push((Math.max(...times) - Math.min(...times)) / 3_600_000);
+      }
       report.poolsScanned += 1;
     } catch (error) {
       report.problems.push(`trades for ${pool.name}: ${(error as Error).message}`);
@@ -297,15 +346,26 @@ export async function discoverWallets(
     report.problems.push('trades came back but none could be read — GeckoTerminal may have changed its trade format');
   }
 
-  report.candidates = findCandidates(usable, tradesByPool, exclude, rules);
+  report.candidates = findCandidates(usable, tradesByPool, exclude, rules, report.walletRejects);
   return report;
 }
 
 export function printDiscoveryReport(report: DiscoveryReport, log: (line: string) => void = console.log): void {
+  const tally = (t: Tally) =>
+    Object.entries(t)
+      .sort((a, b) => b[1] - a[1])
+      .map(([reason, n]) => `${n} ${reason}`)
+      .join(', ');
   log(
-    `🔎 Discovery: ${report.poolsFetched} trending pools, ${report.poolsUsable} usable, ${report.poolsScanned} scanned, ` +
-      `${report.tradesParsed} trades read → ${report.candidates.length} candidate(s)`
+    `🔎 Discovery: ${report.poolsFetched} pools listed, ${report.poolsReadable} readable, ${report.poolsUsable} usable, ` +
+      `${report.poolsScanned} scanned, ${report.tradesParsed} trades read → ${report.candidates.length} candidate(s)`
   );
+  if (Object.keys(report.poolRejects).length) log(`   pools left out: ${tally(report.poolRejects)}`);
+  if (report.windowHours.length) {
+    const w = [...report.windowHours].sort((a, b) => a - b);
+    log(`   each pool's trades covered ${w[0].toFixed(1)}h to ${w[w.length - 1].toFixed(1)}h (median ${w[Math.floor(w.length / 2)].toFixed(1)}h)`);
+  }
+  if (Object.keys(report.walletRejects).length) log(`   wallets left out: ${tally(report.walletRejects)}`);
   for (const c of report.candidates) {
     log(`   • ${c.wallet} — ${c.pools} token(s), median ${c.medianReturnPct >= 0 ? '+' : ''}${c.medianReturnPct.toFixed(0)}%`);
     for (const e of c.evidence) log(`       ${e}`);
