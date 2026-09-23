@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1790168960.102754,
-    "seen": 1790169029.9166853,
-    "ast_hash": "83da657803d13758539df5cb848acce2",
+    "mtime": 1790169613.3898597,
+    "seen": 1790169615.339666,
+    "ast_hash": "8a370e692648a447f6b063da9f7918fc",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/index.ts": {
-    "mtime": 1790031276.1841862,
-    "seen": 1790031430.9666116,
-    "ast_hash": "4334d8e590f82c8ea1975c0020732783",
+    "mtime": 1790169551.750992,
+    "seen": 1790169615.339676,
+    "ast_hash": "6020f14c8fdcddc314e69030a6746f4c",
     "semantic_hash": ""
   },
   "src/jupiter.ts": {
@@ -84,10 +84,10 @@
     "semantic_hash": ""
   },
   "src/watcher.ts": {
-    "mtime": 1788707475.576319,
-    "seen": 1789459579.9463015,
-    "ast_hash": "7d767329ab59aea4e204a63d7f9196b1",
-    "semantic_hash": "7d767329ab59aea4e204a63d7f9196b1"
+    "mtime": 1790169551.7507737,
+    "seen": 1790169615.339692,
+    "ast_hash": "84f28509296bfa4ae78b2a2a37815533",
+    "semantic_hash": ""
   },
   "src/writeoff.ts": {
     "mtime": 1788792075.8589034,
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790168960.1043723,
-    "seen": 1790169029.9167147,
-    "ast_hash": "155a1c6a8ca5cca5d49379c3bd46967f",
+    "mtime": 1790169551.7515202,
+    "seen": 1790169615.3396938,
+    "ast_hash": "d0dfcdeacfbd2dd6ec3d1880a9216588",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790169027.959622,
-    "seen": 1790169029.9167173,
-    "ast_hash": "d907a142b5eb8bf122ec398f64a64815",
+    "mtime": 1790169473.193443,
+    "seen": 1790169615.3396964,
+    "ast_hash": "fde401bdac134966fdd307bb94661d29",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "src/doctor.ts": {
-    "mtime": 1790168960.1033163,
-    "seen": 1790169029.9166927,
-    "ast_hash": "194d6a558a8a84d518dfc3f4556a74ac",
+    "mtime": 1790169551.7511573,
+    "seen": 1790169615.3396735,
+    "ast_hash": "09c94468719de1a7be51b2a2971ebe3d",
     "semantic_hash": ""
   },
   "src/setup.ts": {

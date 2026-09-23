@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1790031748.989804,
-    "seen": 1790031749.901715,
-    "ast_hash": "d33499f97242ec1491bcea487b213800",
+    "mtime": 1790168960.102754,
+    "seen": 1790169029.9166853,
+    "ast_hash": "83da657803d13758539df5cb848acce2",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -24,9 +24,9 @@
     "semantic_hash": "a6a2d7e055201162335f90d6abd0b9bd"
   },
   "src/notify.ts": {
-    "mtime": 1790029939.8017833,
-    "seen": 1790030002.911664,
-    "ast_hash": "558149ef747ddb3e3780be1b079481fb",
+    "mtime": 1790168960.1030204,
+    "seen": 1790169029.9166973,
+    "ast_hash": "24316f9fa024af736858645c338933ad",
     "semantic_hash": ""
   },
   "src/pnl.ts": {
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790031630.7711608,
-    "seen": 1790031749.9017467,
-    "ast_hash": "823035e8ed2aece653397af107ace94b",
+    "mtime": 1790168960.1043723,
+    "seen": 1790169029.9167147,
+    "ast_hash": "155a1c6a8ca5cca5d49379c3bd46967f",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790031748.989474,
-    "seen": 1790031749.9017508,
-    "ast_hash": "deea678277b79b8010f9332348f0c020",
+    "mtime": 1790169027.959622,
+    "seen": 1790169029.9167173,
+    "ast_hash": "d907a142b5eb8bf122ec398f64a64815",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "src/doctor.ts": {
-    "mtime": 1790031276.1847594,
-    "seen": 1790031430.966608,
-    "ast_hash": "40c266102065ce9f2fe98a1b9d433403",
+    "mtime": 1790168960.1033163,
+    "seen": 1790169029.9166927,
+    "ast_hash": "194d6a558a8a84d518dfc3f4556a74ac",
     "semantic_hash": ""
   },
   "src/setup.ts": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "src/alerts.ts": {
-    "mtime": 1790029939.8062298,
-    "seen": 1790030002.9116561,
-    "ast_hash": "1d50504de74f8e3189d211b181b8b378",
+    "mtime": 1790168960.1031575,
+    "seen": 1790169029.9166884,
+    "ast_hash": "212e8f865f3ac55edde6ddf2324e62d4",
     "semantic_hash": ""
   },
   "src/exitRules.ts": {
