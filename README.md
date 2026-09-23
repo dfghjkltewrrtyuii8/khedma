@@ -173,6 +173,9 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `EXIT_CHECK_SECONDS` | How often open positions are priced to check those rules. Default `30`. Costs one Jupiter request per open position each time. |
 | `EXIT_REBUY_COOLDOWN_HOURS` | After a rule sells a token, ignore new buys of it for this long. Default `24`; `0` = allow immediately. |
 | `RPC_REQUESTS_PER_SECOND` | How fast the watcher may read from Helius. Default `8`. Lower it if you see rate-limit retries. |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Reports on your phone — filled in by `npm run telegram` ([details](#telegram-pl-on-your-phone)). Empty = off. |
+| `TELEGRAM_REPORT_HOURS` | How often a Telegram report arrives. Default `3`; `0` = only when you ask and when the bot stops. |
+| `TELEGRAM_TRADE_ALERTS` | A Telegram message per trade: `sells` (default), `all` (buys too) or `off`. |
 | `NOTIFICATIONS` | macOS desktop alerts on every buy, sell, and failed sell. Default `true`; set `false` to silence. |
 | `SOUNDS` | macOS chime on every filled buy, completed sell, and failed sell — each one different, so you can tell them apart without looking. Plays even if notifications are muted. Default `true`. |
 | `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which chime for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
@@ -306,6 +309,61 @@ anything, and any real tokens stay in your wallet):
 ```zsh
 rm -rf data
 ```
+
+## Telegram: P&L on your phone
+
+Leave the bot running overnight and check it from your phone in the morning,
+without scrolling back through the terminal.
+
+**Set it up once (about 3 minutes):**
+
+```zsh
+npm run telegram
+```
+
+It walks you through it: in Telegram, message **@BotFather** → `/newbot` →
+pick a name and a username ending in `bot` → paste the token it gives you
+(typed hidden). Then open your new bot, press **Start**, send it `hi`, and
+confirm it's you. That's all — restart the bot (`Ctrl+C`, `npm start`) and
+it's on. `npm run doctor` sends a test message to check it any time.
+
+**What you get:**
+
+| On your phone | When |
+|---|---|
+| `/pnl` | Profit and loss: won/lost, total in SOL and $, best and worst trade, what open trades are worth now |
+| `/open` | What it's holding right now, each with a chart link |
+| `/wallets` | Who it's copying, how each is doing, the bench, and who was dropped |
+| `/status` | Running? How long? When did it last see a trade? Did the laptop sleep? |
+| A report | Every `TELEGRAM_REPORT_HOURS` (default 3) and a final one when the bot stops |
+| A message per sell | With the result, e.g. `✅ Sold WIF… +42% (+0.0042 SOL) · paper · trailing stop` |
+
+Everything arrives **silently** (no buzz at night). Only two things make the
+phone ring: a **real-money** sell that failed, and the bot crashing.
+
+**Safety.** It's read-only: there is no command that buys, sells or changes a
+setting, so someone holding your phone can look but never trade. It only
+answers your own Telegram account; anyone else who finds your bot gets no
+reply. Your wallet key never goes near it. The bot token lives in `.env` only.
+**One Telegram bot per computer** — a friend makes their own with
+`npm run telegram` on their machine (two computers sharing one token fight
+over its messages, and the bot will tell you so).
+
+Settings (in `.env`): `TELEGRAM_REPORT_HOURS` (`0` = only when you ask and
+when it stops) and `TELEGRAM_TRADE_ALERTS` (`sells`, `all` for buys too, or
+`off`).
+
+**Keep the computer awake.** A sleeping computer runs nothing — no trades are
+watched. The bot notices afterwards and tells you (`😴 The computer was asleep
+01:12–06:40`), but the trades in that window are gone. On a Mac, keep it
+plugged in with the lid open and start it like this:
+
+```zsh
+caffeinate -is npm start
+```
+
+On Windows: Settings → System → Power → "When plugged in, put my device to
+sleep after" → **Never**.
 
 ---
 

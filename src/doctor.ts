@@ -20,6 +20,7 @@ import { fetchDexscreenerMarket } from './tokenMarket';
 import { loadKeypair } from './wallet';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } from './watcher';
 import { fetchGeckoTerminal, parseTrendingPools } from './discovery';
+import { explainTelegramError, TelegramClient } from './telegram';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -209,6 +210,25 @@ async function main(): Promise<void> {
       warn(`${name}: could not check (${(error as Error).message})`);
     }
     await sleep(250);
+  }
+
+  console.log('\nTelegram (reports on your phone)');
+  if (!config.telegramBotToken) {
+    ok('not set up — optional. For P&L on your phone: npm run telegram');
+  } else {
+    const telegram = new TelegramClient(config.telegramBotToken);
+    try {
+      const me = await withTimeout(telegram.getMe(), 15_000);
+      ok(`bot @${me.username ?? me.id} accepts the token`);
+      if (!config.telegramChatId) {
+        bad('not linked to your Telegram chat yet', 'run: npm run telegram');
+      } else {
+        await withTimeout(telegram.sendMessage(config.telegramChatId, '🩺 npm run doctor: Telegram works — your reports will arrive here.', true), 15_000);
+        ok('test message sent — check Telegram on your phone');
+      }
+    } catch (error) {
+      bad(`Telegram: ${explainTelegramError(error)}`);
+    }
   }
 
   console.log('\nSettings');

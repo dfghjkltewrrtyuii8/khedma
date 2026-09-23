@@ -15,7 +15,7 @@ import path from 'path';
 import bs58 from 'bs58';
 import { Keypair, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
 
-import { analyzeSwap, installedWeb3Version, MAX_TX_VERSION, MIN_WEB3_VERSION, versionAtLeast, WalletWatcher } from '../src/watcher';
+import { analyzeSwap, installedWeb3Version, MAX_TX_VERSION, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from '../src/watcher';
 import { RateLimiter } from '../src/rateLimiter';
 import { PositionStore } from '../src/positions';
 import { Trader } from '../src/trader';
@@ -25,7 +25,11 @@ import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
 import { soundFor, speechFor, speechArgs, windowsAlertInvocation, windowsSoundFor, WINDOWS_ALERT_SCRIPT } from '../src/notify';
-import { classifyWalletSecret, findPlaceholders, parseHeliusInput, parseWalletList, renderEnv } from '../src/setupChecks';
+import { classifyWalletSecret, findPlaceholders, isTelegramToken, parseHeliusInput, parseWalletList, renderEnv, upsertEnv } from '../src/setupChecks';
+import {
+  duration, FetchLike, formatOpen, formatPnl, formatStatus, formatTradeEvent, formatWallets, parseCommand,
+  TelegramBot, TelegramClient, TelegramError, TelegramUpdate, TradeFeed,
+} from '../src/telegram';
 import * as bip39 from 'bip39';
 import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
 import { Position } from '../src/types';
@@ -884,6 +888,7 @@ function testEnvIsolation() {
   assert(config.stopLossPercent === 30 && config.takeProfitPercent === 0, 'exit rules are pinned');
   assert(config.benchWallets.length === 0, 'no bench from the real .env leaks in');
   assert(config.discovery === false, 'DISCOVERY from the real .env does not leak in');
+  assert(config.telegramBotToken === '' && config.telegramChatId === '', 'a real Telegram bot is never messaged by the tests');
   assert(process.env.SPEECH === 'false' && process.env.SOUNDS === 'false', 'tests never make the machine ding or talk');
   console.log('✅ test isolation: the suite reads pinned settings, never the real .env');
 }
@@ -1514,12 +1519,196 @@ async function testPositionCapsAndSweepYield(realLog: typeof console.log) {
   realLog('✅ position caps: paper has its own higher cap, real money keeps MAX_OPEN_POSITIONS; exit sweeps give way to waiting trades');
 }
 
+// Telegram, offline: a fake Telegram API stands in for the real one. Pins the
+// parts that matter for trust — only YOUR chat is answered, the token never
+// shows up in an error, the numbers match the positions — and that a flaky
+// connection is retried or reported once, never allowed to stop trading.
+async function testTelegram(realLog: typeof console.log) {
+  const TOKEN = '123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw1';
+  const CHAT = '5550001';
+  const H = 3_600_000;
+  const NOW = Date.parse('2026-09-24T07:00:00Z');
+  const W1 = TRACKED, W2 = Keypair.generate().publicKey.toBase58(), W3 = Keypair.generate().publicKey.toBase58();
+  let n = 0;
+  const pos = (over: Partial<Position>): Position => ({
+    id: `p${++n}`, mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: W1, dryRun: true, status: 'closed',
+    openedAt: new Date(NOW - 10 * H).toISOString(), closedAt: new Date(NOW - 9 * H).toISOString(),
+    spentSol: 0.01, tokenAmountRaw: '0', initialTokenAmountRaw: '1000', receivedSol: 0, sellTxs: [], ...over,
+  });
+
+  // --- settings helpers ---
+  assert(isTelegramToken(TOKEN) && !isTelegramToken('123:abc') && !isTelegramToken('my bot') && !isTelegramToken(''), 'bot tokens are recognised, junk is not');
+  const envText = 'PRIVATE_KEY_BASE58=abc\r\n# keep me\r\nTELEGRAM_CHAT_ID=old\r\nDRY_RUN=true\r\n';
+  const upserted = upsertEnv(envText, { TELEGRAM_BOT_TOKEN: TOKEN, TELEGRAM_CHAT_ID: CHAT }, '# ---- Telegram ----');
+  assert(upserted.startsWith('PRIVATE_KEY_BASE58=abc\r\n# keep me\r\nTELEGRAM_CHAT_ID=5550001\r\nDRY_RUN=true\r\n'), '.env: existing key replaced in place, other lines untouched, Windows line endings kept');
+  assert(upserted.endsWith(`\r\n# ---- Telegram ----\r\nTELEGRAM_BOT_TOKEN=${TOKEN}\r\n`), '.env: a missing key is appended under its heading');
+  assert(upsertEnv('A=1', { B: '$&$1' }) === 'A=1\nB=$&$1\n' && upsertEnv('B=x\n', { B: '$&' }) === 'B=$&\n', '.env: values are written literally');
+  const rendered = renderEnv({ privateKeyBase58: 'k', walletMnemonic: '', heliusHttpsUrl: 'h', heliusWssUrl: 'w', jupiterApiKey: 'j', trackedWallets: [W1], settings: { TELEGRAM_BOT_TOKEN: TOKEN, TELEGRAM_CHAT_ID: CHAT } });
+  assert(rendered.includes(`TELEGRAM_BOT_TOKEN=${TOKEN}\nTELEGRAM_CHAT_ID=${CHAT}\nTELEGRAM_REPORT_HOURS=3\nTELEGRAM_TRADE_ALERTS=sells`), 'npm run setup keeps the Telegram settings when it rewrites .env');
+
+  // --- the API client, against a fake Telegram ---
+  const calls: { url: string; body: any }[] = [];
+  let reply: { status: number; body: unknown } | Error = { status: 200, body: { ok: true, result: { id: 1, username: 'copy_bot' } } };
+  const fakeFetch: FetchLike = async (url, init) => {
+    calls.push({ url, body: JSON.parse(init.body) });
+    if (reply instanceof Error) throw reply;
+    const r = reply;
+    return { ok: r.status === 200, status: r.status, json: async () => r.body };
+  };
+  const client = new TelegramClient(TOKEN, fakeFetch);
+  const me = await client.getMe();
+  assert(me.username === 'copy_bot' && calls[0].url === `https://api.telegram.org/bot${TOKEN}/getMe`, 'calls the Bot API');
+  await client.sendMessage(CHAT, 'hello', true);
+  assert(calls[1].body.chat_id === CHAT && calls[1].body.disable_notification === true && calls[1].body.link_preview_options.is_disabled === true, 'messages go to your chat, silently, without link previews');
+  await client.sendMessage(CHAT, 'x'.repeat(5000), true);
+  assert(calls[2].body.text.length <= 4000 && calls[2].body.text.endsWith('(cut short)'), 'over-long messages are cut to fit');
+  const kindOf = async (status: number, body: unknown) => {
+    reply = { status, body };
+    try { await client.getMe(); return 'none'; } catch (error) { return (error as TelegramError).kind; }
+  };
+  assert(await kindOf(401, { ok: false, description: 'Unauthorized' }) === 'unauthorized', '401 = token rejected');
+  assert(await kindOf(403, { ok: false, description: 'Forbidden: bot was blocked by the user' }) === 'blocked', '403 = you blocked the bot');
+  assert(await kindOf(409, { ok: false, description: 'Conflict: terminated by other getUpdates request' }) === 'conflict', '409 = another program reads this bot');
+  assert(await kindOf(400, { ok: false, description: 'Bad Request: chat not found' }) === 'chat-not-found', 'chat not found is told apart');
+  reply = { status: 429, body: { ok: false, description: 'Too Many Requests', parameters: { retry_after: 7 } } };
+  const limited = (await client.getMe().catch((e) => e)) as TelegramError;
+  assert(limited.kind === 'rate-limited' && limited.retryAfterSec === 7, '429 carries how long to wait');
+  reply = new Error(`request to https://api.telegram.org/bot${TOKEN}/getMe failed`);
+  const offline = (await client.getMe().catch((e) => e)) as TelegramError;
+  assert(offline.kind === 'network' && !offline.message.includes(TOKEN) && offline.message.includes('<token>'), 'the token is scrubbed from error messages');
+
+  // --- reports ---
+  const win = pos({ receivedSol: 0.02, exitRule: 'trailing-stop' }); // +100%
+  const loss = pos({ receivedSol: 0.007, exitRule: 'stop-loss', sourceWallet: W2, closedAt: new Date(NOW - 1 * H).toISOString() }); // -30%
+  const small = pos({ receivedSol: 0.0105, closedAt: new Date(NOW - 2 * H).toISOString() }); // +5%
+  const open1 = pos({ status: 'open', closedAt: undefined, openedAt: new Date(NOW - 42 * 60_000).toISOString(), tokenAmountRaw: '1000' });
+  const open2 = pos({ status: 'open', closedAt: undefined, tokenAmountRaw: '1000' });
+  const stuck = pos({ status: 'stuck', closedAt: undefined, tokenAmountRaw: '1000', dryRun: false, spentSol: 0.05 });
+  const realWin = pos({ dryRun: false, spentSol: 0.05, receivedSol: 0.06 });
+  const all = [win, loss, small, open1, open2, stuck, realWin];
+  const priceOf = (id: string) => (id === open1.id ? 0.0112 : undefined);
+  const pnl = formatPnl({ positions: all, now: NOW, solPriceUsd: 200, priceOf, title: 'P&L so far', recentSince: NOW - 3 * H, recentLabel: 'Since last report' });
+  assert(pnl.includes('PAPER') && pnl.includes('Closed 3 · 2 won / 1 lost (67%)'), `paper totals: ${pnl}`);
+  assert(pnl.includes('Total: +0.0075 SOL (+$1.50)'), 'total is the sum of received minus spent, with USD');
+  assert(pnl.includes('Since last report: 2 closed, -0.0025 SOL'), 'the recent window counts only trades closed inside it');
+  assert(pnl.includes(`Best ${shortAddress(win.mint)} +100% · worst ${shortAddress(loss.mint)} -30%`), 'best and worst trade');
+  assert(pnl.includes('Open 2 · worth now +0.0012 SOL (+$0.24) (1 priced)'), 'open positions are valued from the latest price, and say how many were priced');
+  assert(pnl.includes('about -0.0061 SOL on these 3'), 'paper results carry what real rent would have cost');
+  assert(pnl.includes('💰 REAL MONEY') && pnl.includes('Closed 1 · 1 won / 0 lost') && pnl.includes('🔴 Stuck 1'), 'real money is reported separately, stuck ones flagged');
+  assert(formatPnl({ positions: [], now: NOW, solPriceUsd: null, title: 'x' }).includes('No trades yet'), 'an empty report says so');
+  assert(formatPnl({ positions: [win], now: NOW, solPriceUsd: null, title: 'x' }).includes('Total: +0.0100 SOL\n'), 'no USD when the price is unavailable — never a made-up number');
+
+  const open = formatOpen({ positions: all, now: NOW, solPriceUsd: 150, priceOf });
+  assert(open.startsWith('📂 Open trades (3)') && open.includes(`${shortAddress(open1.mint)} · paper · +12% (0.0112 SOL) · 42m · from ${shortAddress(W1)}`), `open trade line: ${open}`);
+  assert(open.includes('not priced yet') && open.includes('STUCK') && open.includes(`https://dexscreener.com/solana/${open1.mint}`), 'unpriced and stuck ones shown honestly, with a chart link');
+  assert(formatOpen({ positions: [win], now: NOW, solPriceUsd: null }) === '📂 Nothing open right now.', 'nothing open');
+
+  const wallets = formatWallets({
+    positions: all, copying: [W1, W3], bench: [W2], dropped: [{ wallet: W2, reason: '3 losses in a row' }],
+    isDiscovered: (w) => w === W3, isPaperOnly: (w) => w === W3, solPriceUsd: null,
+  });
+  assert(wallets.includes(`• ${shortAddress(W1)} — 3 closed, 3W/0L, +0.0205 SOL\n`), `per-wallet record: ${wallets}`);
+  assert(wallets.includes(`${shortAddress(W3)}* — no closed trades yet · paper-only until proven`) && wallets.includes('* found by discovery'), 'discovered wallets are marked and shown on probation');
+  assert(wallets.includes(`Bench: 1 waiting (next: ${shortAddress(W2)})`) && wallets.includes(`Dropped ${shortAddress(W2)} — 3 losses in a row`), 'bench and drops');
+
+  const status = formatStatus({
+    now: NOW, startedAt: NOW - 9 * H - 5 * 60_000, dryRun: true, watching: 3, processed: 312, missedUnreadable: 0,
+    lastSwap: { at: NOW - 4 * 60_000, wallet: W1 }, sleeps: [{ from: NOW - 6 * H, to: NOW - 30 * 60_000 }], nextReportAt: NOW + 80 * 60_000,
+  });
+  assert(status.includes('Running 9h 05m · PAPER mode') && status.includes('312 transactions checked') && status.includes('Last trade seen 4m ago'), `status: ${status}`);
+  assert(status.includes('Laptop slept 1× this run, 5h 30m in total') && status.includes('Next report in 1h 20m'), 'sleep and next report');
+  assert(duration(59_000) === '1m' && duration(3 * 24 * H + 2 * H) === '3d 2h', 'durations read naturally');
+
+  // --- trade alerts ---
+  const live = [pos({ status: 'open', closedAt: undefined })];
+  const feed = new TradeFeed(live);
+  assert(feed.poll(live).length === 0, 'positions that existed at startup are not announced');
+  const fresh = pos({ status: 'open', closedAt: undefined });
+  assert(feed.poll([...live, fresh]).map((e) => e.kind).join() === 'opened', 'a new position is announced once');
+  assert(feed.poll([...live, fresh]).length === 0, '…and only once');
+  fresh.status = 'closed'; fresh.receivedSol = 0.0142; fresh.exitRule = 'trailing-stop';
+  live[0].status = 'stuck';
+  const quick = pos({});
+  assert(feed.poll([...live, fresh, quick]).map((e) => e.kind).join() === 'stuck,closed,closed', 'closes and stuck sells are announced; a trade opened and closed between looks is one close');
+  const sold = formatTradeEvent({ kind: 'closed', position: fresh }, 'sells', 150)!;
+  assert(sold.silent && sold.text.startsWith(`✅ Sold ${shortAddress(fresh.mint)} +42% (+0.0042 SOL (+$0.63)) · paper · trailing stop`), `sell alert: ${sold.text}`);
+  assert(formatTradeEvent({ kind: 'closed', position: loss }, 'sells', null)!.text.startsWith('🔻 Sold'), 'a losing sell is marked as such');
+  assert(formatTradeEvent({ kind: 'opened', position: fresh }, 'sells', null) === null && formatTradeEvent({ kind: 'opened', position: fresh }, 'all', null)!.text.startsWith('🛒 Bought'), 'buys only with TELEGRAM_TRADE_ALERTS=all');
+  assert(formatTradeEvent({ kind: 'closed', position: fresh }, 'off', null) === null, 'TELEGRAM_TRADE_ALERTS=off: no trade messages');
+  const stuckReal = formatTradeEvent({ kind: 'stuck', position: stuck }, 'off', null)!;
+  assert(stuckReal && stuckReal.silent === false && stuckReal.text.includes('REAL'), 'a stuck REAL sell always gets through, and buzzes the phone');
+  assert(formatTradeEvent({ kind: 'stuck', position: live[0] }, 'sells', null)!.silent === true, 'a stuck paper sell arrives silently');
+
+  // --- commands ---
+  assert(parseCommand('/pnl') === 'pnl' && parseCommand('/pnl@copy_bot') === 'pnl' && parseCommand('P&L') === 'pnl' && parseCommand(' /Open ') === 'open', 'command spellings');
+  assert(parseCommand('/wallets') === 'wallets' && parseCommand('/status') === 'status' && parseCommand('/start') === 'help' && parseCommand('buy everything') === 'help', 'anything else gets the help text — there are no trading commands');
+
+  const sent: { chat: string; text: string; silent: boolean }[] = [];
+  let failSends = 0;
+  let failKind: TelegramError['kind'] = 'network';
+  let updateCalls = 0;
+  let resolvePolled: () => void = () => {};
+  const polled = new Promise<void>((r) => { resolvePolled = r; });
+  let bot: TelegramBot;
+  const msg = (update_id: number, chat: number, text: string): TelegramUpdate => ({ update_id, message: { date: 0, chat: { id: chat, type: 'private' }, text } });
+  const fakeClient = {
+    async sendMessage(chat: string, text: string, silent: boolean) {
+      if (failSends > 0) { failSends--; throw new TelegramError('nope', failKind, 0); }
+      sent.push({ chat, text, silent });
+    },
+    async getUpdates(offset: number): Promise<TelegramUpdate[]> {
+      updateCalls++;
+      if (updateCalls === 1) {
+        assert(offset === -1, 'first look skips the backlog');
+        return [msg(41, Number(CHAT), '/pnl')]; // sent while the bot was off — must NOT be answered
+      }
+      if (updateCalls === 2) {
+        assert(offset === 42, 'then continues after the skipped backlog');
+        return [msg(42, Number(CHAT), '/status'), msg(43, 999, '/pnl'), msg(44, Number(CHAT), '/wallets')];
+      }
+      bot.stop();
+      resolvePolled();
+      return [];
+    },
+  };
+  const logs: string[] = [];
+  bot = new TelegramBot(fakeClient as unknown as TelegramClient, CHAT, {
+    pnl: async () => 'PNL',
+    open: async () => 'OPEN',
+    status: async () => 'STATUS',
+    wallets: async () => { throw new Error('roster unreadable'); },
+  }, 3, (m) => logs.push(m), 0);
+  bot.start();
+  await polled;
+  await bot.flush(1_000);
+  assert(sent.map((m) => m.text).join('|') === "STATUS|Couldn't build that just now: roster unreadable", `only your chat is answered, the backlog is skipped, errors are explained (got ${sent.map((m) => m.text).join('|')})`);
+  assert(sent.every((m) => m.chat === CHAT && m.silent), 'replies go to your chat only, silently');
+
+  sent.length = 0;
+  failSends = 1; failKind = 'rate-limited';
+  bot.send('after a 429');
+  await bot.flush(1_000);
+  assert(sent.length === 1 && sent[0].text === 'after a 429', 'a rate-limited message is retried once');
+  failSends = 2; failKind = 'network';
+  bot.send('lost 1'); bot.send('lost 2');
+  await bot.flush(1_000);
+  assert(logs.filter((l) => l.includes('Telegram')).length === 1, 'a connection problem is reported once, not per message');
+  failSends = 0;
+  sent.length = 0;
+  for (let i = 0; i < 40; i++) bot.send(`m${i}`);
+  await bot.flush(1_000);
+  assert(sent.length <= 31 && sent[sent.length - 1].text === 'm39', 'a backed-up queue drops the oldest, keeps the newest');
+
+  realLog('✅ telegram: answers only your chat, read-only, token never logged, reports match the positions, alerts per TELEGRAM_TRADE_ALERTS');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
   await testDiscoveryInRotation(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
+  await testTelegram(console.log);
   await testWalletRotation(console.log);
   await testActiveWalletFilter(console.log);
   testCopyGap();

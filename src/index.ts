@@ -19,10 +19,32 @@ import { walletMute } from './walletGate';
 import { discoverWallets, printDiscoveryReport } from './discovery';
 import { Rotation, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
+import { getSolPriceUsd } from './solPrice';
+import {
+  duration,
+  formatOpen,
+  formatPnl,
+  formatSleep,
+  formatStatus,
+  formatTradeEvent,
+  formatWallets,
+  helpText,
+  TelegramBot,
+  TelegramClient,
+  TradeFeed,
+} from './telegram';
 
 // Free-tier Jupiter = 1 request/second shared across everything, so we keep
 // ~1.1s between calls to stay safely under it.
 const JUPITER_MIN_GAP_MS = 1_100;
+
+// A heartbeat that arrives this much later than scheduled means the computer
+// was asleep (a busy bot is late by seconds, not minutes).
+const HEARTBEAT_MS = 30_000;
+const SLEEP_GAP_MS = 3 * 60_000;
+
+// Set once Telegram is running, so even a crash can say so on your phone.
+let telegramForCrash: TelegramBot | null = null;
 
 // @solana/web3.js prints one line per internal 429 retry. When the RPC plan is
 // saturated that floods the log and buries the actual trades. Count them
@@ -180,12 +202,15 @@ async function main(): Promise<void> {
     const r = rotation;
     trader.setPaperOnly((wallet) => r.isPaperOnly(wallet));
   }
+  const startedAt = Date.now();
+  let lastSwap: { at: number; wallet: string } | null = null;
   // Separate budget from Jupiter's: this one paces Helius RPC reads.
   const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
   const watcher = new WalletWatcher(
     connection,
     toWatch.map((w) => new PublicKey(w)),
     (event) => {
+      lastSwap = { at: Date.now(), wallet: event.sourceWallet };
       if (event.side === 'buy') rotation?.noteBuy(event.sourceWallet, Date.now());
       return trader.handleSwapEvent(event);
     },
@@ -195,6 +220,106 @@ async function main(): Promise<void> {
 
   console.log('');
   watcher.start();
+
+  // ---- Telegram: reports on your phone (optional; `npm run telegram`) ----
+  const sleeps: { from: number; to: number }[] = [];
+  const reportMs = config.telegramReportHours * 3_600_000;
+  let lastReportAt = Date.now();
+  let telegram: TelegramBot | null = null;
+  const reportInput = async () => ({
+    positions: [...store.all()],
+    now: Date.now(),
+    solPriceUsd: await getSolPriceUsd(),
+    priceOf: (id: string) => trader.currentValue(id)?.valueSol,
+  });
+  if (config.telegramBotToken && config.telegramChatId) {
+    const watchedCount = () => (rotation ? roster.active().length : config.trackedWallets.length);
+    telegram = new TelegramBot(
+      new TelegramClient(config.telegramBotToken),
+      config.telegramChatId,
+      {
+        pnl: async () =>
+          formatPnl({ ...(await reportInput()), title: 'P&L so far', recentSince: Date.now() - 24 * 3_600_000, recentLabel: 'Last 24h' }),
+        open: async () => formatOpen(await reportInput()),
+        wallets: async () =>
+          formatWallets({
+            positions: [...store.all()],
+            copying: rotation ? roster.active() : config.trackedWallets.map((w) => w.toBase58()),
+            bench: rotation ? roster.bench() : [],
+            dropped: rotation ? roster.dropped() : [],
+            isDiscovered: (w) => rotation !== null && roster.isDiscovered(w),
+            isPaperOnly: (w) => rotation?.isPaperOnly(w) ?? false,
+            solPriceUsd: await getSolPriceUsd(),
+          }),
+        status: async () =>
+          formatStatus({
+            now: Date.now(),
+            startedAt,
+            dryRun: config.dryRun,
+            watching: watchedCount(),
+            processed: watcher.stats().processed,
+            missedUnreadable: watcher.stats().unreadableFormat,
+            lastSwap,
+            sleeps,
+            nextReportAt: reportMs > 0 ? lastReportAt + reportMs : null,
+          }),
+      },
+      config.telegramReportHours
+    );
+    telegram.start();
+    telegramForCrash = telegram;
+    telegram.send(
+      `🟢 Bot started · ${config.dryRun ? 'PAPER mode' : '💰 REAL MONEY mode'} · copying ${watchedCount()} wallet(s)\n\n${helpText(config.telegramReportHours)}`
+    );
+    console.log(
+      `📱 Telegram on: ${config.telegramReportHours > 0 ? `a report every ${config.telegramReportHours}h` : 'reports on request'}` +
+        `, trade alerts: ${config.telegramTradeAlerts}. On your phone, send /pnl any time.`
+    );
+  } else if (config.telegramBotToken) {
+    console.log('📱 Telegram: token set but not linked to your chat yet — run: npm run telegram');
+  } else {
+    console.log('📱 Want P&L on your phone? Optional: npm run telegram');
+  }
+
+  // Trade alerts: compare the position store with the last look.
+  const feed = new TradeFeed(store.all());
+  const feedTimer = telegram
+    ? setInterval(async () => {
+        const events = feed.poll(store.all());
+        if (events.length === 0) return;
+        const price = await getSolPriceUsd();
+        for (const event of events) {
+          const message = formatTradeEvent(event, config.telegramTradeAlerts, price);
+          if (message) telegram!.send(message.text, message.silent);
+        }
+      }, 10_000)
+    : null;
+
+  const reportTimer =
+    telegram && reportMs > 0
+      ? setInterval(async () => {
+          const since = lastReportAt;
+          lastReportAt = Date.now();
+          telegram!.send(
+            formatPnl({ ...(await reportInput()), title: `${config.telegramReportHours}-hour report`, recentSince: since, recentLabel: 'Since last report' })
+          );
+        }, reportMs)
+      : null;
+
+  // Sleep detection: a sleeping computer runs nothing, so the bot can only
+  // notice afterwards — by its heartbeat arriving far too late.
+  let lastBeat = Date.now();
+  const heartbeatTimer = setInterval(() => {
+    const now = Date.now();
+    if (now - lastBeat > SLEEP_GAP_MS) {
+      const gap = { from: lastBeat, to: now };
+      sleeps.push(gap);
+      console.log(`\n${formatSleep(gap)}\n`);
+      telegram?.send(formatSleep(gap));
+    }
+    lastBeat = now;
+  }, HEARTBEAT_MS);
+
   console.log('\nRunning. Press Ctrl+C once to stop and close positions gracefully.\n');
 
   // Default 30s (SUMMARY_INTERVAL_SECONDS in .env). Cheap even at short
@@ -251,6 +376,11 @@ async function main(): Promise<void> {
 
     clearInterval(summaryTimer);
     if (exitTimer) clearInterval(exitTimer);
+    // The final report below covers every close, so no per-trade alerts now.
+    if (feedTimer) clearInterval(feedTimer);
+    if (reportTimer) clearInterval(reportTimer);
+    clearInterval(heartbeatTimer);
+    telegram?.stop();
     reportWatcherHealth(watcher);
     trader.beginShutdown();
     await watcher.stop();
@@ -264,12 +394,30 @@ async function main(): Promise<void> {
     // Anything that could not be closed above is priced here, so the final
     // report shows what the leftovers are actually worth.
     await printSummary(store, jupiter, config.slippageBps, config, true);
+    if (telegram) {
+      telegram.send(
+        `🔴 Bot stopped after ${duration(Date.now() - startedAt)}.\n\n` +
+          formatPnl({ ...(await reportInput()), title: 'Final P&L', recentSince: startedAt, recentLabel: 'This run' })
+      );
+      console.log('Sending the final report to Telegram…');
+      await telegram.flush(10_000);
+    }
     console.log('Goodbye. 👋');
     process.exit(0);
   };
   process.on('SIGINT', () => void shutdown('Ctrl+C'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
+  process.on('uncaughtException', (error) => {
+    console.error(`\n❌ Fatal error: ${error.stack ?? error.message}`);
+    void (async () => {
+      if (telegram) {
+        telegram.send(`❌ The bot crashed and stopped: ${error.message}\nRestart it on the computer with: npm start`, false);
+        await telegram.flush(5_000);
+      }
+      process.exit(1);
+    })();
+  });
   process.on('unhandledRejection', (reason) => {
     console.error(`⚠️  Unhandled error (bot keeps running): ${reason instanceof Error ? reason.message : String(reason)}`);
   });
@@ -288,7 +436,12 @@ function reportWatcherHealth(watcher: WalletWatcher): void {
   );
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
   console.error(`\n❌ Fatal error: ${(error as Error).stack ?? (error as Error).message}`);
+  if (telegramForCrash) {
+    // The one message that makes the phone buzz by default: nothing is being watched now.
+    telegramForCrash.send(`❌ The bot crashed and stopped: ${(error as Error).message}\nRestart it on the computer with: npm start`, false);
+    await telegramForCrash.flush(5_000);
+  }
   process.exit(1);
 });

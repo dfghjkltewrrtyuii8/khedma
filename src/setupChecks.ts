@@ -95,6 +95,30 @@ export function findPlaceholders(env: Record<string, string | undefined>): strin
   return problems;
 }
 
+// A Telegram bot token as @BotFather hands it out: "123456789:AAH…".
+export function isTelegramToken(input: string): boolean {
+  return /^\d{5,}:[A-Za-z0-9_-]{30,}$/.test(input.trim());
+}
+
+// Sets KEY=value lines in an existing .env text, leaving every other line —
+// comments, order, Windows line endings — exactly as it was. Keys not
+// present yet are appended at the end, under `heading` if given.
+export function upsertEnv(text: string, updates: Record<string, string>, heading?: string): string {
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  let out = text;
+  const missing: string[] = [];
+  for (const [key, value] of Object.entries(updates)) {
+    const pattern = new RegExp(`^${key}=.*$`, 'm');
+    if (pattern.test(out)) out = out.replace(pattern, () => `${key}=${value}`);
+    else missing.push(`${key}=${value}`);
+  }
+  if (missing.length > 0) {
+    if (out.length > 0 && !out.endsWith('\n')) out += eol;
+    out += [...(heading ? ['', heading] : []), ...missing, ''].join(eol);
+  }
+  return out;
+}
+
 export function maskSecret(value: string): string {
   const text = value.trim();
   return text.length <= 4 ? '••••' : `••••${text.slice(-4)}`;
@@ -136,6 +160,10 @@ export const ENV_DEFAULTS: Record<string, string> = {
   SPEECH_VOICE: '',
   SPEECH_RATE: '',
   SUMMARY_INTERVAL_SECONDS: '30',
+  TELEGRAM_BOT_TOKEN: '',
+  TELEGRAM_CHAT_ID: '',
+  TELEGRAM_REPORT_HOURS: '3',
+  TELEGRAM_TRADE_ALERTS: 'sells',
 };
 
 export interface EnvValues {
@@ -215,6 +243,12 @@ export function renderEnv(v: EnvValues): string {
     line('SPEECH_VOICE'),
     line('SPEECH_RATE'),
     line('SUMMARY_INTERVAL_SECONDS'),
+    '',
+    '# ---- Reports on your phone (README: "Telegram") — set up with: npm run telegram ----',
+    line('TELEGRAM_BOT_TOKEN'),
+    line('TELEGRAM_CHAT_ID'),
+    line('TELEGRAM_REPORT_HOURS'),
+    line('TELEGRAM_TRADE_ALERTS'),
     '',
   ].join('\n');
 }

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { PublicKey } from '@solana/web3.js';
+import { isTelegramToken } from './setupChecks';
 
 // Well-known mint addresses. These are the "quote" side of trades:
 // when a tracked wallet trades one of these for some other token, that
@@ -46,6 +47,24 @@ export interface Config {
   walletIdleMinutes: number;
   // Automatic wallet discovery — see discovery.ts. Implies rotation.
   discovery: boolean;
+  // Reports on your phone over Telegram — see telegram.ts. On only when both
+  // the token and the chat are set (`npm run telegram` fills them in).
+  telegramBotToken: string;
+  telegramChatId: string;
+  telegramReportHours: number; // 0 = only when asked, and when the bot stops
+  telegramTradeAlerts: TradeAlerts;
+}
+
+// Which trades get a Telegram message of their own (reports always cover all).
+export type TradeAlerts = 'off' | 'sells' | 'all';
+
+function tradeAlertsEnv(): TradeAlerts {
+  const raw = (process.env.TELEGRAM_TRADE_ALERTS ?? '').trim().toLowerCase();
+  if (!raw) return 'sells';
+  if (raw === 'off' || raw === 'false') return 'off';
+  if (raw === 'sells') return 'sells';
+  if (raw === 'all' || raw === 'true') return 'all';
+  fail(`TELEGRAM_TRADE_ALERTS="${raw}" — use off, sells or all.`);
 }
 
 function fail(message: string): never {
@@ -149,6 +168,10 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     walletDropAfterTrades: numberEnv('WALLET_DROP_AFTER_TRADES', 6),
     walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
     discovery: (process.env.DISCOVERY ?? 'false').trim().toLowerCase() === 'true',
+    telegramBotToken: (process.env.TELEGRAM_BOT_TOKEN ?? '').trim(),
+    telegramChatId: (process.env.TELEGRAM_CHAT_ID ?? '').trim(),
+    telegramReportHours: numberEnv('TELEGRAM_REPORT_HOURS', 3),
+    telegramTradeAlerts: tradeAlertsEnv(),
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');
@@ -159,6 +182,12 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
   if (config.exitCheckSeconds <= 0) fail('EXIT_CHECK_SECONDS must be greater than 0.');
   if (config.stopLossPercent >= 100) fail('STOP_LOSS_PERCENT must be below 100 (100% would mean the position is already worthless).');
   if (config.trailingStopPercent >= 100) fail('TRAILING_STOP_PERCENT must be below 100.');
+  if (config.telegramBotToken && !isTelegramToken(config.telegramBotToken)) {
+    fail("TELEGRAM_BOT_TOKEN doesn't look like a bot token (it should look like 123456789:AAH…). Run: npm run telegram");
+  }
+  if (config.telegramChatId && !/^-?\d+$/.test(config.telegramChatId)) {
+    fail(`TELEGRAM_CHAT_ID="${config.telegramChatId}" should be a number. Run: npm run telegram`);
+  }
   if (purpose === 'trade' && trackedWallets.length > config.maxTrackedWallets) {
     fail(
       `TRACKED_WALLETS has ${trackedWallets.length} addresses, more than MAX_TRACKED_WALLETS (${config.maxTrackedWallets}).\n` +

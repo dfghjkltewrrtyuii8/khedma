@@ -52,6 +52,11 @@ const TEST_ENV: Record<string, string> = {
   EXIT_REBUY_COOLDOWN_HOURS: '24',
   RPC_REQUESTS_PER_SECOND: '8',
   SUMMARY_INTERVAL_SECONDS: '30',
+  // Empty: the tests must never message anyone's real Telegram.
+  TELEGRAM_BOT_TOKEN: '',
+  TELEGRAM_CHAT_ID: '',
+  TELEGRAM_REPORT_HOURS: '3',
+  TELEGRAM_TRADE_ALERTS: 'sells',
   // Running the tests must never make the machine ding or talk.
   NOTIFICATIONS: 'false',
   SOUNDS: 'false',

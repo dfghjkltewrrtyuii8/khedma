@@ -40,6 +40,9 @@ export class Trader {
   // When each position was last priced, so a sweep cut short picks up where
   // it stopped instead of re-checking the same ones first.
   private lastExitCheck = new Map<string, number>();
+  // What each open position was worth at its last exit check, so reports can
+  // show where things stand without spending Jupiter calls of their own.
+  private marks = new Map<string, { valueSol: number; at: number }>();
   // With rotation on: the only wallets whose BUYS we copy. Sells are mirrored
   // from any wallet we hold a position from. null = copy every watched wallet.
   private activeWallets: Set<string> | null = null;
@@ -57,6 +60,11 @@ export class Trader {
     // touch the network.
     private readonly marketSource: MarketSource = fetchDexscreenerMarket
   ) {}
+
+  // Latest known value of an open position, in SOL (undefined until priced).
+  currentValue(positionId: string): { valueSol: number; at: number } | undefined {
+    return this.marks.get(positionId);
+  }
 
   setPaperOnly(check: (wallet: string) => boolean): void {
     this.paperOnly = check;
@@ -505,6 +513,7 @@ export class Trader {
       .sort((a, b) => (this.lastExitCheck.get(a.id) ?? 0) - (this.lastExitCheck.get(b.id) ?? 0));
     const openIds = new Set(due.map((p) => p.id));
     for (const id of this.lastExitCheck.keys()) if (!openIds.has(id)) this.lastExitCheck.delete(id);
+    for (const id of this.marks.keys()) if (!openIds.has(id)) this.marks.delete(id);
     for (const position of due) {
       if (this.shuttingDown) return;
       if (this.pendingEvents > 0) return; // a trade is waiting — it goes first; the rest are checked next sweep
@@ -522,6 +531,7 @@ export class Trader {
           slippageBps: this.config.slippageBps,
         });
         valueSol = Number(order.outAmountRaw) / 1e9;
+        this.marks.set(position.id, { valueSol, at: Date.now() });
       } catch (error) {
         // Unpriceable means unsellable too, so there is nothing to act on —
         // and guessing a value here could fire a stop-loss on a number we

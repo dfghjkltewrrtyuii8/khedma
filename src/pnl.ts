@@ -31,7 +31,7 @@ function formatSol(sol: number, solPriceUsd: number | null): string {
 // Rent a new token account locks up on Solana (rent-exempt minimum for a
 // 165-byte SPL token account). Refundable only if the empty account is later
 // closed, which this bot does not do.
-const TOKEN_ACCOUNT_RENT_SOL = 0.00203928;
+export const TOKEN_ACCOUNT_RENT_SOL = 0.00203928;
 
 function signedPct(x: number): string {
   return `${x >= 0 ? '+' : ''}${x.toFixed(0)}%`;
