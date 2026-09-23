@@ -1,17 +1,17 @@
 # Graph Report - khedma  (2026-09-23)
 
 ## Corpus Check
-- 34 files · ~49,676 words
+- 34 files · ~50,476 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: .example 1, (none) 1)
 
 ## Summary
-- 466 nodes · 1463 edges · 13 communities
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 181 edges (avg confidence: 0.8)
+- 469 nodes · 1496 edges · 12 communities
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `841dccea`
+- Built from commit: `f41b3912`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,29 +21,30 @@
 - setup.ts
 - pnl.ts
 - PositionStore
-- trader.ts
+- doctor.ts
 - logic-test.ts
 - compilerOptions
 - Solana Copy-Trading Bot
 - discovery.ts
 - RateLimiter
-- telegramSetup.ts
 - main
 
 ## God Nodes (most connected - your core abstractions)
-1. `main()` - 54 edges
-2. `PositionStore` - 50 edges
+1. `main()` - 56 edges
+2. `PositionStore` - 51 edges
 3. `Trader` - 37 edges
-4. `main()` - 32 edges
-5. `main()` - 32 edges
-6. `Position` - 31 edges
-7. `shortAddress()` - 31 edges
-8. `loadConfig()` - 27 edges
-9. `WalletRoster` - 24 edges
+4. `main()` - 34 edges
+5. `main()` - 33 edges
+6. `shortAddress()` - 32 edges
+7. `Position` - 31 edges
+8. `loadConfig()` - 28 edges
+9. `WalletRoster` - 25 edges
 10. `sleep()` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `testActiveWalletFilter()` --calls--> `loadConfig()`  [EXTRACTED]
+  test/logic-test.ts → src/config.ts
+- `testEmptySlotsFill()` --calls--> `loadConfig()`  [EXTRACTED]
   test/logic-test.ts → src/config.ts
 - `testSourceTracking()` --calls--> `compareToSource()`  [EXTRACTED]
   test/logic-test.ts → src/copyGap.ts
@@ -51,13 +52,11 @@
   test/logic-test.ts → src/pnl.ts
 - `testSummary()` --calls--> `printSummary()`  [EXTRACTED]
   test/logic-test.ts → src/pnl.ts
-- `testActiveWalletFilter()` --calls--> `PositionStore`  [EXTRACTED]
-  test/logic-test.ts → src/positions.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (13 total, 0 thin omitted)
+## Communities (12 total, 0 thin omitted)
 
 ### Community 0 - "scripts"
 Cohesion: 0.18
@@ -65,27 +64,27 @@ Nodes (11): scripts, alerts, discover, doctor, setup, start, summary, telegram (
 
 ### Community 1 - "walletRoster.ts"
 Cohesion: 0.12
-Nodes (15): main(), Candidate, main(), BuyControl, DiscoveryHook, dropReason(), printRoster(), PROBATION_TRADES (+7 more)
+Nodes (18): main(), Candidate, printDiscoveryReport(), main(), BuyControl, copySlots(), DiscoveryHook, dropReason() (+10 more)
 
 ### Community 2 - "setup.ts"
-Cohesion: 0.07
-Nodes (44): dependencies, bip39, bs58, dotenv, ed25519-hd-key, @solana/web3.js, description, devDependencies (+36 more)
+Cohesion: 0.05
+Nodes (50): dependencies, bip39, bs58, dotenv, ed25519-hd-key, @solana/web3.js, description, devDependencies (+42 more)
 
 ### Community 3 - "pnl.ts"
-Cohesion: 0.13
-Nodes (27): avg(), compareToSource(), CopyComparison, entryPhrase(), pct(), priceOf(), summarizeComparisons(), WalletComparison (+19 more)
+Cohesion: 0.14
+Nodes (26): avg(), compareToSource(), CopyComparison, entryPhrase(), pct(), priceOf(), summarizeComparisons(), WalletComparison (+18 more)
 
 ### Community 4 - "PositionStore"
-Cohesion: 0.11
-Nodes (22): loadConfig(), PositionStore, Trader, Position, SwapEvent, main(), main(), okMarket() (+14 more)
-
-### Community 5 - "trader.ts"
 Cohesion: 0.10
-Nodes (27): Config, fail(), numberEnv(), requireEnv(), TradeAlerts, tradeAlertsEnv(), USDT_MINT, JupiterClient (+19 more)
+Nodes (25): loadConfig(), PositionStore, ReportInput, TradeEvent, WalletsInput, Trader, Position, SwapEvent (+17 more)
+
+### Community 5 - "doctor.ts"
+Cohesion: 0.06
+Nodes (54): Config, fail(), numberEnv(), requireEnv(), SOL_MINT, TradeAlerts, tradeAlertsEnv(), USDC_MINT (+46 more)
 
 ### Community 6 - "logic-test.ts"
-Cohesion: 0.08
-Nodes (54): main(), SEQUENCE, SOL_MINT, USDC_MINT, fetchGeckoTerminal(), ago(), bad(), checkWebSocket() (+46 more)
+Cohesion: 0.12
+Nodes (31): main(), SEQUENCE, DEFAULT_PHRASES, DEFAULT_SOUNDS, flagOff(), notify(), NotifyKind, playAlert() (+23 more)
 
 ### Community 7 - "compilerOptions"
 Cohesion: 0.15
@@ -103,13 +102,9 @@ Nodes (21): QUOTE_MINTS, bump(), discoverWallets(), DISCOVERY_RULES, DiscoveryRe
 Cohesion: 0.17
 Nodes (7): RateLimiter, analyzeSwap(), WalletWatcher, testActiveWalletFilter(), testRateLimiter(), testTransactionVersions(), testWatcherQueue()
 
-### Community 11 - "telegramSetup.ts"
-Cohesion: 0.09
-Nodes (23): createPrompter(), ask(), askHidden(), askYesNo(), nextLine(), Prompter, sleep(), isTelegramToken() (+15 more)
-
 ### Community 12 - "main"
-Cohesion: 0.12
-Nodes (36): printDiscoveryReport(), main(), quietenRpcRetryLogs(), reportWatcherHealth(), decideShutdown(), ShutdownDecision, ApiReply, clock() (+28 more)
+Cohesion: 0.08
+Nodes (47): main(), quietenRpcRetryLogs(), reportWatcherHealth(), isTelegramToken(), upsertEnv(), decideShutdown(), ShutdownDecision, ApiReply (+39 more)
 
 ## Knowledge Gaps
 - **100 isolated node(s):** `name`, `version`, `private`, `description`, `start` (+95 more)
@@ -118,11 +113,11 @@ Nodes (36): printDiscoveryReport(), main(), quietenRpcRetryLogs(), reportWatcher
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `@solana/web3.js` connect `setup.ts` to `discovery.ts`, `main`, `trader.ts`, `logic-test.ts`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `shortAddress()` connect `main` to `walletRoster.ts`, `setup.ts`, `pnl.ts`, `PositionStore`, `trader.ts`, `logic-test.ts`, `RateLimiter`?**
+- **Why does `@solana/web3.js` connect `setup.ts` to `discovery.ts`, `main`, `doctor.ts`, `logic-test.ts`?**
   _High betweenness centrality (0.056) - this node is a cross-community bridge._
-- **Why does `main()` connect `main` to `walletRoster.ts`, `setup.ts`, `pnl.ts`, `PositionStore`, `trader.ts`, `logic-test.ts`, `discovery.ts`, `RateLimiter`, `telegramSetup.ts`?**
+- **Why does `shortAddress()` connect `main` to `walletRoster.ts`, `setup.ts`, `pnl.ts`, `PositionStore`, `doctor.ts`, `logic-test.ts`, `RateLimiter`?**
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `main()` connect `main` to `walletRoster.ts`, `setup.ts`, `pnl.ts`, `PositionStore`, `doctor.ts`, `discovery.ts`, `RateLimiter`?**
   _High betweenness centrality (0.049) - this node is a cross-community bridge._
 - **Are the 19 inferred relationships involving `main()` (e.g. with `.all()` and `.byStatus()`) actually correct?**
   _`main()` has 19 INFERRED edges - model-reasoned connections that need verification._
@@ -131,4 +126,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `name`, `version`, `private` to the rest of the system?**
   _100 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `walletRoster.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1202020202020202 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11564625850340136 - nodes in this community are weakly interconnected._

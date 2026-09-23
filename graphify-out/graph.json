@@ -27,7 +27,7 @@
       "file_type": "code",
       "norm_label": "buycontrol",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L173"
+      "source_location": "L190"
     },
     {
       "id": "src_walletroster_discoveryhook",
@@ -40,7 +40,7 @@
       "file_type": "code",
       "norm_label": "discoveryhook",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L177"
+      "source_location": "L194"
     },
     {
       "id": "src_walletroster_rosterfile",
@@ -66,7 +66,7 @@
       "file_type": "code",
       "norm_label": "rotation",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L189"
+      "source_location": "L206"
     },
     {
       "id": "src_walletroster_rotationconfig",
@@ -92,7 +92,7 @@
       "file_type": "code",
       "norm_label": "walletroster",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L63"
+      "source_location": "L80"
     },
     {
       "id": "src_walletroster_watchcontrol",
@@ -105,7 +105,7 @@
       "file_type": "code",
       "norm_label": "watchcontrol",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L168"
+      "source_location": "L185"
     },
     {
       "id": "src_ratelimiter_ratelimiter",
@@ -132,58 +132,6 @@
       "norm_label": "walletwatcher",
       "source_file": "src/watcher.ts",
       "source_location": "L80"
-    },
-    {
-      "id": "src_prompt_prompter",
-      "label": "Prompter",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "prompter",
-      "source_file": "src/prompt.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_telegram_telegrambot",
-      "label": "TelegramBot",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "telegrambot",
-      "source_file": "src/telegram.ts",
-      "source_location": "L454"
-    },
-    {
-      "id": "src_telegram_telegramclient",
-      "label": "TelegramClient",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "telegramclient",
-      "source_file": "src/telegram.ts",
-      "source_location": "L112"
-    },
-    {
-      "id": "src_telegram_telegramerror",
-      "label": "TelegramError",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "telegramerror",
-      "source_file": "src/telegram.ts",
-      "source_location": "L65"
     },
     {
       "id": "src_shutdowndebounce_shutdowndecision",
@@ -238,32 +186,6 @@
       "source_location": "L440"
     },
     {
-      "id": "src_telegram_fetchlike",
-      "label": "FetchLike",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "fetchlike",
-      "source_file": "src/telegram.ts",
-      "source_location": "L51"
-    },
-    {
-      "id": "src_telegram_reportinput",
-      "label": "ReportInput",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "reportinput",
-      "source_file": "src/telegram.ts",
-      "source_location": "L195"
-    },
-    {
       "id": "src_telegram_statusinput",
       "label": "StatusInput",
       "_callable": true,
@@ -275,6 +197,45 @@
       "norm_label": "statusinput",
       "source_file": "src/telegram.ts",
       "source_location": "L319"
+    },
+    {
+      "id": "src_telegram_telegrambot",
+      "label": "TelegramBot",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "telegrambot",
+      "source_file": "src/telegram.ts",
+      "source_location": "L454"
+    },
+    {
+      "id": "src_telegram_telegramclient",
+      "label": "TelegramClient",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "telegramclient",
+      "source_file": "src/telegram.ts",
+      "source_location": "L112"
+    },
+    {
+      "id": "src_telegram_telegramerror",
+      "label": "TelegramError",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "telegramerror",
+      "source_file": "src/telegram.ts",
+      "source_location": "L65"
     },
     {
       "id": "src_telegram_telegramerrorkind",
@@ -303,19 +264,6 @@
       "source_location": "L39"
     },
     {
-      "id": "src_telegram_telegramupdate",
-      "label": "TelegramUpdate",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "telegramupdate",
-      "source_file": "src/telegram.ts",
-      "source_location": "L46"
-    },
-    {
       "id": "src_telegram_telegramuser",
       "label": "TelegramUser",
       "_callable": true,
@@ -327,19 +275,6 @@
       "norm_label": "telegramuser",
       "source_file": "src/telegram.ts",
       "source_location": "L33"
-    },
-    {
-      "id": "src_telegram_tradeevent",
-      "label": "TradeEvent",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "tradeevent",
-      "source_file": "src/telegram.ts",
-      "source_location": "L376"
     },
     {
       "id": "src_telegram_tradefeed",
@@ -355,17 +290,17 @@
       "source_location": "L384"
     },
     {
-      "id": "src_telegram_walletsinput",
-      "label": "WalletsInput",
+      "id": "src_prompt_prompter",
+      "label": "Prompter",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
+      "community": 2,
+      "community_name": "setup.ts",
       "file_type": "code",
-      "norm_label": "walletsinput",
-      "source_file": "src/telegram.ts",
-      "source_location": "L294"
+      "norm_label": "prompter",
+      "source_file": "src/prompt.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_setupchecks_envvalues",
@@ -378,7 +313,7 @@
       "file_type": "code",
       "norm_label": "envvalues",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L169"
+      "source_location": "L170"
     },
     {
       "id": "src_setupchecks_walletsecretkind",
@@ -511,6 +446,45 @@
       "source_location": "L9"
     },
     {
+      "id": "src_telegram_reportinput",
+      "label": "ReportInput",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "reportinput",
+      "source_file": "src/telegram.ts",
+      "source_location": "L195"
+    },
+    {
+      "id": "src_telegram_tradeevent",
+      "label": "TradeEvent",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "tradeevent",
+      "source_file": "src/telegram.ts",
+      "source_location": "L376"
+    },
+    {
+      "id": "src_telegram_walletsinput",
+      "label": "WalletsInput",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": "walletsinput",
+      "source_file": "src/telegram.ts",
+      "source_location": "L294"
+    },
+    {
       "id": "src_trader_trader",
       "label": "Trader",
       "_callable": true,
@@ -556,7 +530,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "config",
       "source_file": "src/config.ts",
@@ -569,11 +543,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tradealerts",
       "source_file": "src/config.ts",
-      "source_location": "L59"
+      "source_location": "L61"
+    },
+    {
+      "id": "src_exitrules_exitcandidate",
+      "label": "ExitCandidate",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitcandidate",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_exitrules_exitconfig",
+      "label": "ExitConfig",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitconfig",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_exitrules_exitdecision",
+      "label": "ExitDecision",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitdecision",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L33"
     },
     {
       "id": "src_jupiter_jupiterclient",
@@ -582,7 +595,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "jupiterclient",
       "source_file": "src/jupiter.ts",
@@ -595,7 +608,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "jupitererror",
       "source_file": "src/jupiter.ts",
@@ -608,7 +621,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "jupitererrorkind",
       "source_file": "src/jupiter.ts",
@@ -621,7 +634,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "jupiterorder",
       "source_file": "src/jupiter.ts",
@@ -634,7 +647,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "orderparams",
       "source_file": "src/jupiter.ts",
@@ -647,7 +660,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "dexpair",
       "source_file": "src/tokenMarket.ts",
@@ -660,7 +673,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "marketsource",
       "source_file": "src/tokenMarket.ts",
@@ -673,7 +686,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tokengateconfig",
       "source_file": "src/tokenMarket.ts",
@@ -686,7 +699,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tokenmarket",
       "source_file": "src/tokenMarket.ts",
@@ -699,50 +712,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tokenverdict",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L27"
     },
     {
-      "id": "src_exitrules_exitcandidate",
-      "label": "ExitCandidate",
+      "id": "src_watcher_queuedtx",
+      "label": "QueuedTx",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
+      "community": 5,
+      "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "exitcandidate",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L27"
+      "norm_label": "queuedtx",
+      "source_file": "src/watcher.ts",
+      "source_location": "L64"
     },
     {
-      "id": "src_exitrules_exitconfig",
-      "label": "ExitConfig",
+      "id": "src_watcher_swaphandler",
+      "label": "SwapHandler",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
+      "community": 5,
+      "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "exitconfig",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L22"
+      "norm_label": "swaphandler",
+      "source_file": "src/watcher.ts",
+      "source_location": "L62"
     },
     {
-      "id": "src_exitrules_exitdecision",
-      "label": "ExitDecision",
+      "id": "src_watcher_watcherstats",
+      "label": "WatcherStats",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
+      "community": 5,
+      "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "exitdecision",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L33"
+      "norm_label": "watcherstats",
+      "source_file": "src/watcher.ts",
+      "source_location": "L70"
     },
     {
       "id": "src_notify_notifykind",
@@ -758,43 +771,30 @@
       "source_location": "L22"
     },
     {
-      "id": "src_watcher_queuedtx",
-      "label": "QueuedTx",
+      "id": "src_telegram_fetchlike",
+      "label": "FetchLike",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "queuedtx",
-      "source_file": "src/watcher.ts",
-      "source_location": "L64"
+      "norm_label": "fetchlike",
+      "source_file": "src/telegram.ts",
+      "source_location": "L51"
     },
     {
-      "id": "src_watcher_swaphandler",
-      "label": "SwapHandler",
+      "id": "src_telegram_telegramupdate",
+      "label": "TelegramUpdate",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "swaphandler",
-      "source_file": "src/watcher.ts",
-      "source_location": "L62"
-    },
-    {
-      "id": "src_watcher_watcherstats",
-      "label": "WatcherStats",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "watcherstats",
-      "source_file": "src/watcher.ts",
-      "source_location": "L70"
+      "norm_label": "telegramupdate",
+      "source_file": "src/telegram.ts",
+      "source_location": "L46"
     },
     {
       "id": "src_discovery_discoveryreport",
@@ -887,16 +887,16 @@
       "source_location": "L15"
     },
     {
-      "id": "src_positions_positionstore_all",
-      "label": ".all()",
+      "id": "src_discovery_printdiscoveryreport",
+      "label": "printDiscoveryReport()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
       "community_name": "walletRoster.ts",
       "file_type": "code",
-      "norm_label": ".all()",
-      "source_file": "src/positions.ts",
-      "source_location": "L34"
+      "norm_label": "printdiscoveryreport()",
+      "source_file": "src/discovery.ts",
+      "source_location": "L442"
     },
     {
       "id": "src_summary_main",
@@ -920,7 +920,19 @@
       "file_type": "code",
       "norm_label": ".setactivewallets()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L174"
+      "source_location": "L191"
+    },
+    {
+      "id": "src_walletroster_copyslots",
+      "label": "copySlots()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "walletRoster.ts",
+      "file_type": "code",
+      "norm_label": "copyslots()",
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L59"
     },
     {
       "id": "src_walletroster_discoveryhook_run",
@@ -932,7 +944,7 @@
       "file_type": "code",
       "norm_label": ".run()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L179"
+      "source_location": "L196"
     },
     {
       "id": "src_walletroster_dropreason",
@@ -944,7 +956,7 @@
       "file_type": "code",
       "norm_label": "dropreason()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L47"
+      "source_location": "L64"
     },
     {
       "id": "src_walletroster_printroster",
@@ -956,7 +968,7 @@
       "file_type": "code",
       "norm_label": "printroster()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L331"
+      "source_location": "L354"
     },
     {
       "id": "src_walletroster_rotation_applydrops",
@@ -968,7 +980,19 @@
       "file_type": "code",
       "norm_label": ".applydrops()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L243"
+      "source_location": "L264"
+    },
+    {
+      "id": "src_walletroster_rotation_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "walletRoster.ts",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L218"
     },
     {
       "id": "src_walletroster_rotation_describe",
@@ -980,7 +1004,7 @@
       "file_type": "code",
       "norm_label": ".describe()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L318"
+      "source_location": "L341"
     },
     {
       "id": "src_walletroster_rotation_holdspositionfrom",
@@ -992,7 +1016,7 @@
       "file_type": "code",
       "norm_label": ".holdspositionfrom()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L236"
+      "source_location": "L257"
     },
     {
       "id": "src_walletroster_rotation_ispaperonly",
@@ -1004,7 +1028,7 @@
       "file_type": "code",
       "norm_label": ".ispaperonly()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L206"
+      "source_location": "L227"
     },
     {
       "id": "src_walletroster_rotation_maybediscover",
@@ -1016,7 +1040,7 @@
       "file_type": "code",
       "norm_label": ".maybediscover()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L214"
+      "source_location": "L235"
     },
     {
       "id": "src_walletroster_rotation_notebuy",
@@ -1028,7 +1052,7 @@
       "file_type": "code",
       "norm_label": ".notebuy()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L267"
+      "source_location": "L289"
     },
     {
       "id": "src_walletroster_rotation_startup",
@@ -1040,7 +1064,7 @@
       "file_type": "code",
       "norm_label": ".startup()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L256"
+      "source_location": "L277"
     },
     {
       "id": "src_walletroster_rotation_tick",
@@ -1052,7 +1076,19 @@
       "file_type": "code",
       "norm_label": ".tick()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L271"
+      "source_location": "L293"
+    },
+    {
+      "id": "src_walletroster_rotationon",
+      "label": "rotationOn()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "walletRoster.ts",
+      "file_type": "code",
+      "norm_label": "rotationon()",
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L48"
     },
     {
       "id": "src_walletroster_walletroster_active",
@@ -1064,7 +1100,7 @@
       "file_type": "code",
       "norm_label": ".active()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L143"
+      "source_location": "L160"
     },
     {
       "id": "src_walletroster_walletroster_adddiscovered",
@@ -1076,7 +1112,7 @@
       "file_type": "code",
       "norm_label": ".adddiscovered()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L112"
+      "source_location": "L129"
     },
     {
       "id": "src_walletroster_walletroster_all",
@@ -1088,7 +1124,7 @@
       "file_type": "code",
       "norm_label": ".all()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L92"
+      "source_location": "L109"
     },
     {
       "id": "src_walletroster_walletroster_bench",
@@ -1100,7 +1136,7 @@
       "file_type": "code",
       "norm_label": ".bench()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L147"
+      "source_location": "L164"
     },
     {
       "id": "src_walletroster_walletroster_constructor",
@@ -1112,7 +1148,7 @@
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L68"
+      "source_location": "L85"
     },
     {
       "id": "src_walletroster_walletroster_discoveredinfo",
@@ -1124,7 +1160,7 @@
       "file_type": "code",
       "norm_label": ".discoveredinfo()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L101"
+      "source_location": "L118"
     },
     {
       "id": "src_walletroster_walletroster_drop",
@@ -1136,7 +1172,7 @@
       "file_type": "code",
       "norm_label": ".drop()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L155"
+      "source_location": "L172"
     },
     {
       "id": "src_walletroster_walletroster_dropped",
@@ -1148,7 +1184,7 @@
       "file_type": "code",
       "norm_label": ".dropped()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L151"
+      "source_location": "L168"
     },
     {
       "id": "src_walletroster_walletroster_idle",
@@ -1160,7 +1196,7 @@
       "file_type": "code",
       "norm_label": ".idle()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L160"
+      "source_location": "L177"
     },
     {
       "id": "src_walletroster_walletroster_isdiscovered",
@@ -1172,7 +1208,7 @@
       "file_type": "code",
       "norm_label": ".isdiscovered()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L97"
+      "source_location": "L114"
     },
     {
       "id": "src_walletroster_walletroster_known",
@@ -1184,7 +1220,7 @@
       "file_type": "code",
       "norm_label": ".known()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L107"
+      "source_location": "L124"
     },
     {
       "id": "src_walletroster_walletroster_load",
@@ -1196,7 +1232,7 @@
       "file_type": "code",
       "norm_label": ".load()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L77"
+      "source_location": "L94"
     },
     {
       "id": "src_walletroster_walletroster_ordered",
@@ -1208,7 +1244,7 @@
       "file_type": "code",
       "norm_label": ".ordered()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L131"
+      "source_location": "L148"
     },
     {
       "id": "src_walletroster_walletroster_save",
@@ -1220,7 +1256,7 @@
       "file_type": "code",
       "norm_label": ".save()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L83"
+      "source_location": "L100"
     },
     {
       "id": "src_walletroster_watchcontrol_addwallet",
@@ -1232,7 +1268,7 @@
       "file_type": "code",
       "norm_label": ".addwallet()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L170"
+      "source_location": "L187"
     },
     {
       "id": "src_walletroster_watchcontrol_iswatching",
@@ -1244,7 +1280,7 @@
       "file_type": "code",
       "norm_label": ".iswatching()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L169"
+      "source_location": "L186"
     },
     {
       "id": "src_walletroster_watchcontrol_removewallet",
@@ -1256,7 +1292,7 @@
       "file_type": "code",
       "norm_label": ".removewallet()",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L171"
+      "source_location": "L188"
     },
     {
       "id": "test_logic_test_testdiscoveryinrotation",
@@ -1269,6 +1305,18 @@
       "norm_label": "testdiscoveryinrotation()",
       "source_file": "test/logic-test.ts",
       "source_location": "L1372"
+    },
+    {
+      "id": "test_logic_test_testemptyslotsfill",
+      "label": "testEmptySlotsFill()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "walletRoster.ts",
+      "file_type": "code",
+      "norm_label": "testemptyslotsfill()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1427"
     },
     {
       "id": "test_logic_test_testwalletrotation",
@@ -1547,474 +1595,6 @@
       "source_location": "L329"
     },
     {
-      "id": "src_prompt_createprompter",
-      "label": "createPrompter()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "createprompter()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_prompt_createprompter_ask",
-      "label": "ask()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "ask()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L66"
-    },
-    {
-      "id": "src_prompt_createprompter_askhidden",
-      "label": "askHidden()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "askhidden()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L73"
-    },
-    {
-      "id": "src_prompt_createprompter_askyesno",
-      "label": "askYesNo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "askyesno()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L86"
-    },
-    {
-      "id": "src_prompt_createprompter_nextline",
-      "label": "nextLine()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "nextline()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L60"
-    },
-    {
-      "id": "src_prompt_prompter_ask",
-      "label": ".ask()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".ask()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_prompt_prompter_askhidden",
-      "label": ".askHidden()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".askhidden()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_prompt_prompter_askyesno",
-      "label": ".askYesNo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".askyesno()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_prompt_prompter_done",
-      "label": ".done()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".done()",
-      "source_file": "src/prompt.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_ratelimiter_sleep",
-      "label": "sleep()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "sleep()",
-      "source_file": "src/rateLimiter.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_setupchecks_istelegramtoken",
-      "label": "isTelegramToken()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "istelegramtoken()",
-      "source_file": "src/setupChecks.ts",
-      "source_location": "L99"
-    },
-    {
-      "id": "src_setupchecks_upsertenv",
-      "label": "upsertEnv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "upsertenv()",
-      "source_file": "src/setupChecks.ts",
-      "source_location": "L106"
-    },
-    {
-      "id": "src_telegram_errorkind",
-      "label": "errorKind()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "errorkind()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L75"
-    },
-    {
-      "id": "src_telegram_explaintelegramerror",
-      "label": "explainTelegramError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "explaintelegramerror()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L85"
-    },
-    {
-      "id": "src_telegram_helptext",
-      "label": "helpText()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "helptext()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L363"
-    },
-    {
-      "id": "src_telegram_parsecommand",
-      "label": "parseCommand()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "parsecommand()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L443"
-    },
-    {
-      "id": "src_telegram_telegrambot_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L460"
-    },
-    {
-      "id": "src_telegram_telegrambot_deliver",
-      "label": ".deliver()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".deliver()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L502"
-    },
-    {
-      "id": "src_telegram_telegrambot_drain",
-      "label": ".drain()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".drain()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L494"
-    },
-    {
-      "id": "src_telegram_telegrambot_flush",
-      "label": ".flush()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".flush()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L482"
-    },
-    {
-      "id": "src_telegram_telegrambot_handle",
-      "label": ".handle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".handle()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L555"
-    },
-    {
-      "id": "src_telegram_telegrambot_pollloop",
-      "label": ".pollLoop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".pollloop()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L522"
-    },
-    {
-      "id": "src_telegram_telegrambot_problem",
-      "label": ".problem()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".problem()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L515"
-    },
-    {
-      "id": "src_telegram_telegrambot_send",
-      "label": ".send()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".send()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L471"
-    },
-    {
-      "id": "src_telegram_telegrambot_start",
-      "label": ".start()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".start()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L486"
-    },
-    {
-      "id": "src_telegram_telegrambot_stop",
-      "label": ".stop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".stop()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L490"
-    },
-    {
-      "id": "src_telegram_telegramclient_call",
-      "label": ".call()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".call()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L124"
-    },
-    {
-      "id": "src_telegram_telegramclient_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L113"
-    },
-    {
-      "id": "src_telegram_telegramclient_getme",
-      "label": ".getMe()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".getme()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L147"
-    },
-    {
-      "id": "src_telegram_telegramclient_getupdates",
-      "label": ".getUpdates()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".getupdates()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L151"
-    },
-    {
-      "id": "src_telegram_telegramclient_scrub",
-      "label": ".scrub()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".scrub()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L120"
-    },
-    {
-      "id": "src_telegram_telegramclient_sendmessage",
-      "label": ".sendMessage()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".sendmessage()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L155"
-    },
-    {
-      "id": "src_telegram_telegramerror_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/telegram.ts",
-      "source_location": "L66"
-    },
-    {
-      "id": "src_telegramsetup_bail",
-      "label": "bail()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "bail()",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_telegramsetup_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L96"
-    },
-    {
-      "id": "src_telegramsetup_say",
-      "label": "say()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "say()",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L27"
-    },
-    {
-      "id": "src_telegramsetup_tokenfromuser",
-      "label": "tokenFromUser()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "tokenfromuser()",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L36"
-    },
-    {
-      "id": "src_telegramsetup_waitformessage",
-      "label": "waitForMessage()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "waitformessage()",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L66"
-    },
-    {
-      "id": "src_discovery_printdiscoveryreport",
-      "label": "printDiscoveryReport()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "main",
-      "file_type": "code",
-      "norm_label": "printdiscoveryreport()",
-      "source_file": "src/discovery.ts",
-      "source_location": "L442"
-    },
-    {
       "id": "src_index_main",
       "label": "main()",
       "_callable": true,
@@ -2048,7 +1628,31 @@
       "file_type": "code",
       "norm_label": "reportwatcherhealth()",
       "source_file": "src/index.ts",
-      "source_location": "L426"
+      "source_location": "L437"
+    },
+    {
+      "id": "src_setupchecks_istelegramtoken",
+      "label": "isTelegramToken()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "istelegramtoken()",
+      "source_file": "src/setupChecks.ts",
+      "source_location": "L99"
+    },
+    {
+      "id": "src_setupchecks_upsertenv",
+      "label": "upsertEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "upsertenv()",
+      "source_file": "src/setupChecks.ts",
+      "source_location": "L106"
     },
     {
       "id": "src_shutdowndebounce_decideshutdown",
@@ -2097,6 +1701,30 @@
       "norm_label": "duration()",
       "source_file": "src/telegram.ts",
       "source_location": "L178"
+    },
+    {
+      "id": "src_telegram_errorkind",
+      "label": "errorKind()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "errorkind()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "src_telegram_explaintelegramerror",
+      "label": "explainTelegramError()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "explaintelegramerror()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L85"
     },
     {
       "id": "src_telegram_formatopen",
@@ -2171,6 +1799,18 @@
       "source_location": "L304"
     },
     {
+      "id": "src_telegram_helptext",
+      "label": "helpText()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "helptext()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L363"
+    },
+    {
       "id": "src_telegram_money",
       "label": "money()",
       "_callable": true,
@@ -2181,6 +1821,18 @@
       "norm_label": "money()",
       "source_file": "src/telegram.ts",
       "source_location": "L168"
+    },
+    {
+      "id": "src_telegram_parsecommand",
+      "label": "parseCommand()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "parsecommand()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L443"
     },
     {
       "id": "src_telegram_pct",
@@ -2231,6 +1883,198 @@
       "source_location": "L192"
     },
     {
+      "id": "src_telegram_telegrambot_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L460"
+    },
+    {
+      "id": "src_telegram_telegrambot_deliver",
+      "label": ".deliver()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".deliver()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L502"
+    },
+    {
+      "id": "src_telegram_telegrambot_drain",
+      "label": ".drain()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".drain()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L494"
+    },
+    {
+      "id": "src_telegram_telegrambot_handle",
+      "label": ".handle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".handle()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L555"
+    },
+    {
+      "id": "src_telegram_telegrambot_pollloop",
+      "label": ".pollLoop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".pollloop()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L522"
+    },
+    {
+      "id": "src_telegram_telegrambot_problem",
+      "label": ".problem()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".problem()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L515"
+    },
+    {
+      "id": "src_telegram_telegrambot_send",
+      "label": ".send()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".send()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L471"
+    },
+    {
+      "id": "src_telegram_telegrambot_start",
+      "label": ".start()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".start()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L486"
+    },
+    {
+      "id": "src_telegram_telegrambot_stop",
+      "label": ".stop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".stop()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L490"
+    },
+    {
+      "id": "src_telegram_telegramclient_call",
+      "label": ".call()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".call()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L124"
+    },
+    {
+      "id": "src_telegram_telegramclient_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L113"
+    },
+    {
+      "id": "src_telegram_telegramclient_getme",
+      "label": ".getMe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".getme()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L147"
+    },
+    {
+      "id": "src_telegram_telegramclient_getupdates",
+      "label": ".getUpdates()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".getupdates()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L151"
+    },
+    {
+      "id": "src_telegram_telegramclient_scrub",
+      "label": ".scrub()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".scrub()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L120"
+    },
+    {
+      "id": "src_telegram_telegramclient_sendmessage",
+      "label": ".sendMessage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".sendmessage()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L155"
+    },
+    {
+      "id": "src_telegram_telegramerror_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L66"
+    },
+    {
       "id": "src_telegram_tradefeed_poll",
       "label": ".poll()",
       "_callable": true,
@@ -2241,6 +2085,78 @@
       "norm_label": ".poll()",
       "source_file": "src/telegram.ts",
       "source_location": "L391"
+    },
+    {
+      "id": "src_telegramsetup_bail",
+      "label": "bail()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "bail()",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_telegramsetup_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L96"
+    },
+    {
+      "id": "src_telegramsetup_say",
+      "label": "say()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "say()",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_telegramsetup_tokenfromuser",
+      "label": "tokenFromUser()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "tokenfromuser()",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L36"
+    },
+    {
+      "id": "src_telegramsetup_waitformessage",
+      "label": "waitForMessage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "waitformessage()",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L66"
+    },
+    {
+      "id": "src_tokenmarket_tokengateenabled",
+      "label": "tokenGateEnabled()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "tokengateenabled()",
+      "source_file": "src/tokenMarket.ts",
+      "source_location": "L29"
     },
     {
       "id": "src_watcher_shortaddress",
@@ -2264,7 +2180,115 @@
       "file_type": "code",
       "norm_label": "testtelegram()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1526"
+      "source_location": "L1568"
+    },
+    {
+      "id": "src_prompt_createprompter",
+      "label": "createPrompter()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "createprompter()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_prompt_createprompter_ask",
+      "label": "ask()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "ask()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L66"
+    },
+    {
+      "id": "src_prompt_createprompter_askhidden",
+      "label": "askHidden()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "askhidden()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L73"
+    },
+    {
+      "id": "src_prompt_createprompter_askyesno",
+      "label": "askYesNo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "askyesno()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L86"
+    },
+    {
+      "id": "src_prompt_createprompter_nextline",
+      "label": "nextLine()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "nextline()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L60"
+    },
+    {
+      "id": "src_prompt_prompter_ask",
+      "label": ".ask()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": ".ask()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_prompt_prompter_askhidden",
+      "label": ".askHidden()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": ".askhidden()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_prompt_prompter_askyesno",
+      "label": ".askYesNo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": ".askyesno()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_prompt_prompter_done",
+      "label": ".done()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": ".done()",
+      "source_file": "src/prompt.ts",
+      "source_location": "L12"
     },
     {
       "id": "src_setup_bail",
@@ -2396,7 +2420,7 @@
       "file_type": "code",
       "norm_label": "renderenv()",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L179"
+      "source_location": "L180"
     },
     {
       "id": "src_wallet_loadkeypair",
@@ -2579,18 +2603,6 @@
       "source_location": "L85"
     },
     {
-      "id": "src_solprice_getsolpriceusd",
-      "label": "getSolPriceUsd()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "pnl.ts",
-      "file_type": "code",
-      "norm_label": "getsolpriceusd()",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L16"
-    },
-    {
       "id": "src_walletgate_isloss",
       "label": "isLoss()",
       "_callable": true,
@@ -2648,7 +2660,19 @@
       "file_type": "code",
       "norm_label": "loadconfig()",
       "source_file": "src/config.ts",
-      "source_location": "L93"
+      "source_location": "L95"
+    },
+    {
+      "id": "src_positions_positionstore_all",
+      "label": ".all()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "PositionStore",
+      "file_type": "code",
+      "norm_label": ".all()",
+      "source_file": "src/positions.ts",
+      "source_location": "L34"
     },
     {
       "id": "src_positions_positionstore_atriskcount",
@@ -3107,18 +3131,6 @@
       "source_location": "L90"
     },
     {
-      "id": "src_walletroster_rotation_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "PositionStore",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L197"
-    },
-    {
       "id": "src_writeoff_main",
       "label": "main()",
       "_callable": true,
@@ -3140,7 +3152,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1705"
+      "source_location": "L1747"
     },
     {
       "id": "test_logic_test_okmarket",
@@ -3236,7 +3248,7 @@
       "file_type": "code",
       "norm_label": "testpositioncapsandsweepyield()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1459"
+      "source_location": "L1501"
     },
     {
       "id": "test_logic_test_testprobationinrealmode",
@@ -3248,7 +3260,7 @@
       "file_type": "code",
       "norm_label": "testprobationinrealmode()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1425"
+      "source_location": "L1467"
     },
     {
       "id": "test_logic_test_testrealsellrecordsactualsol",
@@ -3328,11 +3340,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "fail()",
       "source_file": "src/config.ts",
-      "source_location": "L70"
+      "source_location": "L72"
     },
     {
       "id": "src_config_numberenv",
@@ -3340,11 +3352,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "numberenv()",
       "source_file": "src/config.ts",
-      "source_location": "L82"
+      "source_location": "L84"
     },
     {
       "id": "src_config_requireenv",
@@ -3352,11 +3364,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "requireenv()",
       "source_file": "src/config.ts",
-      "source_location": "L76"
+      "source_location": "L78"
     },
     {
       "id": "src_config_tradealertsenv",
@@ -3364,11 +3376,167 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tradealertsenv()",
       "source_file": "src/config.ts",
-      "source_location": "L61"
+      "source_location": "L63"
+    },
+    {
+      "id": "src_discovery_fetchgeckoterminal",
+      "label": "fetchGeckoTerminal()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "fetchgeckoterminal()",
+      "source_file": "src/discovery.ts",
+      "source_location": "L320"
+    },
+    {
+      "id": "src_doctor_ago",
+      "label": "ago()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "ago()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_doctor_bad",
+      "label": "bad()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "bad()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_doctor_checkwebsocket",
+      "label": "checkWebSocket()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "checkwebsocket()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L67"
+    },
+    {
+      "id": "src_doctor_finish",
+      "label": "finish()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "finish()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L55"
+    },
+    {
+      "id": "src_doctor_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L103"
+    },
+    {
+      "id": "src_doctor_ok",
+      "label": "ok()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "ok()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_doctor_warn",
+      "label": "warn()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "warn()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_doctor_withtimeout",
+      "label": "withTimeout()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "withtimeout()",
+      "source_file": "src/doctor.ts",
+      "source_location": "L41"
+    },
+    {
+      "id": "src_exitrules_decideexit",
+      "label": "decideExit()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "decideexit()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_exitrules_describeexitrules",
+      "label": "describeExitRules()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "describeexitrules()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "src_exitrules_exitrulesenabled",
+      "label": "exitRulesEnabled()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitrulesenabled()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_exitrules_pct",
+      "label": "pct()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "pct()",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L41"
     },
     {
       "id": "src_jupiter_jupiterclient_execute",
@@ -3376,7 +3544,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": ".execute()",
       "source_file": "src/jupiter.ts",
@@ -3388,7 +3556,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": ".getorder()",
       "source_file": "src/jupiter.ts",
@@ -3400,7 +3568,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": ".request()",
       "source_file": "src/jupiter.ts",
@@ -3412,7 +3580,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/jupiter.ts",
@@ -3424,11 +3592,47 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "lookslikenoroute()",
       "source_file": "src/jupiter.ts",
       "source_location": "L40"
+    },
+    {
+      "id": "src_ratelimiter_sleep",
+      "label": "sleep()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "sleep()",
+      "source_file": "src/rateLimiter.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_solprice_getsolpriceusd",
+      "label": "getSolPriceUsd()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "getsolpriceusd()",
+      "source_file": "src/solPrice.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_telegram_telegrambot_flush",
+      "label": ".flush()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": ".flush()",
+      "source_file": "src/telegram.ts",
+      "source_location": "L482"
     },
     {
       "id": "src_tokenmarket_describeage",
@@ -3436,7 +3640,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "describeage()",
       "source_file": "src/tokenMarket.ts",
@@ -3448,7 +3652,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "evaluatetoken()",
       "source_file": "src/tokenMarket.ts",
@@ -3460,7 +3664,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "fetchdexscreenermarket()",
       "source_file": "src/tokenMarket.ts",
@@ -3472,23 +3676,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "summarizepairs()",
       "source_file": "src/tokenMarket.ts",
       "source_location": "L92"
-    },
-    {
-      "id": "src_tokenmarket_tokengateenabled",
-      "label": "tokenGateEnabled()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "trader.ts",
-      "file_type": "code",
-      "norm_label": "tokengateenabled()",
-      "source_file": "src/tokenMarket.ts",
-      "source_location": "L29"
     },
     {
       "id": "src_tokenmarket_usd",
@@ -3496,7 +3688,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "usd()",
       "source_file": "src/tokenMarket.ts",
@@ -3508,11 +3700,47 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/trader.ts",
       "source_location": "L53"
+    },
+    {
+      "id": "src_watcher_installedweb3version",
+      "label": "installedWeb3Version()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "installedweb3version()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L57"
+    },
+    {
+      "id": "src_watcher_versionatleast",
+      "label": "versionAtLeast()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "versionatleast()",
+      "source_file": "src/watcher.ts",
+      "source_location": "L46"
+    },
+    {
+      "id": "test_logic_test_testexitdecisions",
+      "label": "testExitDecisions()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "testexitdecisions()",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L779"
     },
     {
       "id": "test_logic_test_testtokengate",
@@ -3520,7 +3748,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "testtokengate()",
       "source_file": "test/logic-test.ts",
@@ -3537,162 +3765,6 @@
       "norm_label": "main()",
       "source_file": "src/alerts.ts",
       "source_location": "L17"
-    },
-    {
-      "id": "src_discovery_fetchgeckoterminal",
-      "label": "fetchGeckoTerminal()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "fetchgeckoterminal()",
-      "source_file": "src/discovery.ts",
-      "source_location": "L320"
-    },
-    {
-      "id": "src_doctor_ago",
-      "label": "ago()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "ago()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L47"
-    },
-    {
-      "id": "src_doctor_bad",
-      "label": "bad()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "bad()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_doctor_checkwebsocket",
-      "label": "checkWebSocket()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "checkwebsocket()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L66"
-    },
-    {
-      "id": "src_doctor_finish",
-      "label": "finish()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "finish()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L54"
-    },
-    {
-      "id": "src_doctor_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L102"
-    },
-    {
-      "id": "src_doctor_ok",
-      "label": "ok()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "ok()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L29"
-    },
-    {
-      "id": "src_doctor_warn",
-      "label": "warn()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "warn()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_doctor_withtimeout",
-      "label": "withTimeout()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "withtimeout()",
-      "source_file": "src/doctor.ts",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_exitrules_decideexit",
-      "label": "decideExit()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "decideexit()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L46"
-    },
-    {
-      "id": "src_exitrules_describeexitrules",
-      "label": "describeExitRules()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "describeexitrules()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L105"
-    },
-    {
-      "id": "src_exitrules_exitrulesenabled",
-      "label": "exitRulesEnabled()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "exitrulesenabled()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_exitrules_pct",
-      "label": "pct()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "pct()",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L41"
     },
     {
       "id": "src_notify_flagoff",
@@ -3839,30 +3911,6 @@
       "source_location": "L140"
     },
     {
-      "id": "src_watcher_installedweb3version",
-      "label": "installedWeb3Version()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "installedweb3version()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L57"
-    },
-    {
-      "id": "src_watcher_versionatleast",
-      "label": "versionAtLeast()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "versionatleast()",
-      "source_file": "src/watcher.ts",
-      "source_location": "L46"
-    },
-    {
       "id": "test_logic_test_maketx",
       "label": "makeTx()",
       "_callable": true,
@@ -3885,18 +3933,6 @@
       "norm_label": "testanalyzeswap()",
       "source_file": "test/logic-test.ts",
       "source_location": "L89"
-    },
-    {
-      "id": "test_logic_test_testexitdecisions",
-      "label": "testExitDecisions()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "testexitdecisions()",
-      "source_file": "test/logic-test.ts",
-      "source_location": "L779"
     },
     {
       "id": "test_logic_test_testnotifysounds",
@@ -4235,6 +4271,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_summary",
+      "label": "summary.ts",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "walletRoster.ts",
+      "file_type": "code",
+      "norm_label": "summary.ts",
+      "source_file": "src/summary.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_walletroster",
       "label": "walletRoster.ts",
       "_origin": "ast",
@@ -4244,61 +4291,6 @@
       "norm_label": "walletroster.ts",
       "source_file": "src/walletRoster.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_walletroster_probation_trades",
-      "label": "PROBATION_TRADES",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "walletRoster.ts",
-      "file_type": "code",
-      "norm_label": "probation_trades",
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L187"
-    },
-    {
-      "id": "src_prompt",
-      "label": "prompt.ts",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "prompt.ts",
-      "source_file": "src/prompt.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_telegramsetup",
-      "label": "telegramSetup.ts",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "telegramsetup.ts",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_telegramsetup_askhidden_askyesno_done",
-      "label": "{ askHidden, askYesNo, done }",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "{ askhidden, askyesno, done }",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L25"
-    },
-    {
-      "id": "src_telegramsetup_env_path",
-      "label": "ENV_PATH",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "telegramSetup.ts",
-      "file_type": "code",
-      "norm_label": "env_path",
-      "source_file": "src/telegramSetup.ts",
-      "source_location": "L17"
     },
     {
       "id": "src_index",
@@ -4343,6 +4335,39 @@
       "norm_label": "exit_words",
       "source_file": "src/telegram.ts",
       "source_location": "L405"
+    },
+    {
+      "id": "src_telegramsetup",
+      "label": "telegramSetup.ts",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "telegramsetup.ts",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_telegramsetup_askhidden_askyesno_done",
+      "label": "{ askHidden, askYesNo, done }",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "{ askhidden, askyesno, done }",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_telegramsetup_env_path",
+      "label": "ENV_PATH",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "main",
+      "file_type": "code",
+      "norm_label": "env_path",
+      "source_file": "src/telegramSetup.ts",
+      "source_location": "L17"
     },
     {
       "id": "package",
@@ -4508,6 +4533,17 @@
       "norm_label": "version",
       "source_file": "package.json",
       "source_location": "L3"
+    },
+    {
+      "id": "src_prompt",
+      "label": "prompt.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "setup.ts",
+      "file_type": "code",
+      "norm_label": "prompt.ts",
+      "source_file": "src/prompt.ts",
+      "source_location": "L1"
     },
     {
       "id": "src_setup",
@@ -4763,17 +4799,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_solprice",
-      "label": "solPrice.ts",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "pnl.ts",
-      "file_type": "code",
-      "norm_label": "solprice.ts",
-      "source_file": "src/solPrice.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_types",
       "label": "types.ts",
       "_origin": "ast",
@@ -4811,29 +4836,73 @@
       "label": "config.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "config.ts",
       "source_file": "src/config.ts",
       "source_location": "L1"
     },
     {
+      "id": "src_config_sol_mint",
+      "label": "SOL_MINT",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "sol_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_config_usdc_mint",
+      "label": "USDC_MINT",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "usdc_mint",
+      "source_file": "src/config.ts",
+      "source_location": "L9"
+    },
+    {
       "id": "src_config_usdt_mint",
       "label": "USDT_MINT",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "usdt_mint",
       "source_file": "src/config.ts",
       "source_location": "L10"
     },
     {
+      "id": "src_doctor",
+      "label": "doctor.ts",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "doctor.ts",
+      "source_file": "src/doctor.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_exitrules",
+      "label": "exitRules.ts",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "exitrules.ts",
+      "source_file": "src/exitRules.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_jupiter",
       "label": "jupiter.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "jupiter.ts",
       "source_file": "src/jupiter.ts",
@@ -4844,21 +4913,21 @@
       "label": "rateLimiter.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "ratelimiter.ts",
       "source_file": "src/rateLimiter.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_summary",
-      "label": "summary.ts",
+      "id": "src_solprice",
+      "label": "solPrice.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
-      "norm_label": "summary.ts",
-      "source_file": "src/summary.ts",
+      "norm_label": "solprice.ts",
+      "source_file": "src/solPrice.ts",
       "source_location": "L1"
     },
     {
@@ -4866,7 +4935,7 @@
       "label": "tokenMarket.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "tokenmarket.ts",
       "source_file": "src/tokenMarket.ts",
@@ -4877,7 +4946,7 @@
       "label": "cache",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "cache",
       "source_file": "src/tokenMarket.ts",
@@ -4888,18 +4957,51 @@
       "label": "trader.ts",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "code",
       "norm_label": "trader.ts",
       "source_file": "src/trader.ts",
       "source_location": "L1"
     },
     {
+      "id": "src_watcher",
+      "label": "watcher.ts",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "watcher.ts",
+      "source_file": "src/watcher.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_watcher_max_tx_version",
+      "label": "MAX_TX_VERSION",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "max_tx_version",
+      "source_file": "src/watcher.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_watcher_min_web3_version",
+      "label": "MIN_WEB3_VERSION",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "doctor.ts",
+      "file_type": "code",
+      "norm_label": "min_web3_version",
+      "source_file": "src/watcher.ts",
+      "source_location": "L43"
+    },
+    {
       "id": "src_trader_rationale_460",
       "label": "IMPORTANT: a failed sell is NOT a closed position. The tokens are still",
       "_origin": "ast",
       "community": 5,
-      "community_name": "trader.ts",
+      "community_name": "doctor.ts",
       "file_type": "rationale",
       "norm_label": "important: a failed sell is not a closed position. the tokens are still",
       "source_file": "src/trader.ts",
@@ -4926,50 +5028,6 @@
       "norm_label": "sequence",
       "source_file": "src/alerts.ts",
       "source_location": "L10"
-    },
-    {
-      "id": "src_config_sol_mint",
-      "label": "SOL_MINT",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "sol_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_config_usdc_mint",
-      "label": "USDC_MINT",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "usdc_mint",
-      "source_file": "src/config.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_doctor",
-      "label": "doctor.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "doctor.ts",
-      "source_file": "src/doctor.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_exitrules",
-      "label": "exitRules.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "exitrules.ts",
-      "source_file": "src/exitRules.ts",
-      "source_location": "L1"
     },
     {
       "id": "src_notify",
@@ -5060,37 +5118,15 @@
       "source_location": "L112"
     },
     {
-      "id": "src_watcher",
-      "label": "watcher.ts",
+      "id": "src_walletroster_probation_trades",
+      "label": "PROBATION_TRADES",
       "_origin": "ast",
       "community": 6,
       "community_name": "logic-test.ts",
       "file_type": "code",
-      "norm_label": "watcher.ts",
-      "source_file": "src/watcher.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_watcher_max_tx_version",
-      "label": "MAX_TX_VERSION",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "max_tx_version",
-      "source_file": "src/watcher.ts",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_watcher_min_web3_version",
-      "label": "MIN_WEB3_VERSION",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "logic-test.ts",
-      "file_type": "code",
-      "norm_label": "min_web3_version",
-      "source_file": "src/watcher.ts",
-      "source_location": "L43"
+      "norm_label": "probation_trades",
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L204"
     },
     {
       "id": "test_logic_test",
@@ -5316,7 +5352,7 @@
       "node_kind": "heading",
       "norm_label": "5. run the bot (dry-run)",
       "source_file": "README.md",
-      "source_location": "L187"
+      "source_location": "L188"
     },
     {
       "id": "readme_6_stopping_the_bot",
@@ -5328,7 +5364,7 @@
       "node_kind": "heading",
       "norm_label": "6. stopping the bot",
       "source_file": "README.md",
-      "source_location": "L220"
+      "source_location": "L221"
     },
     {
       "id": "readme_7_going_live_only_when_you_re_ready",
@@ -5340,7 +5376,7 @@
       "node_kind": "heading",
       "norm_label": "7. going live (only when you're ready)",
       "source_file": "README.md",
-      "source_location": "L227"
+      "source_location": "L228"
     },
     {
       "id": "readme_automatic_wallet_discovery_discovery_true",
@@ -5352,7 +5388,7 @@
       "node_kind": "heading",
       "norm_label": "automatic wallet discovery (`discovery=true`)",
       "source_file": "README.md",
-      "source_location": "L540"
+      "source_location": "L545"
     },
     {
       "id": "readme_every_setting_reference",
@@ -5376,7 +5412,7 @@
       "node_kind": "heading",
       "norm_label": "exiting without them",
       "source_file": "README.md",
-      "source_location": "L581"
+      "source_location": "L586"
     },
     {
       "id": "readme_how_it_decides_what_is_a_buy_or_sell",
@@ -5388,7 +5424,7 @@
       "node_kind": "heading",
       "norm_label": "how it decides what is a \"buy\" or \"sell\"",
       "source_file": "README.md",
-      "source_location": "L466"
+      "source_location": "L467"
     },
     {
       "id": "readme_installing_for_a_friend_fresh_mac",
@@ -5400,7 +5436,7 @@
       "node_kind": "heading",
       "norm_label": "installing for a friend (fresh mac)",
       "source_file": "README.md",
-      "source_location": "L370"
+      "source_location": "L371"
     },
     {
       "id": "readme_safety_features_on_by_default",
@@ -5448,7 +5484,7 @@
       "node_kind": "heading",
       "norm_label": "telegram: p&l on your phone",
       "source_file": "README.md",
-      "source_location": "L313"
+      "source_location": "L314"
     },
     {
       "id": "readme_troubleshooting",
@@ -5460,7 +5496,7 @@
       "node_kind": "heading",
       "norm_label": "troubleshooting",
       "source_file": "README.md",
-      "source_location": "L631"
+      "source_location": "L636"
     },
     {
       "id": "readme_useful_extras",
@@ -5472,7 +5508,7 @@
       "node_kind": "heading",
       "norm_label": "useful extras",
       "source_file": "README.md",
-      "source_location": "L240"
+      "source_location": "L241"
     },
     {
       "id": "readme_wallet_rotation",
@@ -5484,7 +5520,7 @@
       "node_kind": "heading",
       "norm_label": "wallet rotation",
       "source_file": "README.md",
-      "source_location": "L507"
+      "source_location": "L508"
     },
     {
       "id": "readme_what_it_refuses_to_copy_quality_gates",
@@ -5496,7 +5532,7 @@
       "node_kind": "heading",
       "norm_label": "what it refuses to copy (quality gates)",
       "source_file": "README.md",
-      "source_location": "L483"
+      "source_location": "L484"
     },
     {
       "id": "readme_what_stuck_means",
@@ -5508,7 +5544,7 @@
       "node_kind": "heading",
       "norm_label": "what \"stuck\" means",
       "source_file": "README.md",
-      "source_location": "L620"
+      "source_location": "L625"
     },
     {
       "id": "readme_windows_powershell",
@@ -5520,7 +5556,7 @@
       "node_kind": "heading",
       "norm_label": "windows (powershell)",
       "source_file": "README.md",
-      "source_location": "L404"
+      "source_location": "L405"
     },
     {
       "id": "src_config_quote_mints",
@@ -5590,7 +5626,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L100",
+      "source_location": "L102",
       "weight": 1.0
     },
     {
@@ -5602,7 +5638,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L149",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -5614,7 +5650,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L174",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
@@ -5626,7 +5662,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L185",
+      "source_location": "L189",
       "weight": 1.0
     },
     {
@@ -5638,7 +5674,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L97",
+      "source_location": "L99",
       "weight": 1.0
     },
     {
@@ -5650,7 +5686,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L86",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -5662,7 +5698,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L78",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -5674,7 +5710,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/config.ts",
-      "source_location": "L67",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -5747,6 +5783,18 @@
       "context": "call",
       "source_file": "src/discover.ts",
       "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_discover_main",
+      "target": "src_walletroster_copyslots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/discover.ts",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -5998,7 +6046,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L69",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -6010,7 +6058,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L88",
+      "source_location": "L89",
       "weight": 1.0
     },
     {
@@ -6022,24 +6070,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L97",
+      "source_location": "L98",
       "weight": 1.0
     },
     {
       "source": "src_doctor_main",
       "target": "src_doctor_bad",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/doctor.ts",
-      "source_location": "L108",
-      "weight": 1.0
-    },
-    {
-      "source": "src_doctor_main",
-      "target": "src_doctor_finish",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -6051,6 +6087,18 @@
     },
     {
       "source": "src_doctor_main",
+      "target": "src_doctor_finish",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/doctor.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "src_doctor_main",
       "target": "src_setupchecks_findplaceholders",
       "relation": "calls",
       "_origin": "ast",
@@ -6058,7 +6106,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L112",
+      "source_location": "L113",
       "weight": 1.0
     },
     {
@@ -6070,7 +6118,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L117",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -6082,7 +6130,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L118",
+      "source_location": "L119",
       "weight": 1.0
     },
     {
@@ -6094,7 +6142,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L119",
+      "source_location": "L120",
       "weight": 1.0
     },
     {
@@ -6106,7 +6154,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L124",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "src_doctor_main",
+      "target": "src_walletroster_rotationon",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/doctor.ts",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "src_doctor_main",
+      "target": "src_walletroster_copyslots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/doctor.ts",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -6118,7 +6190,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L133",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -6130,7 +6202,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L144",
+      "source_location": "L149",
       "weight": 1.0
     },
     {
@@ -6142,7 +6214,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L150",
+      "source_location": "L155",
       "weight": 1.0
     },
     {
@@ -6154,7 +6226,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L154",
+      "source_location": "L159",
       "weight": 1.0
     },
     {
@@ -6166,7 +6238,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L154",
+      "source_location": "L159",
       "weight": 1.0
     },
     {
@@ -6178,7 +6250,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L175",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -6190,7 +6262,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L183",
+      "source_location": "L188",
       "weight": 1.0
     },
     {
@@ -6202,7 +6274,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L185",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -6214,7 +6286,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L192",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -6226,7 +6298,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L194",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -6238,7 +6310,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L198",
+      "source_location": "L203",
       "weight": 1.0
     },
     {
@@ -6250,7 +6322,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L205",
+      "source_location": "L210",
       "weight": 1.0
     },
     {
@@ -6262,7 +6334,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L212",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -6274,7 +6346,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L219",
+      "source_location": "L224",
       "weight": 1.0
     },
     {
@@ -6286,7 +6358,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L230",
+      "source_location": "L235",
       "weight": 1.0
     },
     {
@@ -6298,7 +6370,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L251",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -6310,7 +6382,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L252",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -6322,7 +6394,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L264",
+      "source_location": "L269",
       "weight": 1.0
     },
     {
@@ -6334,7 +6406,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L268",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -6346,7 +6418,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L275",
+      "source_location": "L280",
       "weight": 1.0
     },
     {
@@ -6358,7 +6430,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L286",
+      "source_location": "L291",
       "weight": 1.0
     },
     {
@@ -6411,6 +6483,30 @@
     },
     {
       "source": "src_index_main",
+      "target": "src_walletroster_rotationon",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/index.ts",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "src_index_main",
+      "target": "src_walletroster_copyslots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/index.ts",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "src_index_main",
       "target": "src_positions_positionstore",
       "relation": "calls",
       "_origin": "ast",
@@ -6454,7 +6550,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L166",
+      "source_location": "L167",
       "weight": 1.0
     },
     {
@@ -6466,7 +6562,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L177",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -6478,7 +6574,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L187",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -6490,7 +6586,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L188",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -6502,7 +6598,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L197",
+      "source_location": "L206",
       "weight": 1.0
     },
     {
@@ -6514,7 +6610,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L198",
+      "source_location": "L207",
       "weight": 1.0
     },
     {
@@ -6526,7 +6622,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L199",
+      "source_location": "L208",
       "weight": 1.0
     },
     {
@@ -6538,7 +6634,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L209",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -6550,7 +6646,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L219",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -6562,7 +6658,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L232",
+      "source_location": "L240",
       "weight": 1.0
     },
     {
@@ -6574,7 +6670,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L237",
+      "source_location": "L245",
       "weight": 1.0
     },
     {
@@ -6586,7 +6682,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L238",
+      "source_location": "L246",
       "weight": 1.0
     },
     {
@@ -6598,7 +6694,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L242",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -6610,7 +6706,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L243",
+      "source_location": "L251",
       "weight": 1.0
     },
     {
@@ -6622,7 +6718,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L245",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -6634,7 +6730,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L255",
+      "source_location": "L263",
       "weight": 1.0
     },
     {
@@ -6646,7 +6742,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L272",
+      "source_location": "L283",
       "weight": 1.0
     },
     {
@@ -6658,7 +6754,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L285",
+      "source_location": "L296",
       "weight": 1.0
     },
     {
@@ -6670,7 +6766,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L292",
+      "source_location": "L303",
       "weight": 1.0
     },
     {
@@ -6682,7 +6778,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L317",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -6694,7 +6790,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L334",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -6706,7 +6802,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L336",
+      "source_location": "L347",
       "weight": 1.0
     },
     {
@@ -6718,7 +6814,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L344",
+      "source_location": "L355",
       "weight": 1.0
     },
     {
@@ -6730,7 +6826,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L360",
+      "source_location": "L371",
       "weight": 1.0
     },
     {
@@ -6742,7 +6838,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L399",
+      "source_location": "L410",
       "weight": 1.0
     },
     {
@@ -7583,6 +7679,30 @@
       "context": "call",
       "source_file": "src/summary.ts",
       "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_summary_main",
+      "target": "src_walletroster_rotationon",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/summary.ts",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_summary_main",
+      "target": "src_walletroster_copyslots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/summary.ts",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -8914,7 +9034,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L48",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -8926,7 +9046,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L332",
+      "source_location": "L355",
       "weight": 1.0
     },
     {
@@ -8938,7 +9058,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L332",
+      "source_location": "L355",
       "weight": 1.0
     },
     {
@@ -8950,7 +9070,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L334",
+      "source_location": "L357",
       "weight": 1.0
     },
     {
@@ -8962,7 +9082,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L339",
+      "source_location": "L362",
       "weight": 1.0
     },
     {
@@ -8974,7 +9094,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L343",
+      "source_location": "L366",
       "weight": 1.0
     },
     {
@@ -8986,7 +9106,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L348",
+      "source_location": "L371",
       "weight": 1.0
     },
     {
@@ -8998,7 +9118,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L351",
+      "source_location": "L374",
       "weight": 1.0
     },
     {
@@ -9010,7 +9130,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L245",
+      "source_location": "L266",
       "weight": 1.0
     },
     {
@@ -9022,7 +9142,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L249",
+      "source_location": "L270",
       "weight": 1.0
     },
     {
@@ -9034,7 +9154,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L320",
+      "source_location": "L343",
       "weight": 1.0
     },
     {
@@ -9046,7 +9166,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L208",
+      "source_location": "L229",
       "weight": 1.0
     },
     {
@@ -9058,7 +9178,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L257",
+      "source_location": "L278",
       "weight": 1.0
     },
     {
@@ -9070,7 +9190,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L261",
+      "source_location": "L283",
       "weight": 1.0
     },
     {
@@ -9082,7 +9202,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L263",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -9094,7 +9214,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L274",
+      "source_location": "L296",
       "weight": 1.0
     },
     {
@@ -9106,7 +9226,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L284",
+      "source_location": "L306",
       "weight": 1.0
     },
     {
@@ -9118,7 +9238,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L294",
+      "source_location": "L316",
       "weight": 1.0
     },
     {
@@ -9130,7 +9250,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L303",
+      "source_location": "L325",
       "weight": 1.0
     },
     {
@@ -9142,7 +9262,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L303",
+      "source_location": "L325",
       "weight": 1.0
     },
     {
@@ -9154,7 +9274,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L306",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -9166,7 +9286,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L314",
+      "source_location": "L337",
       "weight": 1.0
     },
     {
@@ -9178,7 +9298,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L315",
+      "source_location": "L338",
       "weight": 1.0
     },
     {
@@ -9190,7 +9310,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L144",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
@@ -9202,7 +9322,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L113",
+      "source_location": "L130",
       "weight": 1.0
     },
     {
@@ -9214,7 +9334,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L121",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -9226,7 +9346,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L127",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -9238,7 +9358,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L148",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -9250,7 +9370,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L157",
+      "source_location": "L174",
       "weight": 1.0
     },
     {
@@ -9262,7 +9382,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L162",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -9418,7 +9538,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1706",
+      "source_location": "L1748",
       "weight": 1.0
     },
     {
@@ -9430,7 +9550,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1707",
+      "source_location": "L1749",
       "weight": 1.0
     },
     {
@@ -9442,7 +9562,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1708",
+      "source_location": "L1750",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_main",
+      "target": "test_logic_test_testemptyslotsfill",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1751",
       "weight": 1.0
     },
     {
@@ -9454,7 +9586,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1709",
+      "source_location": "L1752",
       "weight": 1.0
     },
     {
@@ -9466,7 +9598,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1710",
+      "source_location": "L1753",
       "weight": 1.0
     },
     {
@@ -9478,7 +9610,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1711",
+      "source_location": "L1754",
       "weight": 1.0
     },
     {
@@ -9490,7 +9622,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1712",
+      "source_location": "L1755",
       "weight": 1.0
     },
     {
@@ -9502,7 +9634,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1713",
+      "source_location": "L1756",
       "weight": 1.0
     },
     {
@@ -9514,7 +9646,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1714",
+      "source_location": "L1757",
       "weight": 1.0
     },
     {
@@ -9526,7 +9658,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1715",
+      "source_location": "L1758",
       "weight": 1.0
     },
     {
@@ -9538,7 +9670,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1716",
+      "source_location": "L1759",
       "weight": 1.0
     },
     {
@@ -9550,7 +9682,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1717",
+      "source_location": "L1760",
       "weight": 1.0
     },
     {
@@ -9562,7 +9694,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1718",
+      "source_location": "L1761",
       "weight": 1.0
     },
     {
@@ -9574,7 +9706,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1719",
+      "source_location": "L1762",
       "weight": 1.0
     },
     {
@@ -9586,7 +9718,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1720",
+      "source_location": "L1763",
       "weight": 1.0
     },
     {
@@ -9598,7 +9730,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1721",
+      "source_location": "L1764",
       "weight": 1.0
     },
     {
@@ -9610,7 +9742,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1722",
+      "source_location": "L1765",
       "weight": 1.0
     },
     {
@@ -9622,7 +9754,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1723",
+      "source_location": "L1766",
       "weight": 1.0
     },
     {
@@ -9634,7 +9766,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1724",
+      "source_location": "L1767",
       "weight": 1.0
     },
     {
@@ -9646,7 +9778,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1725",
+      "source_location": "L1768",
       "weight": 1.0
     },
     {
@@ -9658,7 +9790,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1726",
+      "source_location": "L1769",
       "weight": 1.0
     },
     {
@@ -9670,7 +9802,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1727",
+      "source_location": "L1770",
       "weight": 1.0
     },
     {
@@ -9682,7 +9814,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1728",
+      "source_location": "L1771",
       "weight": 1.0
     },
     {
@@ -9694,7 +9826,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1729",
+      "source_location": "L1772",
       "weight": 1.0
     },
     {
@@ -9706,7 +9838,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1730",
+      "source_location": "L1773",
       "weight": 1.0
     },
     {
@@ -9718,7 +9850,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1731",
+      "source_location": "L1774",
       "weight": 1.0
     },
     {
@@ -9730,7 +9862,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1732",
+      "source_location": "L1775",
       "weight": 1.0
     },
     {
@@ -9742,7 +9874,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1733",
+      "source_location": "L1776",
       "weight": 1.0
     },
     {
@@ -9754,7 +9886,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1734",
+      "source_location": "L1777",
       "weight": 1.0
     },
     {
@@ -9766,7 +9898,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1735",
+      "source_location": "L1778",
       "weight": 1.0
     },
     {
@@ -9778,7 +9910,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1736",
+      "source_location": "L1779",
       "weight": 1.0
     },
     {
@@ -10070,6 +10202,90 @@
       "weight": 1.0
     },
     {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_config_loadconfig",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1428",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_copyslots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1431",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_rotationon",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1434",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_positions_positionstore",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1437",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_walletroster",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1438",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_rotation",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1440",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_watcher_shortaddress",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1461",
+      "weight": 1.0
+    },
+    {
       "source": "test_logic_test_testenvisolation",
       "target": "src_config_loadconfig",
       "relation": "calls",
@@ -10258,7 +10474,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1460",
+      "source_location": "L1502",
       "weight": 1.0
     },
     {
@@ -10270,7 +10486,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1486",
+      "source_location": "L1528",
       "weight": 1.0
     },
     {
@@ -10282,7 +10498,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1487",
+      "source_location": "L1529",
       "weight": 1.0
     },
     {
@@ -10294,7 +10510,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1426",
+      "source_location": "L1468",
       "weight": 1.0
     },
     {
@@ -10306,7 +10522,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1427",
+      "source_location": "L1469",
       "weight": 1.0
     },
     {
@@ -10318,7 +10534,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1437",
+      "source_location": "L1479",
       "weight": 1.0
     },
     {
@@ -10582,7 +10798,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1540",
+      "source_location": "L1582",
       "weight": 1.0
     },
     {
@@ -10594,7 +10810,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1542",
+      "source_location": "L1584",
       "weight": 1.0
     },
     {
@@ -10606,7 +10822,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1546",
+      "source_location": "L1588",
       "weight": 1.0
     },
     {
@@ -10618,7 +10834,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1558",
+      "source_location": "L1600",
       "weight": 1.0
     },
     {
@@ -10630,7 +10846,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1590",
+      "source_location": "L1632",
       "weight": 1.0
     },
     {
@@ -10642,7 +10858,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1594",
+      "source_location": "L1636",
       "weight": 1.0
     },
     {
@@ -10654,7 +10870,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1601",
+      "source_location": "L1643",
       "weight": 1.0
     },
     {
@@ -10666,7 +10882,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1606",
+      "source_location": "L1648",
       "weight": 1.0
     },
     {
@@ -10678,7 +10894,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1614",
+      "source_location": "L1656",
       "weight": 1.0
     },
     {
@@ -10690,7 +10906,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1620",
+      "source_location": "L1662",
       "weight": 1.0
     },
     {
@@ -10702,7 +10918,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1624",
+      "source_location": "L1666",
       "weight": 1.0
     },
     {
@@ -10714,7 +10930,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1633",
+      "source_location": "L1675",
       "weight": 1.0
     },
     {
@@ -10726,7 +10942,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1643",
+      "source_location": "L1685",
       "weight": 1.0
     },
     {
@@ -10738,7 +10954,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1675",
+      "source_location": "L1717",
       "weight": 1.0
     },
     {
@@ -11050,7 +11266,7 @@
       "confidence_score": 1.0,
       "context": "generic_arg",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L179",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -11279,6 +11495,18 @@
       "context": "import",
       "source_file": "src/discover.ts",
       "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_discover",
+      "target": "src_walletroster_copyslots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/discover.ts",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -11630,6 +11858,30 @@
       "weight": 1.0
     },
     {
+      "source": "src_doctor",
+      "target": "src_walletroster_copyslots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/doctor.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_doctor",
+      "target": "src_walletroster_rotationon",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/doctor.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
       "source": "src_exitrules",
       "target": "src_config_config",
       "relation": "imports",
@@ -11799,7 +12051,31 @@
     },
     {
       "source": "src_index",
+      "target": "src_walletroster_copyslots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/index.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_index",
       "target": "src_walletroster_rotation",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/index.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_index",
+      "target": "src_walletroster_rotationon",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -12411,7 +12687,31 @@
     },
     {
       "source": "src_summary",
+      "target": "src_walletroster_copyslots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/summary.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_summary",
       "target": "src_walletroster_printroster",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/summary.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_summary",
+      "target": "src_walletroster_rotationon",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -13755,6 +14055,18 @@
     },
     {
       "source": "test_logic_test",
+      "target": "src_walletroster_copyslots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
       "target": "src_walletroster_dropreason",
       "relation": "imports",
       "_origin": "ast",
@@ -13780,6 +14092,18 @@
     {
       "source": "test_logic_test",
       "target": "src_walletroster_rotation",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
+      "target": "src_walletroster_rotationon",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -14171,6 +14495,18 @@
       "context": "import",
       "source_file": "src/doctor.ts",
       "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_doctor",
+      "target": "src_walletroster",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/doctor.ts",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -15779,7 +16115,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L197",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -15791,7 +16127,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L112",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -16217,7 +16553,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L187",
+      "source_location": "L188",
       "weight": 1.0
     },
     {
@@ -16228,7 +16564,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L220",
+      "source_location": "L221",
       "weight": 1.0
     },
     {
@@ -16239,7 +16575,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L227",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -16250,7 +16586,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L240",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -16294,7 +16630,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L313",
+      "source_location": "L314",
       "weight": 1.0
     },
     {
@@ -16305,7 +16641,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L370",
+      "source_location": "L371",
       "weight": 1.0
     },
     {
@@ -16316,7 +16652,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L404",
+      "source_location": "L405",
       "weight": 1.0
     },
     {
@@ -16327,7 +16663,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L466",
+      "source_location": "L467",
       "weight": 1.0
     },
     {
@@ -16338,7 +16674,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L483",
+      "source_location": "L484",
       "weight": 1.0
     },
     {
@@ -16349,7 +16685,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L507",
+      "source_location": "L508",
       "weight": 1.0
     },
     {
@@ -16360,7 +16696,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L581",
+      "source_location": "L586",
       "weight": 1.0
     },
     {
@@ -16371,7 +16707,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L620",
+      "source_location": "L625",
       "weight": 1.0
     },
     {
@@ -16382,7 +16718,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L631",
+      "source_location": "L636",
       "weight": 1.0
     },
     {
@@ -16404,7 +16740,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L540",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -16470,7 +16806,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L59",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -16481,7 +16817,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L61",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -16492,7 +16828,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L70",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -16503,7 +16839,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L76",
+      "source_location": "L78",
       "weight": 1.0
     },
     {
@@ -16525,7 +16861,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 1.0
     },
     {
@@ -16547,7 +16883,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/config.ts",
-      "source_location": "L93",
+      "source_location": "L95",
       "weight": 1.0
     },
     {
@@ -16899,7 +17235,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L102",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -16910,7 +17246,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L29",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -16921,7 +17257,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -16932,7 +17268,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -16943,7 +17279,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L40",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -16954,7 +17290,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L47",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -16965,7 +17301,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L54",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -16976,7 +17312,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/doctor.ts",
-      "source_location": "L66",
+      "source_location": "L67",
       "weight": 1.0
     },
     {
@@ -17064,7 +17400,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/index.ts",
-      "source_location": "L426",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -17669,7 +18005,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L169",
+      "source_location": "L170",
       "weight": 1.0
     },
     {
@@ -17680,7 +18016,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L179",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -18527,7 +18863,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L168",
+      "source_location": "L185",
       "weight": 1.0
     },
     {
@@ -18538,7 +18874,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L173",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -18549,7 +18885,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L177",
+      "source_location": "L194",
       "weight": 1.0
     },
     {
@@ -18560,7 +18896,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L187",
+      "source_location": "L204",
       "weight": 1.0
     },
     {
@@ -18571,7 +18907,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L189",
+      "source_location": "L206",
       "weight": 1.0
     },
     {
@@ -18587,17 +18923,6 @@
     },
     {
       "source": "src_walletroster",
-      "target": "src_walletroster_printroster",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L331",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster",
       "target": "src_walletroster_rosterfile",
       "relation": "contains",
       "_origin": "ast",
@@ -18609,13 +18934,46 @@
     },
     {
       "source": "src_walletroster",
+      "target": "src_walletroster_printroster",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L354",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster",
+      "target": "src_walletroster_rotationon",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster",
+      "target": "src_walletroster_copyslots",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster",
       "target": "src_walletroster_dropreason",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L47",
+      "source_location": "L64",
       "weight": 1.0
     },
     {
@@ -18626,7 +18984,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L63",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -18840,13 +19198,24 @@
     },
     {
       "source": "test_logic_test",
+      "target": "test_logic_test_testemptyslotsfill",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1427",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test",
       "target": "test_logic_test_testprobationinrealmode",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1425",
+      "source_location": "L1467",
       "weight": 1.0
     },
     {
@@ -18857,7 +19226,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1459",
+      "source_location": "L1501",
       "weight": 1.0
     },
     {
@@ -18868,7 +19237,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1526",
+      "source_location": "L1568",
       "weight": 1.0
     },
     {
@@ -18879,7 +19248,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1705",
+      "source_location": "L1747",
       "weight": 1.0
     },
     {
@@ -20078,7 +20447,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L174",
+      "source_location": "L191",
       "weight": 1.0
     },
     {
@@ -20089,7 +20458,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L179",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -20100,7 +20469,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L197",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -20111,7 +20480,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L206",
+      "source_location": "L227",
       "weight": 1.0
     },
     {
@@ -20122,7 +20491,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L214",
+      "source_location": "L235",
       "weight": 1.0
     },
     {
@@ -20133,7 +20502,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L236",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -20144,7 +20513,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L243",
+      "source_location": "L264",
       "weight": 1.0
     },
     {
@@ -20155,7 +20524,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L256",
+      "source_location": "L277",
       "weight": 1.0
     },
     {
@@ -20166,7 +20535,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L267",
+      "source_location": "L289",
       "weight": 1.0
     },
     {
@@ -20177,7 +20546,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L271",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -20188,128 +20557,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L318",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_discoveredinfo",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L101",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_known",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L107",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_adddiscovered",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L112",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_ordered",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L131",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_active",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L143",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_bench",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L147",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_dropped",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L151",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_drop",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L155",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_idle",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L160",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_constructor",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L68",
-      "weight": 1.0
-    },
-    {
-      "source": "src_walletroster_walletroster",
-      "target": "src_walletroster_walletroster_load",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/walletRoster.ts",
-      "source_location": "L77",
+      "source_location": "L341",
       "weight": 1.0
     },
     {
@@ -20320,7 +20568,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L83",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -20331,7 +20579,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L92",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -20342,7 +20590,128 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L97",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_discoveredinfo",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_known",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_adddiscovered",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_ordered",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_active",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_bench",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_dropped",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_drop",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_idle",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_constructor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "src_walletroster_walletroster",
+      "target": "src_walletroster_walletroster_load",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/walletRoster.ts",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -20353,7 +20722,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L169",
+      "source_location": "L186",
       "weight": 1.0
     },
     {
@@ -20364,7 +20733,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L170",
+      "source_location": "L187",
       "weight": 1.0
     },
     {
@@ -20375,7 +20744,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/walletRoster.ts",
-      "source_location": "L171",
+      "source_location": "L188",
       "weight": 1.0
     },
     {
@@ -20590,7 +20959,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L155",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -20602,7 +20971,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L221",
+      "source_location": "L226",
       "weight": 1.0
     },
     {
@@ -20614,7 +20983,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/doctor.ts",
-      "source_location": "L226",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -20662,7 +21031,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L171",
+      "source_location": "L175",
       "weight": 1.0
     },
     {
@@ -20674,7 +21043,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L200",
+      "source_location": "L209",
       "weight": 1.0
     },
     {
@@ -20686,7 +21055,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L200",
+      "source_location": "L209",
       "weight": 1.0
     },
     {
@@ -20698,7 +21067,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L203",
+      "source_location": "L212",
       "weight": 1.0
     },
     {
@@ -20710,7 +21079,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L215",
+      "source_location": "L224",
       "weight": 1.0
     },
     {
@@ -20722,7 +21091,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L222",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -20734,7 +21103,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L233",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -20746,7 +21115,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L248",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -20758,7 +21127,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L249",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -20770,7 +21139,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L250",
+      "source_location": "L258",
       "weight": 1.0
     },
     {
@@ -20782,7 +21151,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L260",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -20794,7 +21163,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L288",
+      "source_location": "L299",
       "weight": 1.0
     },
     {
@@ -20806,7 +21175,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L346",
+      "source_location": "L357",
       "weight": 1.0
     },
     {
@@ -20818,7 +21187,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L385",
+      "source_location": "L396",
       "weight": 1.0
     },
     {
@@ -20830,7 +21199,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L386",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -20842,7 +21211,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L389",
+      "source_location": "L400",
       "weight": 1.0
     },
     {
@@ -20854,7 +21223,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/index.ts",
-      "source_location": "L427",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -21250,7 +21619,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L345",
+      "source_location": "L368",
       "weight": 1.0
     },
     {
@@ -21262,7 +21631,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L245",
+      "source_location": "L266",
       "weight": 1.0
     },
     {
@@ -21274,7 +21643,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L245",
+      "source_location": "L266",
       "weight": 1.0
     },
     {
@@ -21286,7 +21655,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L248",
+      "source_location": "L269",
       "weight": 1.0
     },
     {
@@ -21298,7 +21667,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L319",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -21310,7 +21679,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L321",
+      "source_location": "L344",
       "weight": 1.0
     },
     {
@@ -21322,7 +21691,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L323",
+      "source_location": "L346",
       "weight": 1.0
     },
     {
@@ -21334,7 +21703,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L237",
+      "source_location": "L258",
       "weight": 1.0
     },
     {
@@ -21346,7 +21715,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L207",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -21358,7 +21727,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L208",
+      "source_location": "L229",
       "weight": 1.0
     },
     {
@@ -21370,7 +21739,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L216",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -21382,7 +21751,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L221",
+      "source_location": "L242",
       "weight": 1.0
     },
     {
@@ -21394,7 +21763,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L223",
+      "source_location": "L244",
       "weight": 1.0
     },
     {
@@ -21406,7 +21775,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L258",
+      "source_location": "L279",
       "weight": 1.0
     },
     {
@@ -21418,7 +21787,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L260",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -21430,7 +21799,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L272",
+      "source_location": "L300",
       "weight": 1.0
     },
     {
@@ -21442,7 +21811,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L279",
+      "source_location": "L301",
       "weight": 1.0
     },
     {
@@ -21454,7 +21823,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L282",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -21818,6 +22187,66 @@
       "weight": 1.0
     },
     {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_rotation_startup",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1450",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_rotation_tick",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1453",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_walletroster_active",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1454",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_walletroster_bench",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1456",
+      "weight": 1.0
+    },
+    {
+      "source": "test_logic_test_testemptyslotsfill",
+      "target": "src_walletroster_rotation_notebuy",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "test/logic-test.ts",
+      "source_location": "L1458",
+      "weight": 1.0
+    },
+    {
       "source": "test_logic_test_testexitsintrader",
       "target": "src_trader_trader_handleswapevent",
       "relation": "calls",
@@ -21922,7 +22351,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1488",
+      "source_location": "L1530",
       "weight": 1.0
     },
     {
@@ -21934,7 +22363,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1489",
+      "source_location": "L1531",
       "weight": 1.0
     },
     {
@@ -21946,7 +22375,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1496",
+      "source_location": "L1538",
       "weight": 1.0
     },
     {
@@ -21958,7 +22387,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1510",
+      "source_location": "L1552",
       "weight": 1.0
     },
     {
@@ -21970,7 +22399,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1439",
+      "source_location": "L1481",
       "weight": 1.0
     },
     {
@@ -21982,7 +22411,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1443",
+      "source_location": "L1485",
       "weight": 1.0
     },
     {
@@ -21994,7 +22423,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1444",
+      "source_location": "L1486",
       "weight": 1.0
     },
     {
@@ -22150,7 +22579,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1559",
+      "source_location": "L1601",
       "weight": 1.0
     },
     {
@@ -22162,7 +22591,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1561",
+      "source_location": "L1603",
       "weight": 1.0
     },
     {
@@ -22174,7 +22603,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1625",
+      "source_location": "L1667",
       "weight": 1.0
     },
     {
@@ -22522,7 +22951,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L319",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -22534,7 +22963,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/walletRoster.ts",
-      "source_location": "L226",
+      "source_location": "L247",
       "weight": 1.0
     },
     {
@@ -22594,7 +23023,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1487",
+      "source_location": "L1529",
       "weight": 1.0
     },
     {
@@ -22606,7 +23035,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1437",
+      "source_location": "L1479",
       "weight": 1.0
     },
     {
@@ -22695,5 +23124,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "841dccea42a656f22ced93f681533276696d9417"
+  "built_at_commit": "f41b3912409de5773356a6d3adad9ea52bfd779b"
 }
