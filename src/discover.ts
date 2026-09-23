@@ -10,12 +10,12 @@
 import { loadConfig } from './config';
 import { discoverWallets, printDiscoveryReport } from './discovery';
 import { PositionStore } from './positions';
-import { printRoster, WalletRoster } from './walletRoster';
+import { copySlots, printRoster, WalletRoster } from './walletRoster';
 
 async function main(): Promise<void> {
   const config = loadConfig('report');
   const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
-  const roster = new WalletRoster(pool, config.trackedWallets.length);
+  const roster = new WalletRoster(pool, copySlots(config));
   roster.load();
 
   console.log('\n🔎 Looking for new wallets on GeckoTerminal — 2 to 3 minutes (their free tier only allows ~10 requests a minute)…\n');

@@ -42,6 +42,7 @@ const TEST_ENV: Record<string, string> = {
   WALLET_MUTE_HOURS: '24',
   MAX_TRACKED_WALLETS: '6',
   BENCH_WALLETS: '',
+  ACTIVE_WALLETS: '4',
   WALLET_DROP_AFTER_TRADES: '6',
   WALLET_IDLE_MINUTES: '90',
   DISCOVERY: 'false',

@@ -36,7 +36,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
-import { dropReason, PROBATION_TRADES, Rotation, WalletRoster } from '../src/walletRoster';
+import { copySlots, dropReason, PROBATION_TRADES, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
@@ -1420,6 +1420,48 @@ async function testDiscoveryInRotation(realLog: typeof console.log) {
   realLog('✅ discovery in rotation: refills a low bench by itself, never re-adds dropped wallets, discovered wallets paper-only until proven');
 }
 
+// With two wallets listed and discovery on, the bot used to copy exactly two:
+// wallets it discovered sat on the bench, unwatched, until one of the two had
+// been quiet for WALLET_IDLE_MINUTES. A live run went 30 minutes without a
+// single trade that way. Now the empty slots (ACTIVE_WALLETS) fill at once.
+async function testEmptySlotsFill(realLog: typeof console.log) {
+  const base = loadConfig();
+  const [A, B, N1, N2, N3] = Array.from({ length: 5 }, () => Keypair.generate().publicKey.toBase58());
+  const two = [new PublicKey(A), new PublicKey(B)];
+  assert(copySlots({ ...base, trackedWallets: two, activeWallets: 4 }) === 4, 'ACTIVE_WALLETS sets the slots');
+  assert(copySlots({ ...base, trackedWallets: two, activeWallets: 1 }) === 2, 'never fewer than you listed yourself');
+  assert(copySlots({ ...base, trackedWallets: two, activeWallets: 10, maxTrackedWallets: 6 }) === 6, 'never more than the watcher can follow');
+  assert(rotationOn({ benchWallets: [], discovery: true }) && !rotationOn({ benchWallets: [], discovery: false }), 'rotation is on with discovery or a bench');
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-slots-'));
+  const store = new PositionStore(dir);
+  const roster = new WalletRoster([A, B], 4, dir);
+  const logs: string[] = [];
+  const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 90 }, (m) => logs.push(m), {
+    minBench: 3, cooldownMs: 30 * 60_000,
+    async run() { return [N1, N2, N3].map((wallet) => ({ wallet, pools: 2, medianReturnPct: 40, evidence: ['X: +40%'] })); },
+  });
+  const watching = new Set<string>();
+  const watch = { isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); } };
+  let copying: string[] | null = null;
+  const trader = { setActiveWallets(w: string[] | null) { copying = w; } };
+  const T0 = Date.parse('2026-09-23T20:00:00Z');
+
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  assert(watching.size === 2, 'before discovery finishes, your two are watched');
+  await rotation.pendingDiscovery;
+  await rotation.tick(T0 + 30_000, watch, trader); // the next 30-second tick
+  assert(roster.active().join() === [A, B, N1, N2].join() && [A, B, N1, N2].every((w) => watching.has(w)), 'discovered wallets fill the two empty slots on the next tick — no 90-minute wait');
+  assert(copying !== null && (copying as string[]).length === 4, 'and their buys are copied');
+  assert(roster.bench().join() === N3, 'the rest wait on the bench');
+  assert(logs.some((l) => l.startsWith('🔄 Now copying')), 'each new wallet is announced');
+  rotation.noteBuy(A, T0 + 80 * 60_000);
+  rotation.noteBuy(B, T0 + 80 * 60_000);
+  await rotation.tick(T0 + 30_000 + 91 * 60_000, watch, trader);
+  assert(logs.some((l) => l.includes(`Benched ${shortAddress(N1)}`)), 'a discovered wallet that goes quiet is benched like any other (its idle clock started when it got the slot)');
+  realLog('✅ empty slots: discovered wallets are copied as soon as they are found, up to ACTIVE_WALLETS');
+}
+
 // In REAL mode, a wallet on probation is copied on paper — no SOL moves, and
 // its paper positions don't use up the real-money position slots.
 async function testProbationInRealMode(realLog: typeof console.log) {
@@ -1706,6 +1748,7 @@ async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
   await testDiscoveryInRotation(console.log);
+  await testEmptySlotsFill(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

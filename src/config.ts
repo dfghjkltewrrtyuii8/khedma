@@ -43,6 +43,8 @@ export interface Config {
   exitRebuyCooldownHours: number;
   // Wallet rotation — see walletRoster.ts. On only when benchWallets is set.
   benchWallets: PublicKey[];
+  // How many wallets rotation copies at once (see copySlots in walletRoster.ts).
+  activeWallets: number;
   walletDropAfterTrades: number;
   walletIdleMinutes: number;
   // Automatic wallet discovery — see discovery.ts. Implies rotation.
@@ -165,6 +167,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     exitCheckSeconds: numberEnv('EXIT_CHECK_SECONDS', 30),
     exitRebuyCooldownHours: numberEnv('EXIT_REBUY_COOLDOWN_HOURS', 24),
     benchWallets,
+    activeWallets: numberEnv('ACTIVE_WALLETS', 4),
     walletDropAfterTrades: numberEnv('WALLET_DROP_AFTER_TRADES', 6),
     walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
     discovery: (process.env.DISCOVERY ?? 'false').trim().toLowerCase() === 'true',
@@ -179,6 +182,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
   if (config.summaryIntervalSeconds <= 0) fail('SUMMARY_INTERVAL_SECONDS must be greater than 0.');
   if (config.maxTrackedWallets <= 0) fail('MAX_TRACKED_WALLETS must be greater than 0.');
   if (config.paperMaxOpenPositions <= 0) fail('PAPER_MAX_OPEN_POSITIONS must be greater than 0.');
+  if (config.activeWallets < 1) fail('ACTIVE_WALLETS must be at least 1.');
   if (config.exitCheckSeconds <= 0) fail('EXIT_CHECK_SECONDS must be greater than 0.');
   if (config.stopLossPercent >= 100) fail('STOP_LOSS_PERCENT must be below 100 (100% would mean the position is already worthless).');
   if (config.trailingStopPercent >= 100) fail('TRAILING_STOP_PERCENT must be below 100.');

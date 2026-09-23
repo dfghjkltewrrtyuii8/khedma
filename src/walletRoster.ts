@@ -43,6 +43,23 @@ interface RosterFile {
 // currently being copied is forgotten (dropped ones stay dropped regardless).
 const MAX_DISCOVERED = 40;
 
+// Is rotation on? It needs somewhere for new wallets to come from: your
+// BENCH_WALLETS, or discovery.
+export function rotationOn(cfg: Pick<Config, 'benchWallets' | 'discovery'>): boolean {
+  return cfg.benchWallets.length > 0 || cfg.discovery;
+}
+
+// How many wallets rotation copies at once: ACTIVE_WALLETS, never fewer than
+// you listed in TRACKED_WALLETS, never more than the watcher can follow on the
+// free Helius plan (MAX_TRACKED_WALLETS). Empty slots are filled from the
+// bench — including wallets discovery finds — as soon as there are any.
+// (It used to be exactly the number in TRACKED_WALLETS, so with two listed,
+// discovered wallets sat unwatched until one of the two went quiet for
+// WALLET_IDLE_MINUTES — a long, silent wait.)
+export function copySlots(cfg: Pick<Config, 'trackedWallets' | 'activeWallets' | 'maxTrackedWallets'>): number {
+  return Math.min(cfg.maxTrackedWallets, Math.max(cfg.trackedWallets.length, cfg.activeWallets));
+}
+
 // Pure: should copying this wallet stop for good? Returns the reason, or null.
 export function dropReason(positions: readonly Position[], wallet: string, cfg: RotationConfig): string | null {
   const record = walletRecords(positions).get(wallet);
@@ -193,6 +210,10 @@ export class Rotation {
   pendingDiscovery: Promise<void> | null = null;
   private readonly activeSince = new Map<string, number>();
   private readonly finishing = new Set<string>(); // off the active list, still holding a position we copied
+  // Who was being copied as of the last startup/tick. Remembered rather than
+  // re-read, because discovery can fill an empty slot between ticks — and
+  // that wallet must still be announced and get its idle clock started.
+  private lastActive: string[] = [];
 
   constructor(
     private readonly roster: WalletRoster,
@@ -256,6 +277,7 @@ export class Rotation {
   startup(now: number): string[] {
     this.applyDrops(now);
     const active = this.roster.active();
+    this.lastActive = active;
     for (const w of active) this.activeSince.set(w, now);
     for (const w of this.roster.all()) {
       if (!active.includes(w) && this.holdsPositionFrom(w)) this.finishing.add(w);
@@ -269,7 +291,7 @@ export class Rotation {
   }
 
   async tick(now: number, watch: WatchControl, trader: BuyControl): Promise<void> {
-    const before = this.roster.active();
+    const before = this.lastActive;
 
     this.applyDrops(now);
 
@@ -311,6 +333,7 @@ export class Rotation {
         if (watch.isWatching(w)) await watch.removeWallet(w);
       }
     }
+    this.lastActive = active;
     trader.setActiveWallets(active);
     this.maybeDiscover(now);
   }

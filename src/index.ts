@@ -17,7 +17,7 @@ import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
 import { discoverWallets, printDiscoveryReport } from './discovery';
-import { Rotation, WalletRoster } from './walletRoster';
+import { copySlots, Rotation, rotationOn, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 import { getSolPriceUsd } from './solPrice';
 import {
@@ -116,8 +116,8 @@ async function main(): Promise<void> {
   console.log(`Filters: ${tokenGate}; ${walletGate}.`);
   console.log(`Exits:   ${describeExitRules(config)}.`);
   console.log(
-    config.benchWallets.length > 0 || config.discovery
-      ? `Wallets: rotating — copies ${config.trackedWallets.length} at a time from ${config.trackedWallets.length + config.benchWallets.length}; ` +
+    rotationOn(config)
+      ? `Wallets: rotating — copies up to ${copySlots(config)} at a time (ACTIVE_WALLETS); ` +
           `drops after ${config.walletMaxConsecutiveLosses} straight losses or a net loss over ${config.walletDropAfterTrades}, ` +
           `benches after ${config.walletIdleMinutes} quiet min` +
           (config.discovery ? '; DISCOVERY on — finds new wallets itself when the bench runs low (paper-tested first).\n' : '.\n')
@@ -161,9 +161,13 @@ async function main(): Promise<void> {
   }
 
   // Rotation: decide which wallets get a slot before watching anything.
-  const rotating = config.benchWallets.length > 0 || config.discovery;
+  const rotating = rotationOn(config);
+  const slots = rotating ? copySlots(config) : config.trackedWallets.length;
   const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
-  const roster = new WalletRoster(pool, config.trackedWallets.length);
+  const roster = new WalletRoster(pool, slots);
+  // Declared before rotation starts, so its swaps can be announced on Telegram
+  // once that's running.
+  let telegram: TelegramBot | null = null;
   let rotation: Rotation | null = null;
   let toWatch = config.trackedWallets.map((w) => w.toBase58());
   if (rotating) {
@@ -178,7 +182,12 @@ async function main(): Promise<void> {
       roster,
       store,
       config,
-      console.log,
+      (message) => {
+        console.log(message);
+        // Wallet swaps and finds go to your phone too; the routine
+        // "looking…" lines stay in the terminal.
+        if (/^🔄|^🔎 Found/.test(message)) telegram?.send(message);
+      },
       config.discovery
         ? {
             minBench: 3,
@@ -225,7 +234,6 @@ async function main(): Promise<void> {
   const sleeps: { from: number; to: number }[] = [];
   const reportMs = config.telegramReportHours * 3_600_000;
   let lastReportAt = Date.now();
-  let telegram: TelegramBot | null = null;
   const reportInput = async () => ({
     positions: [...store.all()],
     now: Date.now(),
@@ -268,8 +276,11 @@ async function main(): Promise<void> {
     );
     telegram.start();
     telegramForCrash = telegram;
+    const copying = watchedCount();
     telegram.send(
-      `🟢 Bot started · ${config.dryRun ? 'PAPER mode' : '💰 REAL MONEY mode'} · copying ${watchedCount()} wallet(s)\n\n${helpText(config.telegramReportHours)}`
+      `🟢 Bot started · ${config.dryRun ? 'PAPER mode' : '💰 REAL MONEY mode'} · copying ${copying} wallet(s)` +
+        (rotation && copying < slots ? `, looking for ${slots - copying} more` : '') +
+        `\n\n${helpText(config.telegramReportHours)}`
     );
     console.log(
       `📱 Telegram on: ${config.telegramReportHours > 0 ? `a report every ${config.telegramReportHours}h` : 'reports on request'}` +

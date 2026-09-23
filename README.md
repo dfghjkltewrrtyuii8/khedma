@@ -164,6 +164,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
 | `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
 | `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
+| `ACTIVE_WALLETS` | Rotation: how many wallets to copy at once; empty slots fill from the bench and discovery. Default `4`. |
 | `WALLET_DROP_AFTER_TRADES` | Rotation: drop a wallet once this many copies have closed at a net loss. Default `6`; `0` = only the losing streak. |
 | `WALLET_IDLE_MINUTES` | Rotation: bench a wallet after this many minutes without a buy while running. Default `90`; `0` = never. |
 | `DISCOVERY` | Find new wallets automatically when the bench runs low ([details](#automatic-wallet-discovery-discoverytrue)). Discovered wallets are paper-only until proven. Default `false`. |
@@ -514,7 +515,10 @@ TRACKED_WALLETS=<the 3 to start with>
 BENCH_WALLETS=<substitutes, best first>
 ```
 
-It copies as many wallets at a time as `TRACKED_WALLETS` lists, and:
+It copies `ACTIVE_WALLETS` wallets at a time (default 4 — never fewer than
+you list in `TRACKED_WALLETS`, never more than `MAX_TRACKED_WALLETS`). Empty
+slots are filled from the bench straight away, including wallets that
+[discovery](#automatic-wallet-discovery-discoverytrue) finds. And it:
 
 - **Drops a wallet for good** when copying it loses: 3 losses in a row
   (`WALLET_MAX_CONSECUTIVE_LOSSES`), or a net loss once 6 of its copies have
@@ -523,12 +527,13 @@ It copies as many wallets at a time as `TRACKED_WALLETS` lists, and:
   running (`WALLET_IDLE_MINUTES`). Quiet isn't bad — it may trade while you
   sleep — so it goes to the back of the bench and gets another turn later. Over
   a few sessions this favours wallets that trade during *your* hours.
-- **Never adds a wallet you didn't list.** Every candidate is yours.
+- **Never adds a wallet you didn't list** — unless you turn on
+  [discovery](#automatic-wallet-discovery-discoverytrue).
 
 A wallet that loses its slot stops being copied at once, but the bot keeps
 watching it until any position copied from it has closed, so its sells are
 still mirrored. Swaps are announced as they happen (`🔄 Dropped …`,
-`🔄 Now copying …`), the `📊` line shows who's active, and `npm run summary`
+`🔄 Now copying …`) — in the terminal and, if set up, on Telegram — the `📊` line shows who's active, and `npm run summary`
 lists the whole roster with the reason for every drop. It's saved in
 `data/wallets.json`; delete that file (with the bot stopped) to give every
 wallet a fresh start.

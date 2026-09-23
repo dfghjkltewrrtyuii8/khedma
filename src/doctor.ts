@@ -21,6 +21,7 @@ import { loadKeypair } from './wallet';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } from './watcher';
 import { fetchGeckoTerminal, parseTrendingPools } from './discovery';
 import { explainTelegramError, TelegramClient } from './telegram';
+import { copySlots, rotationOn } from './walletRoster';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -123,8 +124,12 @@ async function main(): Promise<void> {
   }
   const config = loadConfig(); // exits with its own precise message if a value is malformed
   ok(`${config.trackedWallets.length} tracked wallet(s), DRY_RUN=${config.dryRun}`);
-  if (config.benchWallets.length > 0) {
-    ok(`rotation on: ${config.benchWallets.length} wallet(s) on the bench, copying ${config.trackedWallets.length} at a time`);
+  if (rotationOn(config)) {
+    ok(
+      `rotation on: copies up to ${copySlots(config)} wallets at a time — your ${config.trackedWallets.length}` +
+        (config.benchWallets.length ? `, then ${config.benchWallets.length} on your bench` : '') +
+        (config.discovery ? ', then ones discovery finds' : '')
+    );
   }
 
   console.log('\nWallet');
