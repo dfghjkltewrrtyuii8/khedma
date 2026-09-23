@@ -4,11 +4,12 @@
   "2": "setup.ts",
   "3": "pnl.ts",
   "4": "PositionStore",
-  "5": "logic-test.ts",
-  "6": "doctor.ts",
+  "5": "trader.ts",
+  "6": "logic-test.ts",
   "7": "compilerOptions",
   "8": "Solana Copy-Trading Bot",
   "9": "discovery.ts",
   "10": "RateLimiter",
-  "11": "jupiter.ts"
+  "11": "telegramSetup.ts",
+  "12": "main"
 }
