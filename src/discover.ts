@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   const roster = new WalletRoster(pool, config.trackedWallets.length);
   roster.load();
 
-  console.log('\n🔎 Looking for new wallets on GeckoTerminal — about a minute…\n');
+  console.log('\n🔎 Looking for new wallets on GeckoTerminal — 2 to 3 minutes (their free tier only allows ~10 requests a minute)…\n');
   const report = await discoverWallets(roster.known());
   printDiscoveryReport(report);
 

@@ -32,13 +32,19 @@ export const DISCOVERY_RULES = {
   trendingPages: 2, // 20 pools per page — what's moving right now
   topPoolPages: 1, // plus the day's biggest pools by volume — older, where multi-hour holds show up
   maxPoolsScanned: 20, // one API call each
-  pauseMs: 2_500, // the free API allows ~30 calls/min; stay well under
+  // The free API rate-limits at about 10 calls a minute in practice: a live run
+  // paced at 2.5s was cut off after ~9 calls and lost 14 of 20 pools to 429s.
+  pauseMs: 6_500,
+  rateLimitRetries: 2, // after a 429, wait and retry the same request this many times…
+  rateLimitBackoffMs: 45_000, // …this long apart; if it still refuses, stop the scan rather than hammer it
   // Only trades this big are read. The free feed returns a pool's last ~300
   // trades; on a busy pool, small trades fill that in minutes and hide every
-  // multi-hour hold. Reading only $150+ trades makes one page span hours —
-  // and serious traders trade that size anyway. (First live run used $25 and
-  // rejected busy pools instead: it kept 3 of 40 pools and found no one.)
-  minTradeUsd: 150,
+  // multi-hour hold. Reading only larger trades makes one page span hours —
+  // and serious traders trade that size anyway. History: $25 plus a busy-pool
+  // filter kept 3 of 40 pools and found no one; $150 kept 37 pools but each
+  // page covered a median 1.8h, and 347 of ~450 wallets couldn't be judged
+  // because their buy or sell fell outside it. $250 stretches that further.
+  minTradeUsd: 250,
   minPoolReserveUsd: 20_000, // enough depth that a copy can get back out
   minPoolAgeMinutes: 40, // the rules below need a buy 15+ min in and a 20+ min hold, so younger pools can't qualify
   sniperWindowMinutes: 15, // a first buy this soon after the pool opened is launch sniping — uncopyable
@@ -82,6 +88,10 @@ const bump = (tally: Tally | undefined, reason: string) => {
   if (tally) tally[reason] = (tally[reason] ?? 0) + 1;
 };
 
+// When nobody qualifies, the few that came closest — so the rules can be
+// judged against what's actually out there, not loosened blind.
+const NEAR_MISSES_SHOWN = 3;
+
 export interface DiscoveryReport {
   poolsFetched: number;
   poolsReadable: number;
@@ -91,6 +101,7 @@ export interface DiscoveryReport {
   windowHours: number[]; // how much time each scanned pool's trades actually covered
   poolRejects: Tally;
   walletRejects: Tally;
+  nearMisses: Candidate[];
   candidates: Candidate[];
   problems: string[];
 }
@@ -210,7 +221,8 @@ export function findCandidates(
   tradesByPool: Map<string, PoolTrade[]>,
   exclude: Set<string>,
   rules = DISCOVERY_RULES,
-  rejects?: Tally
+  rejects?: Tally,
+  nearMisses?: Candidate[]
 ): Candidate[] {
   const hits = new Map<string, { returns: number[]; evidence: string[] }>();
 
@@ -262,7 +274,11 @@ export function findCandidates(
   const single = all
     .filter((c) => c.pools === 1 && c.medianReturnPct >= rules.strongSingleReturnPct)
     .sort((a, b) => b.medianReturnPct - a.medianReturnPct);
-  for (const c of all) if (c.pools === 1 && c.medianReturnPct < rules.strongSingleReturnPct) bump(rejects, `one token only, under +${rules.strongSingleReturnPct}%`);
+  const weakSingles = all
+    .filter((c) => c.pools === 1 && c.medianReturnPct < rules.strongSingleReturnPct)
+    .sort((a, b) => b.medianReturnPct - a.medianReturnPct);
+  for (let i = 0; i < weakSingles.length; i++) bump(rejects, `one token only, under +${rules.strongSingleReturnPct}%`);
+  if (nearMisses) nearMisses.push(...weakSingles.slice(0, NEAR_MISSES_SHOWN));
   return [...proven, ...single].slice(0, rules.maxCandidates);
 }
 
@@ -280,8 +296,32 @@ export const fetchGeckoTerminal: FetchJson = async (url) => {
   return response.json();
 };
 
-// One discovery run: ~17 API calls, about 45 seconds. Never throws — problems
-// are returned in the report so the caller can say exactly what went wrong.
+class RateLimited extends Error {}
+
+// A request that waits and retries on 429. If it's still refused after the
+// retries, throws RateLimited so the caller stops the scan instead of burning
+// through the rest of the list getting refused.
+async function fetchPolitely(
+  fetchJson: FetchJson,
+  url: string,
+  pause: (ms: number) => Promise<void>,
+  rules: typeof DISCOVERY_RULES
+): Promise<unknown> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetchJson(url);
+    } catch (error) {
+      const limited = /\b429\b|rate limit/i.test((error as Error).message);
+      if (!limited) throw error;
+      if (attempt >= rules.rateLimitRetries) throw new RateLimited((error as Error).message);
+      await pause(rules.rateLimitBackoffMs);
+    }
+  }
+}
+
+// One discovery run: ~23 API calls paced for the free tier, a few minutes.
+// Never throws — problems are returned in the report so the caller can say
+// exactly what went wrong.
 export async function discoverWallets(
   exclude: Set<string>,
   now: number = Date.now(),
@@ -291,7 +331,7 @@ export async function discoverWallets(
 ): Promise<DiscoveryReport> {
   const report: DiscoveryReport = {
     poolsFetched: 0, poolsReadable: 0, poolsUsable: 0, poolsScanned: 0, tradesParsed: 0,
-    windowHours: [], poolRejects: {}, walletRejects: {}, candidates: [], problems: [],
+    windowHours: [], poolRejects: {}, walletRejects: {}, nearMisses: [], candidates: [], problems: [],
   };
   const pools: PoolInfo[] = [];
   let pagesRead = 0;
@@ -299,9 +339,10 @@ export async function discoverWallets(
     ...Array.from({ length: rules.trendingPages }, (_, i) => ({ label: `trending pools page ${i + 1}`, url: `${BASE_URL}/networks/solana/trending_pools?page=${i + 1}` })),
     ...Array.from({ length: rules.topPoolPages }, (_, i) => ({ label: `top pools page ${i + 1}`, url: `${BASE_URL}/networks/solana/pools?page=${i + 1}&sort=h24_volume_usd_desc` })),
   ];
+  let stopped = false;
   for (const listing of listings) {
     try {
-      const body = await fetchJson(listing.url);
+      const body = await fetchPolitely(fetchJson, listing.url, pause, rules);
       pagesRead += 1;
       const raw = Array.isArray((body as any)?.data) ? (body as any).data.length : 0;
       report.poolsFetched += raw;
@@ -311,6 +352,10 @@ export async function discoverWallets(
       }
     } catch (error) {
       report.problems.push(`${listing.label}: ${(error as Error).message}`);
+      if (error instanceof RateLimited) {
+        stopped = true;
+        break;
+      }
     }
     await pause(rules.pauseMs);
   }
@@ -323,10 +368,13 @@ export async function discoverWallets(
   report.poolsUsable = usable.length;
   const tradesByPool = new Map<string, PoolTrade[]>();
   let tradePagesWithData = 0;
-  for (const pool of usable.slice(0, rules.maxPoolsScanned)) {
+  for (const pool of stopped ? [] : usable.slice(0, rules.maxPoolsScanned)) {
     try {
-      const body = await fetchJson(
-        `${BASE_URL}/networks/solana/pools/${pool.address}/trades?trade_volume_in_usd_greater_than=${rules.minTradeUsd}`
+      const body = await fetchPolitely(
+        fetchJson,
+        `${BASE_URL}/networks/solana/pools/${pool.address}/trades?trade_volume_in_usd_greater_than=${rules.minTradeUsd}`,
+        pause,
+        rules
       );
       const trades = parsePoolTrades(body, pool.baseMint);
       if (Array.isArray((body as any)?.data) && (body as any).data.length > 0) tradePagesWithData += 1;
@@ -339,14 +387,24 @@ export async function discoverWallets(
       report.poolsScanned += 1;
     } catch (error) {
       report.problems.push(`trades for ${pool.name}: ${(error as Error).message}`);
+      if (error instanceof RateLimited) {
+        stopped = true;
+        break;
+      }
     }
     await pause(rules.pauseMs);
+  }
+  if (stopped) {
+    report.problems.push(
+      `GeckoTerminal kept refusing (rate limit), so the scan stopped after ${report.poolsScanned} pool(s) — ` +
+        'what was read is still used. Try again in a few minutes.'
+    );
   }
   if (tradePagesWithData > 0 && report.tradesParsed === 0) {
     report.problems.push('trades came back but none could be read — GeckoTerminal may have changed its trade format');
   }
 
-  report.candidates = findCandidates(usable, tradesByPool, exclude, rules, report.walletRejects);
+  report.candidates = findCandidates(usable, tradesByPool, exclude, rules, report.walletRejects, report.nearMisses);
   return report;
 }
 
@@ -369,6 +427,10 @@ export function printDiscoveryReport(report: DiscoveryReport, log: (line: string
   for (const c of report.candidates) {
     log(`   • ${c.wallet} — ${c.pools} token(s), median ${c.medianReturnPct >= 0 ? '+' : ''}${c.medianReturnPct.toFixed(0)}%`);
     for (const e of c.evidence) log(`       ${e}`);
+  }
+  if (report.candidates.length === 0 && report.nearMisses.length) {
+    log('   closest this time (not enough to pick):');
+    for (const m of report.nearMisses) log(`     ${m.wallet.slice(0, 4)}…${m.wallet.slice(-4)} — ${m.evidence[0]}`);
   }
   for (const p of report.problems) log(`   ⚠️ ${p}`);
 }

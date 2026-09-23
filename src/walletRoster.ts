@@ -216,7 +216,7 @@ export class Rotation {
     if (this.roster.bench().length >= this.discovery.minBench) return;
     if (now - this.lastDiscoveryAt < this.discovery.cooldownMs) return;
     this.lastDiscoveryAt = now;
-    this.log('🔎 Bench is low — looking for new wallets to try (about a minute, trading carries on)…');
+    this.log('🔎 Bench is low — looking for new wallets to try (a few minutes; trading carries on)…');
     this.pendingDiscovery = this.discovery
       .run(this.roster.known())
       .then((candidates) => {

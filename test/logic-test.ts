@@ -1328,6 +1328,29 @@ async function testDiscovery(realLog: typeof console.log) {
   assert(urls.every((u) => u.startsWith('https://api.geckoterminal.com/api/v2/networks/solana/')) && pauses === urls.length, 'every call is to GeckoTerminal and paced');
   assert(urls.some((u) => u.includes('trade_volume_in_usd_greater_than=')), 'dust trades are filtered at the source');
 
+  // Near misses are reported when nobody qualifies: MEH (+12% on one token).
+  const nearMisses: any[] = [];
+  findCandidates(usable, byPool, new Set([KNOWN, GOOD, ONEHIT]), undefined, undefined, nearMisses);
+  assert(nearMisses.length === 1 && nearMisses[0].wallet === MEH && /\+12%/.test(nearMisses[0].evidence[0]), 'the closest near-miss is kept for the report');
+
+  // Rate limiting: a 429 is waited out and retried; a pool that keeps refusing
+  // stops the scan (keeping what was read) instead of hammering the API.
+  let p1Refusals = 0;
+  const pausesMs: number[] = [];
+  const flaky = async (url: string) => {
+    if (url.includes('/pools/P1/trades') && p1Refusals++ < 2) throw new Error('GeckoTerminal rate limit (429) — too many requests');
+    return fakeFetch(url);
+  };
+  const recovered = await discoverWallets(new Set([KNOWN]), NOW, flaky, async (ms) => { pausesMs.push(ms); });
+  assert(recovered.poolsScanned === 3 && recovered.problems.length === 0 && recovered.candidates.length === 2, 'two 429s on one pool are waited out and the scan completes');
+  assert(pausesMs.filter((ms) => ms >= 45_000).length === 2, 'each 429 waits the long backoff before retrying');
+  const stubborn = await discoverWallets(new Set([KNOWN]), NOW, async (url: string) => {
+    if (url.includes('/trades')) throw new Error('GeckoTerminal rate limit (429)');
+    return fakeFetch(url);
+  }, async () => {});
+  assert(stubborn.poolsScanned === 0 && stubborn.problems.some((p) => /kept refusing/.test(p)), 'a pool that keeps refusing stops the scan with a clear message');
+  assert(stubborn.problems.filter((p) => p.startsWith('trades for')).length === 1, 'it stops at the first stubborn refusal instead of trying every pool');
+
   const changed = await discoverWallets(new Set(), NOW, async (u) => (u.includes('page=1') ? { data: [{ id: 'x', attributes: { name: 'weird' } }] } : { data: [] }), async () => {});
   assert(changed.candidates.length === 0 && changed.problems.some((p) => /changed its response format/.test(p)), 'an unreadable response is reported, not a silent zero');
   const down = await discoverWallets(new Set(), NOW, async () => { throw new Error('GeckoTerminal HTTP 503'); }, async () => {});
