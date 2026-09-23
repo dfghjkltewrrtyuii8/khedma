@@ -36,6 +36,10 @@ export interface Config {
   trailingStopPercent: number;
   exitCheckSeconds: number;
   exitRebuyCooldownHours: number;
+  // Wallet rotation — see walletRoster.ts. On only when benchWallets is set.
+  benchWallets: PublicKey[];
+  walletDropAfterTrades: number;
+  walletIdleMinutes: number;
 }
 
 function fail(message: string): never {
@@ -88,6 +92,24 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
   }
   if (trackedWallets.length === 0) fail('TRACKED_WALLETS has no valid addresses.');
 
+  // Substitutes for rotation. Optional; anything already in TRACKED_WALLETS
+  // is ignored here rather than counted twice.
+  const tracked = new Set(trackedWallets.map((w) => w.toBase58()));
+  const benchWallets: PublicKey[] = [];
+  for (const piece of (process.env.BENCH_WALLETS ?? '').split(',')) {
+    const address = piece.trim();
+    if (!address) continue;
+    let key: PublicKey;
+    try {
+      key = new PublicKey(address);
+    } catch {
+      fail(`BENCH_WALLETS contains "${address}", which is not a valid Solana address.`);
+    }
+    if (tracked.has(key.toBase58()) || benchWallets.some((b) => b.equals(key))) continue;
+    benchWallets.push(key);
+  }
+  if (benchWallets.length > 30) fail(`BENCH_WALLETS has ${benchWallets.length} addresses; keep it to 30 or fewer.`);
+
   // SAFETY: dry-run unless DRY_RUN is exactly "false".
   const dryRun = (process.env.DRY_RUN ?? 'true').trim().toLowerCase() !== 'false';
 
@@ -116,6 +138,9 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     trailingStopPercent: numberEnv('TRAILING_STOP_PERCENT', 30),
     exitCheckSeconds: numberEnv('EXIT_CHECK_SECONDS', 30),
     exitRebuyCooldownHours: numberEnv('EXIT_REBUY_COOLDOWN_HOURS', 24),
+    benchWallets,
+    walletDropAfterTrades: numberEnv('WALLET_DROP_AFTER_TRADES', 6),
+    walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');

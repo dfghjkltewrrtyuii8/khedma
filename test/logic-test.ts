@@ -32,6 +32,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
+import { dropReason, Rotation, WalletRoster } from '../src/walletRoster';
 import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
 const TRACKED = TEST_WALLET;
@@ -880,6 +881,7 @@ function testEnvIsolation() {
   assert(config.copyBuyAmountSol === 0.01, 'buy size is pinned by test-env.ts');
   assert(config.trackedWallets.length === 1 && config.trackedWallets[0].toBase58() === TRACKED, 'tracked wallets are pinned');
   assert(config.stopLossPercent === 30 && config.takeProfitPercent === 0, 'exit rules are pinned');
+  assert(config.benchWallets.length === 0, 'no bench from the real .env leaks in');
   assert(process.env.SPEECH === 'false' && process.env.SOUNDS === 'false', 'tests never make the machine ding or talk');
   console.log('✅ test isolation: the suite reads pinned settings, never the real .env');
 }
@@ -1090,8 +1092,142 @@ async function testRealSellRecordsActualSol(realLog: typeof console.log) {
   realLog('✅ real sells: record the SOL that actually arrived (after fees and slippage), not the quote');
 }
 
+// Wallet rotation, end to end without a network: history-based drops at
+// startup, quiet wallets sent to the back of the bench, bench wallets
+// promoted, a dropped wallet kept WATCHED until the position we copied from it
+// closes (its sells still matter), and the roster surviving a restart.
+async function testWalletRotation(realLog: typeof console.log) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-rotation-'));
+  const store = new PositionStore(dir);
+  const [A, B, C, D, E, F] = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
+  const cfg = { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 90 };
+  const MIN = 60_000;
+  const T0 = Date.parse('2026-09-23T20:00:00Z');
+
+  // A arrives with three straight copied losses from an earlier session.
+  for (let i = 0; i < 3; i++) {
+    const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: A, dryRun: true, spentSol: 0.01, tokenAmountRaw: '100' });
+    store.recordSell(p, 100n, 0.006);
+  }
+  assert(dropReason(store.all(), A, cfg) === '3 copied losses in a row', 'a losing streak is a reason to drop');
+  assert(dropReason(store.all(), B, cfg) === null, 'no history, no reason');
+
+  const roster = new WalletRoster([A, B, C, D, E, F], 3, dir);
+  roster.load();
+  const logs: string[] = [];
+  const rotation = new Rotation(roster, store, cfg, (m) => logs.push(m));
+  const watching = new Set<string>();
+  const watch = { isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); } };
+  let copying: string[] | null = null;
+  const trader = { setActiveWallets(ws: string[] | null) { copying = ws; } };
+
+  const initial = rotation.startup(T0);
+  assert(!initial.includes(A) && initial.join() === [B, C, D].join(), 'A is dropped before anything is watched; D takes its slot');
+  initial.forEach((w) => watching.add(w));
+  await rotation.tick(T0, watch, trader);
+  assert(copying!.join() === [B, C, D].join(), 'the trader copies exactly the active wallets');
+
+  // C holds a position we copied, then goes quiet; B and D keep buying.
+  store.openPosition({ mint: MEME_MINT, decimals: 6, sourceWallet: C, dryRun: true, spentSol: 0.01, tokenAmountRaw: '100' });
+  rotation.noteBuy(B, T0 + 80 * MIN);
+  rotation.noteBuy(D, T0 + 85 * MIN);
+  await rotation.tick(T0 + 91 * MIN, watch, trader);
+  assert(roster.active().join() === [B, D, E].join(), 'quiet C is benched and E is promoted');
+  assert(roster.bench().join() === [F, C].join(), 'C goes to the BACK of the bench, not out');
+  assert(copying!.join() === [B, D, E].join() && !copying!.includes(C), 'C is no longer copied');
+  assert(watching.has(C) && watching.has(E), 'C stays watched while we hold its position; E is now watched');
+  assert(logs.some((l) => l.includes('Benched')) && logs.some((l) => l.includes('Now copying')), 'both moves are announced');
+
+  // Once the position copied from C closes, C is no longer watched.
+  const cPos = store.all().find((p) => p.sourceWallet === C)!;
+  store.recordSell(cPos, 100n, 0.012);
+  rotation.noteBuy(B, T0 + 95 * MIN); rotation.noteBuy(D, T0 + 95 * MIN); rotation.noteBuy(E, T0 + 95 * MIN);
+  await rotation.tick(T0 + 100 * MIN, watch, trader);
+  assert(!watching.has(C), 'C is released once nothing copied from it is open');
+  assert(!watching.has(A), 'the dropped wallet was never watched');
+
+  // A wallet that grinds out a net loss over enough trades is dropped too.
+  for (let i = 0; i < 6; i++) {
+    const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: E, dryRun: true, spentSol: 0.01, tokenAmountRaw: '100' });
+    store.recordSell(p, 100n, i % 2 === 0 ? 0.012 : 0.006); // alternating, never 3 in a row, net negative
+  }
+  assert(/net -0\.0060 SOL over 6/.test(dropReason(store.all(), E, cfg) ?? ''), 'a net loss over 6 copies is a reason to drop');
+  await rotation.tick(T0 + 101 * MIN, watch, trader);
+  assert(!roster.active().includes(E) && roster.active().includes(F), 'E is dropped and F promoted');
+
+  // It all survives a restart.
+  const reloaded = new WalletRoster([A, B, C, D, E, F], 3, dir);
+  reloaded.load();
+  assert(reloaded.active().join() === roster.active().join() && reloaded.dropped().length === 2, 'the roster is restored from data/wallets.json');
+  realLog('✅ wallet rotation: drops losers, benches quiet wallets, promotes the bench, keeps watching until copied trades close');
+}
+
+// With rotation on, the trader copies BUYS only from active wallets, but still
+// mirrors a SELL from a wallet that's been benched while we hold its token.
+async function testActiveWalletFilter(realLog: typeof console.log) {
+  const config = loadConfig();
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-active-')));
+  let orders = 0;
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      orders++;
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: params.inputMint === SOL_MINT ? 5_000n : 12_000_000n };
+    },
+    async execute() { throw new Error('must not execute in dry run'); },
+  };
+  const trader = new Trader(config, { async getBalance() { return 10e9; } } as any, Keypair.generate(), fakeJupiter as any, store, okMarket);
+  const OTHER = Keypair.generate().publicKey.toBase58();
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    await trader.handleSwapEvent({ signature: 'a1', sourceWallet: TRACKED, side: 'buy', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    assert(store.byStatus('open').length === 1, 'bought while TRACKED was active');
+    trader.setActiveWallets([OTHER]); // TRACKED gets benched
+    const before = orders;
+    await trader.handleSwapEvent({ signature: 'a2', sourceWallet: TRACKED, side: 'buy', mint: Keypair.generate().publicKey.toBase58(), decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    assert(store.all().length === 1 && orders === before, 'a benched wallet\'s buy is refused before any Jupiter call');
+    await trader.handleSwapEvent({ signature: 'a3', sourceWallet: TRACKED, side: 'sell', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 100n, ownerPreTokenRaw: 100n, quoteSolEquivalent: 0.2 });
+    assert(store.byStatus('closed').length === 1, 'but its sell is still mirrored');
+    trader.setActiveWallets(null);
+    await trader.handleSwapEvent({ signature: 'a4', sourceWallet: TRACKED, side: 'buy', mint: Keypair.generate().publicKey.toBase58(), decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    assert(store.byStatus('open').length === 1, 'rotation off (null) copies every watched wallet again');
+  } finally {
+    console.log = loud;
+  }
+
+  // The watcher can add and drop wallets while running.
+  const subs: string[] = [];
+  let removed = 0;
+  const conn = { onLogs(pk: PublicKey) { subs.push(pk.toBase58()); return subs.length; }, async removeOnLogsListener() { removed++; }, async getParsedTransaction() { return null; } };
+  const watcher = new WalletWatcher(conn as any, [new PublicKey(TRACKED)], async () => {}, new RateLimiter(0));
+  console.log = () => {};
+  try {
+    watcher.start();
+    watcher.addWallet(OTHER);
+    watcher.addWallet(OTHER); // idempotent
+    assert(subs.length === 2 && watcher.isWatching(OTHER), 'addWallet subscribes once');
+    await watcher.removeWallet(TRACKED);
+    assert(!watcher.isWatching(TRACKED) && removed === 1, 'removeWallet unsubscribes');
+    await watcher.stop();
+  } finally {
+    console.log = loud;
+  }
+
+  // BENCH_WALLETS: parsed, and anything already tracked is not counted twice.
+  process.env.BENCH_WALLETS = `${OTHER}, ${TRACKED},${OTHER}`;
+  try {
+    const c = loadConfig();
+    assert(c.benchWallets.length === 1 && c.benchWallets[0].toBase58() === OTHER, 'bench is deduped against itself and TRACKED_WALLETS');
+  } finally {
+    process.env.BENCH_WALLETS = '';
+  }
+  realLog('✅ active wallets: benched wallets\' buys refused, their sells still mirrored; watcher adds/drops wallets live');
+}
+
 async function main() {
   testEnvIsolation();
+  await testWalletRotation(console.log);
+  await testActiveWalletFilter(console.log);
   testCopyGap();
   await testSourceTracking(console.log);
   await testRealSellRecordsActualSol(console.log);

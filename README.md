@@ -162,6 +162,9 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `WALLET_MAX_CONSECUTIVE_LOSSES` | Mute a tracked wallet after this many copied losses in a row. Default `3`; `0` = never mute. |
 | `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
 | `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
+| `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
+| `WALLET_DROP_AFTER_TRADES` | Rotation: drop a wallet once this many copies have closed at a net loss. Default `6`; `0` = only the losing streak. |
+| `WALLET_IDLE_MINUTES` | Rotation: bench a wallet after this many minutes without a buy while running. Default `90`; `0` = never. |
 | `STOP_LOSS_PERCENT` | Sell if a position falls this far below what you paid. Default `30`; `0` = off. |
 | `TRAILING_STOP_PERCENT` | Sell if a position that has been in profit gives back this much from its own peak. Default `30`; `0` = off. |
 | `TAKE_PROFIT_PERCENT` | Sell as soon as a position is up this much. Default `0` (**off on purpose** — see below). |
@@ -440,6 +443,39 @@ moves:
 
 Both gates make the bot slower and pickier. That is the point: the trades
 they refuse are the ones that lost.
+
+## Wallet rotation
+
+Give the bot more candidates than it copies at once, and it keeps the good
+ones and swaps out the rest by itself:
+
+```
+TRACKED_WALLETS=<the 3 to start with>
+BENCH_WALLETS=<substitutes, best first>
+```
+
+It copies as many wallets at a time as `TRACKED_WALLETS` lists, and:
+
+- **Drops a wallet for good** when copying it loses: 3 losses in a row
+  (`WALLET_MAX_CONSECUTIVE_LOSSES`), or a net loss once 6 of its copies have
+  closed (`WALLET_DROP_AFTER_TRADES`). The next bench wallet takes its slot.
+- **Benches a quiet wallet** after 90 minutes without a buy while you're
+  running (`WALLET_IDLE_MINUTES`). Quiet isn't bad — it may trade while you
+  sleep — so it goes to the back of the bench and gets another turn later. Over
+  a few sessions this favours wallets that trade during *your* hours.
+- **Never adds a wallet you didn't list.** Every candidate is yours.
+
+A wallet that loses its slot stops being copied at once, but the bot keeps
+watching it until any position copied from it has closed, so its sells are
+still mirrored. Swaps are announced as they happen (`🔄 Dropped …`,
+`🔄 Now copying …`), the `📊` line shows who's active, and `npm run summary`
+lists the whole roster with the reason for every drop. It's saved in
+`data/wallets.json`; delete that file (with the bot stopped) to give every
+wallet a fresh start.
+
+Six copies is a small sample, so rotation will sometimes drop a wallet that
+was just unlucky. It's a trade-off in favour of not spending your limited
+hours on wallets that aren't working.
 
 ## Exiting without them
 

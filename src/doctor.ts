@@ -121,6 +121,9 @@ async function main(): Promise<void> {
   }
   const config = loadConfig(); // exits with its own precise message if a value is malformed
   ok(`${config.trackedWallets.length} tracked wallet(s), DRY_RUN=${config.dryRun}`);
+  if (config.benchWallets.length > 0) {
+    ok(`rotation on: ${config.benchWallets.length} wallet(s) on the bench, copying ${config.trackedWallets.length} at a time`);
+  }
 
   console.log('\nWallet');
   let keypair;
@@ -177,8 +180,8 @@ async function main(): Promise<void> {
   if (price !== null) ok(`CoinGecko SOL price $${price.toFixed(2)}`);
   else warn('CoinGecko unreachable — P&L will say "USD price unavailable" (trading itself is unaffected)');
 
-  console.log('\nTracked wallets — last activity (a wallet quiet for days has nothing to copy)');
-  for (const wallet of config.trackedWallets) {
+  console.log('\nTracked and bench wallets — last activity (a wallet quiet for days has nothing to copy)');
+  for (const wallet of [...config.trackedWallets, ...config.benchWallets].slice(0, 20)) {
     const name = shortAddress(wallet.toBase58());
     try {
       const signatures = await withTimeout(connection.getSignaturesForAddress(wallet, { limit: 1 }), 15_000);

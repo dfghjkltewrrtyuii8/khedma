@@ -4,7 +4,7 @@
 //   Ctrl+C (once)      -> stop watching, try to close all positions, print P&L
 //   Ctrl+C (twice)     -> force-quit immediately (never double-executes sells)
 
-import { Connection } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { loadConfig } from './config';
 import { JupiterClient } from './jupiter';
 import { printSummary } from './pnl';
@@ -16,6 +16,7 @@ import { tokenGateEnabled } from './tokenMarket';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
+import { Rotation, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 
 // Free-tier Jupiter = 1 request/second shared across everything, so we keep
@@ -88,7 +89,14 @@ async function main(): Promise<void> {
         (config.walletMuteHours > 0 ? ` (for ${config.walletMuteHours}h)` : ' (until removed)')
       : 'wallet muting OFF';
   console.log(`Filters: ${tokenGate}; ${walletGate}.`);
-  console.log(`Exits:   ${describeExitRules(config)}.\n`);
+  console.log(`Exits:   ${describeExitRules(config)}.`);
+  console.log(
+    config.benchWallets.length > 0
+      ? `Wallets: rotating — copies ${config.trackedWallets.length} at a time from ${config.trackedWallets.length + config.benchWallets.length}; ` +
+          `drops after ${config.walletMaxConsecutiveLosses} straight losses or a net loss over ${config.walletDropAfterTrades}, ` +
+          `benches after ${config.walletIdleMinutes} quiet min.\n`
+      : 'Wallets: fixed list (set BENCH_WALLETS to rotate in substitutes).\n'
+  );
 
   const connection = new Connection(config.heliusHttpsUrl, {
     wsEndpoint: config.heliusWssUrl,
@@ -126,15 +134,37 @@ async function main(): Promise<void> {
     if (mute.muted) console.log(`🔇 ${shortAddress(wallet.toBase58())} is muted — ${mute.reason}`);
   }
 
+  // Rotation: decide which wallets get a slot before watching anything.
+  const rotating = config.benchWallets.length > 0;
+  const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
+  const roster = new WalletRoster(pool, config.trackedWallets.length);
+  let rotation: Rotation | null = null;
+  let toWatch = config.trackedWallets.map((w) => w.toBase58());
+  if (rotating) {
+    try {
+      roster.load();
+    } catch (error) {
+      console.error(`\n❌ data/wallets.json exists but could not be read: ${(error as Error).message}`);
+      console.error('   Fix or delete it, then start again.\n');
+      process.exit(1);
+    }
+    rotation = new Rotation(roster, store, config);
+    toWatch = rotation.startup(Date.now());
+  }
+
   const limiter = new RateLimiter(JUPITER_MIN_GAP_MS);
   const jupiter = new JupiterClient(config.jupiterApiKey, limiter);
   const trader = new Trader(config, connection, keypair, jupiter, store);
+  if (rotating) trader.setActiveWallets(roster.active());
   // Separate budget from Jupiter's: this one paces Helius RPC reads.
   const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
   const watcher = new WalletWatcher(
     connection,
-    config.trackedWallets,
-    (event) => trader.handleSwapEvent(event),
+    toWatch.map((w) => new PublicKey(w)),
+    (event) => {
+      if (event.side === 'buy') rotation?.noteBuy(event.sourceWallet, Date.now());
+      return trader.handleSwapEvent(event);
+    },
     rpcLimiter
   );
   quietenRpcRetryLogs();
@@ -151,7 +181,9 @@ async function main(): Promise<void> {
   // Jupiter calls. Use `npm run summary` (or shut down) for marked-to-market
   // numbers, in both DRY_RUN and real mode alike.
   const summaryTimer = setInterval(() => {
+    if (rotation) rotation.tick(Date.now(), watcher, trader).catch(() => {});
     reportWatcherHealth(watcher);
+    if (rotation) console.log(`   Wallets: ${rotation.describe()}`);
     printSummary(store, undefined, config.slippageBps, config).catch(() => {});
   }, config.summaryIntervalSeconds * 1000);
 

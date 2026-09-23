@@ -10,6 +10,7 @@ import { JupiterClient } from './jupiter';
 import { printSummary } from './pnl';
 import { PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
+import { printRoster, WalletRoster } from './walletRoster';
 
 const JUPITER_MIN_GAP_MS = 1_100;
 
@@ -22,6 +23,13 @@ async function main(): Promise<void> {
   const openCount = store.byStatus('open').length;
   const jupiter = openCount > 0 ? new JupiterClient(config.jupiterApiKey, new RateLimiter(JUPITER_MIN_GAP_MS)) : undefined;
   await printSummary(store, jupiter, config.slippageBps, config, true);
+
+  if (config.benchWallets.length > 0) {
+    const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
+    const roster = new WalletRoster(pool, config.trackedWallets.length);
+    roster.load();
+    printRoster(roster);
+  }
 }
 
 main().catch((error) => {

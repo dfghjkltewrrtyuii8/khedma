@@ -78,7 +78,7 @@ export interface WatcherStats {
 }
 
 export class WalletWatcher {
-  private subscriptionIds: number[] = [];
+  private subscriptions = new Map<string, number>(); // wallet -> onLogs subscription id
   private seenSignatures = new Set<string>();
   private stopped = false;
   private queue: QueuedTx[] = [];
@@ -100,36 +100,63 @@ export class WalletWatcher {
   ) {}
 
   start(): void {
-    for (const wallet of this.trackedWallets) {
-      const walletAddress = wallet.toBase58();
-      const subscriptionId = this.connection.onLogs(
-        wallet,
-        (logs) => {
-          if (this.stopped) return;
-          if (logs.err) return; // failed transaction — nothing actually happened
-          if (this.seenSignatures.has(logs.signature)) return;
-          this.rememberSignature(logs.signature);
-          this.enqueue(logs.signature, walletAddress);
-        },
-        'confirmed'
-      );
-      this.subscriptionIds.push(subscriptionId);
-      console.log(`👀 Watching wallet ${walletAddress}`);
+    for (const wallet of this.trackedWallets) this.subscribe(wallet);
+  }
+
+  isWatching(address: string): boolean {
+    return this.subscriptions.has(address);
+  }
+
+  // Start watching a wallet while running (rotation promotes a bench wallet).
+  addWallet(address: string): void {
+    if (this.stopped) return;
+    this.subscribe(new PublicKey(address));
+  }
+
+  // Stop watching a wallet while running. Trades of its already in the queue
+  // still get processed — its sells still matter.
+  async removeWallet(address: string): Promise<void> {
+    const id = this.subscriptions.get(address);
+    if (id === undefined) return;
+    this.subscriptions.delete(address);
+    try {
+      await this.connection.removeOnLogsListener(id);
+    } catch {
+      // The socket may already be closing; that's fine.
     }
+    console.log(`👋 Stopped watching ${shortAddress(address)}`);
+  }
+
+  private subscribe(wallet: PublicKey): void {
+    const walletAddress = wallet.toBase58();
+    if (this.subscriptions.has(walletAddress)) return;
+    const subscriptionId = this.connection.onLogs(
+      wallet,
+      (logs) => {
+        if (this.stopped) return;
+        if (logs.err) return; // failed transaction — nothing actually happened
+        if (this.seenSignatures.has(logs.signature)) return;
+        this.rememberSignature(logs.signature);
+        this.enqueue(logs.signature, walletAddress);
+      },
+      'confirmed'
+    );
+    this.subscriptions.set(walletAddress, subscriptionId);
+    console.log(`👀 Watching wallet ${walletAddress}`);
   }
 
   // Stop reacting to new activity immediately (used at shutdown).
   async stop(): Promise<void> {
     this.stopped = true;
     this.queue = [];
-    for (const id of this.subscriptionIds) {
+    for (const id of this.subscriptions.values()) {
       try {
         await this.connection.removeOnLogsListener(id);
       } catch {
         // The socket may already be closing; that's fine.
       }
     }
-    this.subscriptionIds = [];
+    this.subscriptions.clear();
   }
 
   stats(): WatcherStats {

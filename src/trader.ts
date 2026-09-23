@@ -32,6 +32,9 @@ export class Trader {
   // Events are processed one at a time so two near-simultaneous trades can't
   // race past the position-count checks.
   private queue: Promise<void> = Promise.resolve();
+  // With rotation on: the only wallets whose BUYS we copy. Sells are mirrored
+  // from any wallet we hold a position from. null = copy every watched wallet.
+  private activeWallets: Set<string> | null = null;
 
   constructor(
     private readonly config: Config,
@@ -43,6 +46,10 @@ export class Trader {
     // touch the network.
     private readonly marketSource: MarketSource = fetchDexscreenerMarket
   ) {}
+
+  setActiveWallets(wallets: string[] | null): void {
+    this.activeWallets = wallets ? new Set(wallets) : null;
+  }
 
   beginShutdown(): void {
     this.shuttingDown = true;
@@ -137,6 +144,10 @@ export class Trader {
   // ---------------------------------------------------------------- buys ---
 
   private async maybeCopyBuy(event: SwapEvent): Promise<void> {
+    if (this.activeWallets && !this.activeWallets.has(event.sourceWallet)) {
+      console.log(`   ↳ skip: ${shortAddress(event.sourceWallet)} is off the active list (benched or dropped) — only its sells are still mirrored`);
+      return;
+    }
     const existing = this.store.findOpenByMint(event.mint);
     if (existing) {
       console.log(`   ↳ skip: we already hold a position in ${shortAddress(event.mint)} (${existing.status})`);
