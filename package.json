@@ -1,15 +1,15 @@
 {
   "name": "khedma-copy-trader",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
   "description": "Solana copy-trading bot: watches chosen wallets and mirrors their buys/sells via Jupiter Swap API v2",
   "scripts": {
-    "start": "NODE_OPTIONS=--no-deprecation tsx src/index.ts",
-    "setup": "NODE_OPTIONS=--no-deprecation tsx src/setup.ts",
-    "doctor": "NODE_OPTIONS=--no-deprecation tsx src/doctor.ts",
-    "alerts": "NODE_OPTIONS=--no-deprecation tsx src/alerts.ts",
-    "summary": "NODE_OPTIONS=--no-deprecation tsx src/summary.ts",
-    "writeoff": "NODE_OPTIONS=--no-deprecation tsx src/writeoff.ts",
+    "start": "tsx --no-deprecation src/index.ts",
+    "setup": "tsx --no-deprecation src/setup.ts",
+    "doctor": "tsx --no-deprecation src/doctor.ts",
+    "alerts": "tsx --no-deprecation src/alerts.ts",
+    "summary": "tsx --no-deprecation src/summary.ts",
+    "writeoff": "tsx --no-deprecation src/writeoff.ts",
     "test": "tsx test/logic-test.ts",
     "typecheck": "tsc --noEmit"
   },

@@ -24,7 +24,7 @@ import { JupiterOrder, OrderParams } from '../src/jupiter';
 import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
-import { soundFor, speechFor, speechArgs } from '../src/notify';
+import { soundFor, speechFor, speechArgs, windowsAlertInvocation, windowsSoundFor, WINDOWS_ALERT_SCRIPT } from '../src/notify';
 import { classifyWalletSecret, findPlaceholders, parseHeliusInput, parseWalletList, renderEnv } from '../src/setupChecks';
 import * as bip39 from 'bip39';
 import { evaluateToken, summarizePairs, TokenMarket } from '../src/tokenMarket';
@@ -882,8 +882,36 @@ function testEnvIsolation() {
   console.log('✅ test isolation: the suite reads pinned settings, never the real .env');
 }
 
+// Windows alerts go through PowerShell, the one place in this codebase where a
+// value from .env comes near something that can execute. This pins that it
+// never does: the command line is always the same constant script, and the
+// phrase / sound / voice travel only as environment variables. Pure — nothing
+// is spawned, so it runs the same on any OS.
+function testWindowsAlerts() {
+  const none: NodeJS.ProcessEnv = {};
+  assert(windowsSoundFor('buy', none) === 'C:\\Windows\\Media\\chimes.wav', 'default Windows buy chime');
+  assert(windowsSoundFor('sell', none) === 'C:\\Windows\\Media\\tada.wav', 'default Windows sell chime');
+  assert(windowsSoundFor('buy', none) !== windowsSoundFor('sell', none), 'buy and sell sound different on Windows too');
+  assert(windowsSoundFor('buy', { SOUND_BUY: 'Glass' }) === 'C:\\Windows\\Media\\chimes.wav', 'a Mac sound name from a copied .env falls back to the Windows default');
+  assert(windowsSoundFor('buy', { SOUND_BUY: 'D:\\sounds\\filled.wav' }) === 'D:\\sounds\\filled.wav', 'a full Windows .wav path is used');
+  assert(windowsSoundFor('buy', { SOUNDS: 'false' }) === null, 'SOUNDS=false silences on Windows');
+
+  const nasty = "Order filled'; Remove-Item C:\\ -Recurse; '";
+  const inv = windowsAlertInvocation('buy', false, { SPEECH_BUY: nasty, SPEECH_VOICE: 'male' })!;
+  assert(inv.file === 'powershell.exe', 'runs PowerShell directly, no shell');
+  assert(inv.args.every((a) => !a.includes('Remove-Item') && !a.includes('Order filled')), 'no .env text ever appears on the command line');
+  assert(Buffer.from(inv.args[3], 'base64').toString('utf16le') === WINDOWS_ALERT_SCRIPT, 'the command is always the same constant script');
+  assert(inv.env.COPYBOT_SAY === nasty, 'the phrase travels only as an environment variable, where PowerShell treats it as text');
+  assert(inv.env.COPYBOT_VOICE === 'male', 'voice passed through when valid');
+  assert(windowsAlertInvocation('buy', false, { SPEECH_VOICE: '-evil' })!.env.COPYBOT_VOICE === '', 'an invalid voice value is dropped');
+  assert(windowsAlertInvocation('buy', true, {})!.env.COPYBOT_SAY === 'Simulated. Order filled', 'paper trades still say Simulated on Windows');
+  assert(windowsAlertInvocation('buy', false, { SOUNDS: 'false', SPEECH: 'false' }) === null, 'both off = nothing launched');
+  console.log('✅ windows alerts: chimes + speech via a constant PowerShell script, .env values never on the command line');
+}
+
 async function main() {
   testEnvIsolation();
+  testWindowsAlerts();
   testSetupChecks();
   testExitDecisions();
   await testExitsInTrader(console.log);

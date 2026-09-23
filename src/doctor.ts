@@ -11,7 +11,7 @@ import { Connection } from '@solana/web3.js';
 import dotenv from 'dotenv';
 import { loadConfig, SOL_MINT, USDC_MINT } from './config';
 import { JupiterClient, JupiterError } from './jupiter';
-import { soundFor, speechFor, speechArgs } from './notify';
+import { soundFor, speechFor, speechArgs, windowsSoundFor } from './notify';
 import { RateLimiter, sleep } from './rateLimiter';
 import { describeExitRules, exitRulesEnabled } from './exitRules';
 import { findPlaceholders } from './setupChecks';
@@ -217,6 +217,17 @@ async function main(): Promise<void> {
     }
   } else {
     warn('all exit rules are off — positions are only sold when the tracked wallet sells');
+  }
+  if (process.platform === 'win32') {
+    const missing = (['buy', 'sell', 'fail'] as const)
+      .map((kind) => windowsSoundFor(kind))
+      .filter((file): file is string => file !== null && !fs.existsSync(file));
+    if (missing.length > 0) warn(`Windows sound file(s) not found: ${missing.join(', ')} — speech will still play`);
+    else ok('Windows chimes configured');
+    const phrase = speechFor('buy', false);
+    if (phrase === null) ok('speech off (SPEECH=false)');
+    else ok(`speech on via Windows voices — e.g. "${phrase}"${process.env.SPEECH_VOICE ? `, voice "${process.env.SPEECH_VOICE}"` : ''}`);
+    console.log('     hear them all with: npm run alerts   (male voice: SPEECH_VOICE=male)');
   }
   if (process.platform === 'darwin') {
     const missing = (['buy', 'sell', 'fail'] as const)

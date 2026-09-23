@@ -13,6 +13,9 @@
 // Everything goes through execFile (no shell, so nothing in .env can be
 // interpreted as a command) and is fire-and-forget: trading never waits on
 // audio, and audio that fails is never surfaced.
+//
+// macOS uses afplay + say. Windows uses PowerShell's built-in SoundPlayer and
+// System.Speech (see the Windows section below). Linux stays silent.
 
 import { execFile } from 'child_process';
 
@@ -96,12 +99,87 @@ export function speechArgs(env: NodeJS.ProcessEnv = process.env): string[] {
   return args;
 }
 
+// ---------------------------------------------------------------- Windows ---
+// Windows has no afplay or say, but every copy ships PowerShell with
+// System.Media.SoundPlayer and System.Speech. The script below is a CONSTANT
+// and is passed base64-encoded (-EncodedCommand), so there is no quoting to
+// get wrong. The phrase, sound file and voice reach it ONLY through
+// environment variables — never pasted into the command — so nothing in .env
+// can ever run as PowerShell. Each step has its own try/catch: a missing sound
+// file or an unknown voice skips that step and the phrase is still spoken.
+
+const WINDOWS_MEDIA = 'C:\\Windows\\Media\\';
+const WINDOWS_DEFAULT_SOUNDS: Record<NotifyKind, string> = {
+  buy: `${WINDOWS_MEDIA}chimes.wav`,
+  sell: `${WINDOWS_MEDIA}tada.wav`,
+  fail: `${WINDOWS_MEDIA}Windows Critical Stop.wav`,
+};
+
+export const WINDOWS_ALERT_SCRIPT = [
+  'try { if ($env:COPYBOT_WAV) { (New-Object System.Media.SoundPlayer $env:COPYBOT_WAV).PlaySync() } } catch {}',
+  'try {',
+  '  if ($env:COPYBOT_SAY) {',
+  '    Add-Type -AssemblyName System.Speech',
+  '    $s = New-Object System.Speech.Synthesis.SpeechSynthesizer',
+  '    if ($env:COPYBOT_VOICE) {',
+  '      try { $s.SelectVoice($env:COPYBOT_VOICE) } catch {',
+  "        try { if ($env:COPYBOT_VOICE -match '^(male|female)$') { $s.SelectVoiceByHints($env:COPYBOT_VOICE) } } catch {}",
+  '      }',
+  '    }',
+  '    $s.Speak($env:COPYBOT_SAY)',
+  '  }',
+  '} catch {}',
+].join('\n');
+
+const WINDOWS_ALERT_SCRIPT_B64 = Buffer.from(WINDOWS_ALERT_SCRIPT, 'utf16le').toString('base64');
+
+// Pure: which .wav to play on Windows. SOUND_BUY etc. may be a full Windows
+// path to a .wav (C:\...\x.wav); anything else — including the Mac names
+// like Glass, so a .env copied from a Mac just works — falls back to the
+// Windows default for that event rather than to silence.
+export function windowsSoundFor(kind: NotifyKind, env: NodeJS.ProcessEnv = process.env): string | null {
+  if (flagOff(env, 'SOUNDS')) return null;
+  const override = (env[SOUND_KEYS[kind]] ?? '').trim();
+  if (/^[A-Za-z]:\\[^"<>|?*]+\.wav$/i.test(override)) return override;
+  return WINDOWS_DEFAULT_SOUNDS[kind];
+}
+
+// Pure: exactly how the Windows alert is launched. Exported so a test can
+// prove no .env value ever appears in the command line itself.
+export function windowsAlertInvocation(
+  kind: NotifyKind,
+  simulated: boolean,
+  env: NodeJS.ProcessEnv = process.env
+): { file: string; args: string[]; env: Record<string, string> } | null {
+  const wav = windowsSoundFor(kind, env);
+  const phrase = speechFor(kind, simulated, env);
+  if (!wav && !phrase) return null;
+  const voice = (env.SPEECH_VOICE ?? '').trim();
+  return {
+    file: 'powershell.exe',
+    args: ['-NoProfile', '-NonInteractive', '-EncodedCommand', WINDOWS_ALERT_SCRIPT_B64],
+    env: {
+      COPYBOT_WAV: wav ?? '',
+      COPYBOT_SAY: phrase ?? '',
+      // Same validation as the Mac voice: letters and spaces only. Windows
+      // voice names look like 'Microsoft David Desktop'; 'male' or 'female'
+      // picks any installed voice of that kind.
+      COPYBOT_VOICE: /^[A-Za-z][A-Za-z ]{0,40}$/.test(voice) ? voice : '',
+    },
+  };
+}
+
 // Resolves when the command finishes. Never rejects: a missing sound file or
 // an unavailable voice must not surface as an error mid-trade.
-function run(command: string, args: string[]): Promise<void> {
+function run(command: string, args: string[], extraEnv?: Record<string, string>): Promise<void> {
   return new Promise((resolve) => {
     try {
-      execFile(command, args, () => resolve());
+      execFile(
+        command,
+        args,
+        { env: extraEnv ? { ...process.env, ...extraEnv } : process.env, windowsHide: true },
+        () => resolve()
+      );
     } catch {
       resolve();
     }
@@ -110,6 +188,11 @@ function run(command: string, args: string[]): Promise<void> {
 
 // Chime, then speech — sequenced so the phrase isn't buried under the chime.
 async function playAlert(kind: NotifyKind, simulated: boolean): Promise<void> {
+  if (process.platform === 'win32') {
+    const invocation = windowsAlertInvocation(kind, simulated);
+    if (invocation) await run(invocation.file, invocation.args, invocation.env);
+    return;
+  }
   if (process.platform !== 'darwin') return;
   const sound = soundFor(kind);
   if (sound) await run('afplay', [sound]);
@@ -135,7 +218,8 @@ function showBanner(title: string, message: string): void {
 }
 
 export function notify(title: string, message: string, kind: NotifyKind, simulated = false): void {
-  if (process.platform !== 'darwin') return;
+  if (process.platform !== 'darwin' && process.platform !== 'win32') return;
   void playAlert(kind, simulated); // deliberately not awaited — trading never waits on audio
-  if (!flagOff(process.env, 'NOTIFICATIONS')) showBanner(title, message);
+  // Banners are macOS-only (Notification Center); Windows gets sound + speech.
+  if (process.platform === 'darwin' && !flagOff(process.env, 'NOTIFICATIONS')) showBanner(title, message);
 }

@@ -173,7 +173,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `SOUND_BUY` / `SOUND_SELL` / `SOUND_FAIL` | Which chime for each event: a macOS system sound name (`Glass`, `Hero`, `Basso`, `Ping`, `Pop`, `Submarine`…) or the full path to your own audio file. Defaults `Glass` / `Hero` / `Basso`. |
 | `SPEECH` | Your Mac **says** what happened after the chime — "Order filled", "Order sold". Default `true`; `false` for chimes only. |
 | `SPEECH_BUY` / `SPEECH_SELL` / `SPEECH_FAIL` | What it says for each event. Defaults `Order filled` / `Order sold` / `Sell failed. Position stuck.` |
-| `SPEECH_VOICE` / `SPEECH_RATE` | Optional voice name (list them with `say -v "?"`) and speed in words per minute (80–500, normal ≈175). Empty = your Mac's default voice. |
+| `SPEECH_VOICE` / `SPEECH_RATE` | Optional voice name (Mac: list them with `say -v "?"`; Windows: `male`, `female`, or an exact name like `Microsoft David Desktop`) and, on Mac only, speed in words per minute (80–500, normal ≈175). Empty = the default voice. |
 | `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
 
 ### 5. Run the bot (dry-run)
@@ -306,6 +306,8 @@ rm -rf data
 
 ## Installing for a friend (fresh Mac)
 
+(On Windows? Same idea — see [Windows (PowerShell)](#windows-powershell).)
+
 Send them the code (the `.tar.gz` you were given, or the GitHub branch above)
 and these steps. They need their **own** wallet, Helius key and Jupiter key —
 never share yours: a shared Jupiter key starves both bots (1 request/second
@@ -335,6 +337,68 @@ npm start           # DRY RUN (paper trading). Ctrl+C once to stop.
 Leave that Terminal window open while the bot runs. Watch it on paper for a
 few days before even thinking about `DRY_RUN=false`, and read the risk note at
 the top of this file first.
+
+## Windows (PowerShell)
+
+Everything works on Windows too — the commands are just different. Open
+**PowerShell** (Start menu → type `PowerShell` → Enter).
+
+**1. Node.js** — check it's installed:
+
+```powershell
+node --version
+```
+
+Needs v18 or newer. If not, install the LTS from <https://nodejs.org>, then
+close and reopen PowerShell.
+
+**2. Get the code into a `copybot` folder** (picks the newest copybot file in
+Downloads):
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\copybot" | Out-Null
+$f = Get-ChildItem "$HOME\Downloads\*copybot*.tar.gz" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+tar -xzf $f.FullName -C "$HOME\copybot"
+cd "$HOME\copybot"
+```
+
+**3. Install, test, set up, check, run:**
+
+```powershell
+npm install
+npm test
+npm run setup
+npm run doctor
+npm start
+```
+
+`npm test` should end with `All logic tests passed.`
+
+**If `npm` says "running scripts is disabled on this system"** — a Windows
+default, not a problem with the bot — run this once, answer `Y`, and try again:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+**Every time after that**, starting the bot is:
+
+```powershell
+cd "$HOME\copybot"
+npm start
+```
+
+**Differences from Mac:**
+
+- Edit settings with `notepad .env` instead of `open -e .env`.
+- Chimes use Windows' own sounds and the speech uses Windows voices. For a
+  **male voice**, set `SPEECH_VOICE=male` (or an exact name such as
+  `Microsoft David Desktop`). `SPEECH_RATE` and the Mac chime names (`Glass`,
+  `Hero`…) don't apply on Windows; a `SOUND_BUY` etc. can be a full path to
+  your own `.wav`. Hear them with `npm run alerts`.
+- No pop-up banners — Windows gets the sound and the voice.
+- Only put your wallet key on a computer you trust. For paper trading
+  (`DRY_RUN=true`) the wallet doesn't need any SOL in it at all.
 
 ## How it decides what is a "buy" or "sell"
 
