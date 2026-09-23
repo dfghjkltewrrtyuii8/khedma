@@ -23,6 +23,7 @@ import path from 'path';
 import { Config } from './config';
 import { PositionStore } from './positions';
 import { Position } from './types';
+import { Candidate } from './discovery';
 import { walletRecords } from './walletGate';
 import { shortAddress } from './watcher';
 
@@ -34,7 +35,13 @@ export type RotationConfig = Pick<
 interface RosterFile {
   dropped: Record<string, { reason: string; at: string }>;
   idled: Record<string, string>; // wallet -> when it was last benched for being quiet
+  // Wallets the bot found itself (DISCOVERY=true), oldest first.
+  discovered: { wallet: string; at: string; why: string }[];
 }
+
+// How many discovered wallets to remember. Past this, the oldest that isn't
+// currently being copied is forgotten (dropped ones stay dropped regardless).
+const MAX_DISCOVERED = 40;
 
 // Pure: should copying this wallet stop for good? Returns the reason, or null.
 export function dropReason(positions: readonly Position[], wallet: string, cfg: RotationConfig): string | null {
@@ -54,12 +61,12 @@ export function dropReason(positions: readonly Position[], wallet: string, cfg: 
 // stored: your .env order, with dropped wallets removed and recently-benched
 // ones moved to the back. Editing the .env just works.
 export class WalletRoster {
-  private state: RosterFile = { dropped: {}, idled: {} };
+  private state: RosterFile = { dropped: {}, idled: {}, discovered: [] };
   private readonly dataDir: string;
   private readonly file: string;
 
   constructor(
-    private readonly pool: string[],
+    private readonly configPool: string[],
     private readonly activeCount: number,
     dataDir: string = path.join(process.cwd(), 'data')
   ) {
@@ -70,7 +77,7 @@ export class WalletRoster {
   load(): void {
     if (!fs.existsSync(this.file)) return;
     const parsed = JSON.parse(fs.readFileSync(this.file, 'utf8')) as Partial<RosterFile>;
-    this.state = { dropped: parsed.dropped ?? {}, idled: parsed.idled ?? {} };
+    this.state = { dropped: parsed.dropped ?? {}, idled: parsed.idled ?? {}, discovered: parsed.discovered ?? [] };
   }
 
   private save(): void {
@@ -80,14 +87,52 @@ export class WalletRoster {
     fs.renameSync(temp, this.file);
   }
 
+  // Your wallets first (TRACKED_WALLETS, BENCH_WALLETS), then the ones the bot
+  // discovered, in the order it found them.
   all(): string[] {
-    return [...this.pool];
+    const found = this.state.discovered.map((d) => d.wallet).filter((w) => !this.configPool.includes(w));
+    return [...this.configPool, ...found];
+  }
+
+  isDiscovered(wallet: string): boolean {
+    return !this.configPool.includes(wallet) && this.state.discovered.some((d) => d.wallet === wallet);
+  }
+
+  discoveredInfo(wallet: string): { at: string; why: string } | undefined {
+    return this.state.discovered.find((d) => d.wallet === wallet);
+  }
+
+  // Everything the bot already knows about — so discovery never re-suggests a
+  // wallet that's listed, on the bench, or was dropped for losing.
+  known(): Set<string> {
+    return new Set([...this.all(), ...Object.keys(this.state.dropped)]);
+  }
+
+  // Add newly discovered wallets to the back of the bench. Returns the ones added.
+  addDiscovered(candidates: Candidate[], now: number): string[] {
+    const known = this.known();
+    const added: string[] = [];
+    for (const c of candidates) {
+      if (known.has(c.wallet)) continue;
+      this.state.discovered.push({ wallet: c.wallet, at: new Date(now).toISOString(), why: c.evidence.join('; ') });
+      known.add(c.wallet);
+      added.push(c.wallet);
+    }
+    const active = new Set(this.active());
+    while (this.state.discovered.length > MAX_DISCOVERED) {
+      const i = this.state.discovered.findIndex((d) => !active.has(d.wallet));
+      if (i < 0) break;
+      this.state.discovered.splice(i, 1);
+    }
+    if (added.length) this.save();
+    return added;
   }
 
   private ordered(): string[] {
-    const index = new Map(this.pool.map((w, i) => [w, i]));
+    const pool = this.all();
+    const index = new Map(pool.map((w, i) => [w, i]));
     const idledAt = (w: string) => (this.state.idled[w] ? Date.parse(this.state.idled[w]) : -Infinity);
-    return this.pool
+    return pool
       .filter((w) => !this.state.dropped[w])
       .sort((a, b) => {
         const byIdle = idledAt(a) - idledAt(b); // NaN when neither was ever benched
@@ -104,7 +149,7 @@ export class WalletRoster {
   }
 
   dropped(): { wallet: string; reason: string; at: string }[] {
-    return this.pool.filter((w) => this.state.dropped[w]).map((w) => ({ wallet: w, ...this.state.dropped[w] }));
+    return Object.keys(this.state.dropped).map((w) => ({ wallet: w, ...this.state.dropped[w] }));
   }
 
   drop(wallet: string, reason: string, now: number): void {
@@ -129,8 +174,23 @@ export interface BuyControl {
   setActiveWallets(wallets: string[] | null): void;
 }
 
+export interface DiscoveryHook {
+  // Returns candidates (already filtered against `exclude`). Must not throw.
+  run(exclude: Set<string>): Promise<Candidate[]>;
+  minBench: number; // run when fewer than this many wallets are waiting
+  cooldownMs: number; // and not more often than this
+}
+
+// A discovered wallet trades on PAPER until it has proven itself: this many
+// closed paper copies with a net profit. Only then can it be copied with real
+// money (when DRY_RUN=false). Wallets you listed yourself are never on probation.
+export const PROBATION_TRADES = 6;
+
 export class Rotation {
   private readonly lastBuy = new Map<string, number>();
+  private lastDiscoveryAt = -Infinity;
+  // The discovery run in progress, if any — exposed so tests can await it.
+  pendingDiscovery: Promise<void> | null = null;
   private readonly activeSince = new Map<string, number>();
   private readonly finishing = new Set<string>(); // off the active list, still holding a position we copied
 
@@ -138,8 +198,40 @@ export class Rotation {
     private readonly roster: WalletRoster,
     private readonly store: PositionStore,
     private readonly cfg: RotationConfig,
-    private readonly log: (message: string) => void = console.log
+    private readonly log: (message: string) => void = console.log,
+    private readonly discovery: DiscoveryHook | null = null
   ) {}
+
+  // True while a discovered wallet hasn't yet earned real-money copies.
+  isPaperOnly(wallet: string): boolean {
+    if (!this.roster.isDiscovered(wallet)) return false;
+    const paper = walletRecords(this.store.all().filter((p) => p.dryRun)).get(wallet);
+    return !(paper && paper.closed >= PROBATION_TRADES && paper.netSol > 0);
+  }
+
+  // Start a discovery run in the background if the bench is running low.
+  // Never blocks trading; new wallets land on the bench when it finishes.
+  private maybeDiscover(now: number): void {
+    if (!this.discovery || this.pendingDiscovery) return;
+    if (this.roster.bench().length >= this.discovery.minBench) return;
+    if (now - this.lastDiscoveryAt < this.discovery.cooldownMs) return;
+    this.lastDiscoveryAt = now;
+    this.log('🔎 Bench is low — looking for new wallets to try (about a minute, trading carries on)…');
+    this.pendingDiscovery = this.discovery
+      .run(this.roster.known())
+      .then((candidates) => {
+        const added = this.roster.addDiscovered(candidates, Date.now());
+        this.log(
+          added.length
+            ? `🔎 Found ${added.length} new wallet(s) to try: ${added.map(shortAddress).join(', ')} — paper-tested first.`
+            : '🔎 No new wallets passed the filter this time; will look again later.'
+        );
+      })
+      .catch((error) => this.log(`🔎 Discovery failed: ${(error as Error).message}`))
+      .finally(() => {
+        this.pendingDiscovery = null;
+      });
+  }
 
   private holdsPositionFrom(wallet: string): boolean {
     return this.store.all().some((p) => p.sourceWallet === wallet && (p.status === 'open' || p.status === 'stuck'));
@@ -168,6 +260,7 @@ export class Rotation {
     for (const w of this.roster.all()) {
       if (!active.includes(w) && this.holdsPositionFrom(w)) this.finishing.add(w);
     }
+    this.maybeDiscover(now);
     return [...active, ...this.finishing];
   }
 
@@ -219,11 +312,14 @@ export class Rotation {
       }
     }
     trader.setActiveWallets(active);
+    this.maybeDiscover(now);
   }
 
   describe(): string {
     const active = this.roster.active().map(shortAddress).join(', ') || 'none';
+    const onProbation = this.roster.active().filter((w) => this.isPaperOnly(w)).length;
     const parts = [`copying ${active}`, `${this.roster.bench().length} on the bench`];
+    if (onProbation) parts.push(`${onProbation} found by discovery, paper-only until proven`);
     const dropped = this.roster.dropped().length;
     if (dropped) parts.push(`${dropped} dropped`);
     if (this.finishing.size) parts.push(`${this.finishing.size} finishing open trades`);
@@ -233,10 +329,17 @@ export class Rotation {
 
 // For `npm run summary`: the full roster, with reasons.
 export function printRoster(roster: WalletRoster): void {
+  const label = (w: string) => shortAddress(w) + (roster.isDiscovered(w) ? '*' : '');
   console.log('── WALLET ROTATION ──');
-  console.log(`  Copying now: ${roster.active().map(shortAddress).join(', ') || 'none'}`);
+  console.log(`  Copying now: ${roster.active().map(label).join(', ') || 'none'}`);
   const bench = roster.bench();
-  console.log(`  Bench, next up first: ${bench.length ? bench.map(shortAddress).join(', ') : 'empty — add more to BENCH_WALLETS'}`);
+  console.log(`  Bench, next up first: ${bench.length ? bench.map(label).join(', ') : 'empty'}`);
+  if (roster.all().some((w) => roster.isDiscovered(w))) {
+    console.log('  * found by discovery — traded on paper until it has 6 closed paper copies in profit');
+    for (const w of roster.active().filter((x) => roster.isDiscovered(x))) {
+      console.log(`    ${shortAddress(w)} was picked because: ${roster.discoveredInfo(w)?.why ?? '?'}`);
+    }
+  }
   for (const d of roster.dropped()) {
     console.log(`  Dropped ${shortAddress(d.wallet)} — ${d.reason} (${new Date(d.at).toLocaleString()})`);
   }

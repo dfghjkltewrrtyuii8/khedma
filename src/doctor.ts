@@ -19,6 +19,7 @@ import { getSolPriceUsd } from './solPrice';
 import { fetchDexscreenerMarket } from './tokenMarket';
 import { loadKeypair } from './wallet';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } from './watcher';
+import { fetchGeckoTerminal, parseTrendingPools } from './discovery';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -175,6 +176,17 @@ async function main(): Promise<void> {
     ok(`Dexscreener reachable (BONK: ${Math.round(market.ageMinutes / (24 * 60))} days old, $${Math.round(market.liquidityUsd ?? 0).toLocaleString('en-US')} liquidity)`);
   } else {
     bad('Dexscreener unreachable — the token gate would skip EVERY buy', `check your network/firewall; test: curl -s https://api.dexscreener.com/latest/dex/tokens/${BONK_MINT}`);
+  }
+  if (config.discovery) {
+    try {
+      const body = await fetchGeckoTerminal('https://api.geckoterminal.com/api/v2/networks/solana/trending_pools?page=1');
+      const raw = Array.isArray((body as any)?.data) ? (body as any).data.length : 0;
+      const pools = parseTrendingPools(body);
+      if (pools.length > 0) ok(`GeckoTerminal reachable — ${pools.length} of ${raw} trending pools readable (for DISCOVERY)`);
+      else bad(`GeckoTerminal answered but none of its ${raw} pools could be read — discovery would find nothing`, 'run: npm run discover   and send the output to whoever maintains the bot');
+    } catch (error) {
+      bad(`GeckoTerminal unreachable: ${(error as Error).message} — DISCOVERY can't find wallets`, 'check your network, or set DISCOVERY=false');
+    }
   }
   const price = await getSolPriceUsd();
   if (price !== null) ok(`CoinGecko SOL price $${price.toFixed(2)}`);

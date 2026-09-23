@@ -35,6 +35,9 @@ export class Trader {
   // With rotation on: the only wallets whose BUYS we copy. Sells are mirrored
   // from any wallet we hold a position from. null = copy every watched wallet.
   private activeWallets: Set<string> | null = null;
+  // Wallets whose copies must stay on paper even when DRY_RUN=false: ones the
+  // bot discovered itself that haven't proven themselves yet.
+  private paperOnly: (wallet: string) => boolean = () => false;
 
   constructor(
     private readonly config: Config,
@@ -46,6 +49,10 @@ export class Trader {
     // touch the network.
     private readonly marketSource: MarketSource = fetchDexscreenerMarket
   ) {}
+
+  setPaperOnly(check: (wallet: string) => boolean): void {
+    this.paperOnly = check;
+  }
 
   setActiveWallets(wallets: string[] | null): void {
     this.activeWallets = wallets ? new Set(wallets) : null;
@@ -148,12 +155,16 @@ export class Trader {
       console.log(`   ↳ skip: ${shortAddress(event.sourceWallet)} is off the active list (benched or dropped) — only its sells are still mirrored`);
       return;
     }
+    // Paper for this trade? Always in dry-run; in real mode, still paper for a
+    // discovered wallet on probation.
+    const simulate = this.config.dryRun || this.paperOnly(event.sourceWallet);
+    const onProbation = simulate && !this.config.dryRun;
     const existing = this.store.findOpenByMint(event.mint);
     if (existing) {
       console.log(`   ↳ skip: we already hold a position in ${shortAddress(event.mint)} (${existing.status})`);
       return;
     }
-    if (this.store.atRiskCount() >= this.config.maxOpenPositions) {
+    if (this.store.atRiskCount(simulate) >= this.config.maxOpenPositions) {
       console.log(`   ↳ skip: already at MAX_OPEN_POSITIONS (${this.config.maxOpenPositions}, stuck ones count too)`);
       return;
     }
@@ -192,7 +203,7 @@ export class Trader {
 
     const spendLamports = BigInt(Math.round(this.config.copyBuyAmountSol * 1e9));
 
-    if (!this.config.dryRun) {
+    if (!simulate) {
       const balance = await this.connection.getBalance(this.keypair.publicKey);
       const reserveLamports = Math.round(this.config.minSolReserve * 1e9);
       if (BigInt(balance) < spendLamports + BigInt(reserveLamports)) {
@@ -212,7 +223,7 @@ export class Trader {
         inputMint: SOL_MINT,
         outputMint: event.mint,
         amountRaw: spendLamports,
-        takerPubkey: this.orderTaker(this.config.dryRun),
+        takerPubkey: this.orderTaker(simulate),
         slippageBps: this.config.slippageBps,
       });
     } catch (error) {
@@ -227,7 +238,10 @@ export class Trader {
 
     const expectedTokens = Number(order.outAmountRaw) / 10 ** event.decimals;
 
-    if (this.config.dryRun) {
+    if (simulate) {
+      if (onProbation) {
+        console.log(`   ↳ ${shortAddress(event.sourceWallet)} was found by discovery and is still on probation — PAPER trade, no real SOL`);
+      }
       const position = this.store.openPosition({
         mint: event.mint,
         decimals: event.decimals,

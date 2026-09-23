@@ -165,6 +165,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
 | `WALLET_DROP_AFTER_TRADES` | Rotation: drop a wallet once this many copies have closed at a net loss. Default `6`; `0` = only the losing streak. |
 | `WALLET_IDLE_MINUTES` | Rotation: bench a wallet after this many minutes without a buy while running. Default `90`; `0` = never. |
+| `DISCOVERY` | Find new wallets automatically when the bench runs low ([details](#automatic-wallet-discovery-discoverytrue)). Discovered wallets are paper-only until proven. Default `false`. |
 | `STOP_LOSS_PERCENT` | Sell if a position falls this far below what you paid. Default `30`; `0` = off. |
 | `TRAILING_STOP_PERCENT` | Sell if a position that has been in profit gives back this much from its own peak. Default `30`; `0` = off. |
 | `TAKE_PROFIT_PERCENT` | Sell as soon as a position is up this much. Default `0` (**off on purpose** — see below). |
@@ -477,6 +478,43 @@ Six copies is a small sample, so rotation will sometimes drop a wallet that
 was just unlucky. It's a trade-off in favour of not spending your limited
 hours on wallets that aren't working.
 
+### Automatic wallet discovery (`DISCOVERY=true`)
+
+A fixed list goes stale: wallets that made money last month stop, and good
+traders move to new addresses once people copy them. With `DISCOVERY=true`
+the bot finds new wallets by itself whenever the bench runs low (fewer than
+3 waiting, at most every 30 minutes, in the background — trading carries on).
+
+**Where it looks — deliberately not a leaderboard.** Leaderboards are
+dominated by launch snipers, whose whole edge is being first — exactly what a
+copy 10 seconds late can't have. Instead it takes tokens trending right now
+(GeckoTerminal's free public API; no key, and it doesn't use your Helius
+budget), reads their recent trades, and keeps wallets that:
+
+- bought **after the launch rush** (15+ minutes after the pool opened),
+- held **20 minutes to 6 hours**, then **sold at a profit** (+10% or more),
+- did it on **two or more** trending tokens (or +30% on one),
+- aren't bots (a dozen trades in one window) and aren't dust.
+
+**Discovery nominates; the paper record decides.** The free feed only covers
+each token's recent trades, so "profitable" means "over the last few hours" —
+a noisy signal. So every discovered wallet is copied **on paper** until it has
+6 closed paper copies with a net profit, **even when `DRY_RUN=false`** — and its
+paper positions never take up your real-money slots. Only then is it copied
+with real SOL. Wallets you listed yourself are never on probation, and a
+wallet dropped for losing is never re-discovered.
+
+Run it by hand to see what it finds and why, before turning it on:
+
+```zsh
+npm run discover
+```
+
+It prints each candidate with the evidence (e.g. `WIF: +34%, held 1.8h, bought
+2.1h after launch`) and adds new ones to the bench. If it finds nothing, the
+report says how far it got (pools read, trades read) and where it broke.
+`npm run summary` marks discovered wallets with `*` and says why each was picked.
+
 ## Exiting without them
 
 By default a copy-trading bot sells only when the wallet it copied sells. That
@@ -545,6 +583,7 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
 | Bot seems idle | Normal — it only acts when a tracked wallet trades. The periodic summaries confirm it's alive. |
 | `🚨 … transaction format … can't read` | Solana introduced a newer transaction format than this build understands, so trades in it are **missed** — the bot will look idle while wallets are trading. Update the bot. (This happened once already: version 1 arrived in 2026 and needed `@solana/web3.js` 1.99.) |
+| `npm run discover` finds nothing | Read its report line: `0 trending pools` or a ⚠️ line means GeckoTerminal couldn't be reached or read (network, or they changed their format — send the output to whoever maintains the bot). Pools and trades read but `0 candidates` just means nobody passed the filter this hour; try again later. |
 | `could not price … for exit rules` | Jupiter can't quote that token right now, so the exit rules skip it rather than act on a made-up value. If it persists the token is probably dead — see STUCK below. |
 | Positions keep selling at a small loss | `STOP_LOSS_PERCENT` is tighter than the token's normal swings. Memecoins routinely move 30–50%; raise it, or set it to `0` while you watch. |
 | No sound on buys/sells | Run `npm run alerts` — it plays every alert and prints what it's using. `SOUNDS`/`SPEECH` must not be `false`, and the Mac can't be muted. Test directly: `afplay /System/Library/Sounds/Glass.aiff` and `say "Order filled"`. Your own sound file needs a full path starting with `/`. |

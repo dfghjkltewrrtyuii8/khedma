@@ -16,6 +16,7 @@ import { tokenGateEnabled } from './tokenMarket';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
+import { discoverWallets, printDiscoveryReport } from './discovery';
 import { Rotation, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 
@@ -91,10 +92,11 @@ async function main(): Promise<void> {
   console.log(`Filters: ${tokenGate}; ${walletGate}.`);
   console.log(`Exits:   ${describeExitRules(config)}.`);
   console.log(
-    config.benchWallets.length > 0
+    config.benchWallets.length > 0 || config.discovery
       ? `Wallets: rotating — copies ${config.trackedWallets.length} at a time from ${config.trackedWallets.length + config.benchWallets.length}; ` +
           `drops after ${config.walletMaxConsecutiveLosses} straight losses or a net loss over ${config.walletDropAfterTrades}, ` +
-          `benches after ${config.walletIdleMinutes} quiet min.\n`
+          `benches after ${config.walletIdleMinutes} quiet min` +
+          (config.discovery ? '; DISCOVERY on — finds new wallets itself when the bench runs low (paper-tested first).\n' : '.\n')
       : 'Wallets: fixed list (set BENCH_WALLETS to rotate in substitutes).\n'
   );
 
@@ -135,7 +137,7 @@ async function main(): Promise<void> {
   }
 
   // Rotation: decide which wallets get a slot before watching anything.
-  const rotating = config.benchWallets.length > 0;
+  const rotating = config.benchWallets.length > 0 || config.discovery;
   const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
   const roster = new WalletRoster(pool, config.trackedWallets.length);
   let rotation: Rotation | null = null;
@@ -148,7 +150,23 @@ async function main(): Promise<void> {
       console.error('   Fix or delete it, then start again.\n');
       process.exit(1);
     }
-    rotation = new Rotation(roster, store, config);
+    rotation = new Rotation(
+      roster,
+      store,
+      config,
+      console.log,
+      config.discovery
+        ? {
+            minBench: 3,
+            cooldownMs: 30 * 60_000,
+            run: async (exclude) => {
+              const report = await discoverWallets(exclude);
+              printDiscoveryReport(report);
+              return report.candidates;
+            },
+          }
+        : null
+    );
     toWatch = rotation.startup(Date.now());
   }
 
@@ -156,6 +174,10 @@ async function main(): Promise<void> {
   const jupiter = new JupiterClient(config.jupiterApiKey, limiter);
   const trader = new Trader(config, connection, keypair, jupiter, store);
   if (rotating) trader.setActiveWallets(roster.active());
+  if (rotation) {
+    const r = rotation;
+    trader.setPaperOnly((wallet) => r.isPaperOnly(wallet));
+  }
   // Separate budget from Jupiter's: this one paces Helius RPC reads.
   const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
   const watcher = new WalletWatcher(

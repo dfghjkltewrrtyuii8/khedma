@@ -39,9 +39,13 @@ export class PositionStore {
     return this.positions.filter((p) => p.status === status);
   }
 
-  // Positions still tying up capital: open AND stuck both count.
-  atRiskCount(): number {
-    return this.positions.filter((p) => p.status === 'open' || p.status === 'stuck').length;
+  // Positions still tying up capital: open AND stuck both count. Pass
+  // `dryRun` to count only paper (true) or only real (false) positions, so
+  // paper trades from a wallet on probation never block real ones.
+  atRiskCount(dryRun?: boolean): number {
+    return this.positions.filter(
+      (p) => (p.status === 'open' || p.status === 'stuck') && (dryRun === undefined || p.dryRun === dryRun)
+    ).length;
   }
 
   findOpenByMint(mint: string): Position | undefined {

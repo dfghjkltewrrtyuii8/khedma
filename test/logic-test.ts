@@ -32,7 +32,8 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
-import { dropReason, Rotation, WalletRoster } from '../src/walletRoster';
+import { dropReason, PROBATION_TRADES, Rotation, WalletRoster } from '../src/walletRoster';
+import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
 const TRACKED = TEST_WALLET;
@@ -882,6 +883,7 @@ function testEnvIsolation() {
   assert(config.trackedWallets.length === 1 && config.trackedWallets[0].toBase58() === TRACKED, 'tracked wallets are pinned');
   assert(config.stopLossPercent === 30 && config.takeProfitPercent === 0, 'exit rules are pinned');
   assert(config.benchWallets.length === 0, 'no bench from the real .env leaks in');
+  assert(config.discovery === false, 'DISCOVERY from the real .env does not leak in');
   assert(process.env.SPEECH === 'false' && process.env.SOUNDS === 'false', 'tests never make the machine ding or talk');
   console.log('✅ test isolation: the suite reads pinned settings, never the real .env');
 }
@@ -1224,8 +1226,188 @@ async function testActiveWalletFilter(realLog: typeof console.log) {
   realLog('✅ active wallets: benched wallets\' buys refused, their sells still mirrored; watcher adds/drops wallets live');
 }
 
+// Discovery, offline: fixtures shaped like GeckoTerminal's responses. The
+// point of the filter is to reject exactly what failed before — launch
+// snipers, bots, quick flippers, losers — and keep wallets that bought after
+// the launch rush and sold at a profit, preferably on more than one token.
+async function testDiscovery(realLog: typeof console.log) {
+  const NOW = Date.parse('2026-09-23T22:00:00Z');
+  const H = 3_600_000, M = 60_000;
+  const iso = (t: number) => new Date(t).toISOString();
+  const mint = () => Keypair.generate().publicKey.toBase58();
+  const [M1, M2, M3, M4, M5] = [mint(), mint(), mint(), mint(), mint()];
+  const pool = (address: string, base: string, ageMs: number, reserve: number, h1: number, quote = SOL_MINT) => ({
+    id: `solana_${address}`, type: 'pool',
+    attributes: { address, name: `${address} / SOL`, pool_created_at: iso(NOW - ageMs), reserve_in_usd: String(reserve),
+      transactions: { h1: { buys: h1 / 2, sells: h1 / 2 }, h24: { buys: h1 * 12, sells: h1 * 12 } } },
+    relationships: { base_token: { data: { id: `solana_${base}` } }, quote_token: { data: { id: `solana_${quote}` } } },
+  });
+  const trending = { data: [
+    pool('P1', M1, 5 * H, 80_000, 60),
+    pool('P2', M2, 8 * H, 150_000, 40),
+    pool('P3young', M3, 30 * M, 90_000, 40),     // too young: still launch rush
+    pool('P4thin', M4, 6 * H, 5_000, 40),        // too thin to exit
+    pool('P5busy', M5, 6 * H, 90_000, 500),      // one page of trades = a few minutes
+    pool('PSOL', SOL_MINT, 6 * H, 90_000, 40),   // "token" side is SOL — skipped
+    pool('PODD', mint(), 6 * H, 90_000, 40, mint()), // quoted in some other token — skipped
+    { id: 'broken' },                             // malformed — skipped
+  ] };
+  const parsed = parseTrendingPools(trending);
+  assert(parsed.length === 5 && !parsed.some((p) => p.address === 'PSOL' || p.address === 'PODD'), 'pools quoted in SOL/USDC only, memecoin on the base side');
+  const usable = selectPools(parsed, NOW);
+  assert(usable.map((p) => p.address).join() === 'P1,P2', 'too-young, too-thin and too-busy pools are skipped');
+
+  const [GOOD, SNIPER, LOSER, FLIPPER, BOT, ONEHIT, MEH, KNOWN, TINY] = Array.from({ length: 9 }, () => Keypair.generate().publicKey.toBase58());
+  const created1 = NOW - 5 * H, created2 = NOW - 8 * H;
+  const trade = (wallet: string, side: 'buy' | 'sell', base: string, tokens: number, usd: number, at: number) => ({
+    type: 'trade', attributes: {
+      tx_from_address: wallet, kind: side, volume_in_usd: String(usd), block_timestamp: iso(at),
+      from_token_address: side === 'buy' ? SOL_MINT : base, to_token_address: side === 'buy' ? base : SOL_MINT,
+      from_token_amount: String(side === 'buy' ? usd / 150 : tokens), to_token_amount: String(side === 'buy' ? tokens : usd / 150),
+    },
+  });
+  const trades1 = { data: [
+    trade(GOOD, 'buy', M1, 1000, 200, created1 + 2 * H), trade(GOOD, 'sell', M1, 1000, 300, created1 + 3 * H),        // +50%
+    trade(SNIPER, 'buy', M1, 5000, 500, created1 + 2 * M), trade(SNIPER, 'sell', M1, 5000, 1500, created1 + 1 * H),   // +200%, but 2 min after launch
+    trade(LOSER, 'buy', M1, 1000, 200, created1 + 2 * H), trade(LOSER, 'sell', M1, 1000, 150, created1 + 3 * H),      // -25%
+    ...Array.from({ length: 13 }, (_, i) => trade(BOT, i % 2 ? 'sell' : 'buy', M1, 100, 60, created1 + 2 * H + i * M)), // a bot
+    trade(MEH, 'buy', M1, 1000, 200, created1 + 2 * H), trade(MEH, 'sell', M1, 1000, 224, created1 + 3 * H),          // +12%, one token
+    trade(KNOWN, 'buy', M1, 1000, 200, created1 + 2 * H), trade(KNOWN, 'sell', M1, 1000, 400, created1 + 3 * H),      // already on our list
+  ] };
+  const trades2 = { data: [
+    trade(GOOD, 'buy', M2, 500, 100, created2 + 1 * H), trade(GOOD, 'sell', M2, 500, 130, created2 + 2.5 * H),        // +30%
+    trade(FLIPPER, 'buy', M2, 1000, 200, created2 + 1 * H), trade(FLIPPER, 'sell', M2, 1000, 300, created2 + 1 * H + 3 * M), // 3-minute flip
+    trade(ONEHIT, 'buy', M2, 1000, 100, created2 + 2 * H), trade(ONEHIT, 'sell', M2, 1000, 160, created2 + 3 * H),    // +60%, one token
+    trade(TINY, 'buy', M2, 100, 20, created2 + 2 * H), trade(TINY, 'sell', M2, 100, 40, created2 + 3 * H),            // $20 — noise
+    { type: 'trade', attributes: { tx_from_address: GOOD, kind: 'buy', volume_in_usd: '5', block_timestamp: iso(NOW) } }, // unreadable amounts — skipped
+  ] };
+  const t1 = parsePoolTrades(trades1, M1);
+  assert(t1.length === trades1.data.length && t1.some((t) => t.side === 'sell' && t.wallet === GOOD), 'trades parse, buy/sell decided by which side the memecoin is on');
+  assert(parsePoolTrades(trades2, M2).length === trades2.data.length - 1, 'a trade with unreadable amounts is skipped, not guessed');
+
+  const byPool = new Map([['P1', t1], ['P2', parsePoolTrades(trades2, M2)]]);
+  const found = findCandidates(usable, byPool, new Set([KNOWN]));
+  assert(found.map((c) => c.wallet).join() === [GOOD, ONEHIT].join(),
+    `keeps the repeat winner and the strong one-off; rejects sniper, loser, flipper, bot, +12% one-off, dust and already-known (got ${found.map((c) => c.wallet.slice(0, 4)).join(',')})`);
+  assert(found[0].pools === 2 && Math.round(found[0].medianReturnPct) === 40, 'the repeat winner ranks first, median +40% across two tokens');
+  assert(found[0].evidence.some((e) => /\+50%, held 1\.0h, bought 2\.0h after launch/.test(e)), 'the reason for each pick is kept');
+
+  // The whole run against a fake API: routing, pacing, counts, and a clear
+  // problem report when a response can't be read — never a silent zero.
+  const urls: string[] = [];
+  const fakeFetch = async (url: string) => {
+    urls.push(url);
+    if (url.includes('trending_pools?page=1')) return trending;
+    if (url.includes('trending_pools?page=2')) return { data: [] };
+    if (url.includes('/pools/P1/trades')) return trades1;
+    if (url.includes('/pools/P2/trades')) return trades2;
+    throw new Error('unexpected url ' + url);
+  };
+  let pauses = 0;
+  const report = await discoverWallets(new Set([KNOWN]), NOW, fakeFetch, async () => { pauses++; });
+  assert(report.candidates.map((c) => c.wallet).join() === [GOOD, ONEHIT].join(), 'end to end: same two candidates');
+  assert(report.poolsFetched === 8 && report.poolsUsable === 2 && report.poolsScanned === 2 && report.problems.length === 0, 'report counts');
+  assert(urls.every((u) => u.startsWith('https://api.geckoterminal.com/api/v2/networks/solana/')) && pauses === urls.length, 'every call is to GeckoTerminal and paced');
+  assert(urls.some((u) => u.includes('trade_volume_in_usd_greater_than=')), 'dust trades are filtered at the source');
+
+  const changed = await discoverWallets(new Set(), NOW, async (u) => (u.includes('page=1') ? { data: [{ id: 'x', attributes: { name: 'weird' } }] } : { data: [] }), async () => {});
+  assert(changed.candidates.length === 0 && changed.problems.some((p) => /changed its response format/.test(p)), 'an unreadable response is reported, not a silent zero');
+  const down = await discoverWallets(new Set(), NOW, async () => { throw new Error('GeckoTerminal HTTP 503'); }, async () => {});
+  assert(down.problems.length === 2 && down.problems[0].includes('503'), 'network failures are reported, never thrown');
+  realLog('✅ discovery: keeps post-launch repeat winners; rejects snipers, bots, flippers, losers; reports broken responses');
+}
+
+// Discovery inside rotation: runs by itself when the bench runs low, never
+// re-adds a wallet that is listed or was dropped, respects its cooldown, and
+// keeps every discovered wallet on PAPER until it has proven itself.
+async function testDiscoveryInRotation(realLog: typeof console.log) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-disc-'));
+  const store = new PositionStore(dir);
+  const [A, B, C, N1, N2, N3] = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
+  const cfg = { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 0 };
+  const T0 = Date.parse('2026-09-23T20:00:00Z');
+  const cand = (wallet: string) => ({ wallet, pools: 2, medianReturnPct: 40, evidence: ['X: +40%'] });
+  const runs: Set<string>[] = [];
+  let next = [cand(N1), cand(N2)];
+  const roster = new WalletRoster([A, B, C], 3, dir);
+  const rotation = new Rotation(roster, store, cfg, () => {}, {
+    minBench: 3, cooldownMs: 30 * 60_000,
+    async run(exclude) { runs.push(exclude); return next; },
+  });
+  const watching = new Set<string>();
+  const watch = { isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); } };
+  const trader = { setActiveWallets() {} };
+
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  await rotation.pendingDiscovery;
+  assert(runs.length === 1 && [A, B, C].every((w) => runs[0].has(w)), 'an empty bench triggers discovery at startup, excluding wallets already listed');
+  assert(roster.bench().join() === [N1, N2].join() && roster.isDiscovered(N1) && !roster.isDiscovered(A), 'finds land on the bench, marked as discovered');
+
+  for (let i = 0; i < 3; i++) { // A loses three in a row
+    const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: A, dryRun: true, spentSol: 0.01, tokenAmountRaw: '1' });
+    store.recordSell(p, 1n, 0.005);
+  }
+  await rotation.tick(T0 + 60_000, watch, trader);
+  assert(roster.active().join() === [B, C, N1].join(), 'A is dropped and the discovered N1 takes its slot');
+  assert(rotation.isPaperOnly(N1) && !rotation.isPaperOnly(B), 'a discovered wallet is paper-only; your own wallets never are');
+  assert(runs.length === 1, 'the bench is low again but discovery waits out its cooldown');
+
+  next = [cand(N1), cand(A), cand(N3)]; // one already on the list, one dropped, one new
+  await rotation.tick(T0 + 31 * 60_000, watch, trader);
+  await rotation.pendingDiscovery;
+  const runCount: number = runs.length; // read fresh: TS narrowed runs.length to 1 from the assert above
+  assert(runCount === 2 && runs[1].has(A), 'after the cooldown it looks again, and tells discovery to skip the dropped wallet');
+  assert(roster.bench().join() === [N2, N3].join(), 'only the genuinely new wallet is added — a dropped wallet never comes back');
+
+  for (let i = 0; i < PROBATION_TRADES; i++) { // N1 proves itself on paper
+    const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: N1, dryRun: true, spentSol: 0.01, tokenAmountRaw: '1' });
+    store.recordSell(p, 1n, 0.013);
+  }
+  assert(!rotation.isPaperOnly(N1), `after ${PROBATION_TRADES} profitable paper copies, a discovered wallet earns real-money copies`);
+
+  const reloaded = new WalletRoster([A, B, C], 3, dir);
+  reloaded.load();
+  assert(reloaded.isDiscovered(N3) && reloaded.all().includes(N3) && reloaded.dropped().some((d) => d.wallet === A), 'discoveries and drops survive a restart');
+  realLog('✅ discovery in rotation: refills a low bench by itself, never re-adds dropped wallets, discovered wallets paper-only until proven');
+}
+
+// In REAL mode, a wallet on probation is copied on paper — no SOL moves, and
+// its paper positions don't use up the real-money position slots.
+async function testProbationInRealMode(realLog: typeof console.log) {
+  const config = { ...loadConfig(), dryRun: false, maxOpenPositions: 1 };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-probation-')));
+  const orders: OrderParams[] = [];
+  let executed = 0;
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      orders.push(params);
+      return { requestId: 'r', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: 5_000n };
+    },
+    async execute() { executed++; return { signature: 'x' }; },
+  };
+  const trader = new Trader(config, { async getBalance() { return 10e9; } } as any, Keypair.generate(), fakeJupiter as any, store, okMarket);
+  const PROBE = Keypair.generate().publicKey.toBase58();
+  trader.setPaperOnly((w) => w === PROBE);
+  const loud = console.log, loudErr = console.error;
+  console.log = () => {}; console.error = () => {};
+  try {
+    await trader.handleSwapEvent({ signature: 'p1', sourceWallet: PROBE, side: 'buy', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    const paper = store.all()[0];
+    assert(paper && paper.dryRun === true && executed === 0, 'a probation wallet is copied on PAPER even with DRY_RUN=false');
+    assert(orders[0].takerPubkey === null, 'its order is quote-only — nothing is built to sign');
+    await trader.handleSwapEvent({ signature: 'r1', sourceWallet: TRACKED, side: 'buy', mint: Keypair.generate().publicKey.toBase58(), decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    assert(orders.length === 2 && orders[1].takerPubkey !== null, 'a real wallet still gets a real order: the paper position did not use up the one real slot');
+  } finally {
+    console.log = loud; console.error = loudErr;
+  }
+  realLog('✅ probation: discovered wallets trade on paper in real mode and never take a real-money slot');
+}
+
 async function main() {
   testEnvIsolation();
+  await testDiscovery(console.log);
+  await testDiscoveryInRotation(console.log);
+  await testProbationInRealMode(console.log);
   await testWalletRotation(console.log);
   await testActiveWalletFilter(console.log);
   testCopyGap();

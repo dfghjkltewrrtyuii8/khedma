@@ -24,7 +24,7 @@ async function main(): Promise<void> {
   const jupiter = openCount > 0 ? new JupiterClient(config.jupiterApiKey, new RateLimiter(JUPITER_MIN_GAP_MS)) : undefined;
   await printSummary(store, jupiter, config.slippageBps, config, true);
 
-  if (config.benchWallets.length > 0) {
+  if (config.benchWallets.length > 0 || config.discovery) {
     const pool = [...config.trackedWallets, ...config.benchWallets].map((w) => w.toBase58());
     const roster = new WalletRoster(pool, config.trackedWallets.length);
     roster.load();

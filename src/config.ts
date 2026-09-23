@@ -40,6 +40,8 @@ export interface Config {
   benchWallets: PublicKey[];
   walletDropAfterTrades: number;
   walletIdleMinutes: number;
+  // Automatic wallet discovery — see discovery.ts. Implies rotation.
+  discovery: boolean;
 }
 
 function fail(message: string): never {
@@ -141,6 +143,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     benchWallets,
     walletDropAfterTrades: numberEnv('WALLET_DROP_AFTER_TRADES', 6),
     walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
+    discovery: (process.env.DISCOVERY ?? 'false').trim().toLowerCase() === 'true',
   };
 
   if (config.copyBuyAmountSol <= 0) fail('COPY_BUY_AMOUNT_SOL must be greater than 0.');
