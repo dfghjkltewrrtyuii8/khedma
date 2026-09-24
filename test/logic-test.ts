@@ -25,9 +25,9 @@ import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
 import { soundFor, speechFor, speechArgs, windowsAlertInvocation, windowsSoundFor, WINDOWS_ALERT_SCRIPT } from '../src/notify';
-import { classifyWalletSecret, findPlaceholders, isTelegramToken, parseHeliusInput, parseWalletList, renderEnv, upsertEnv } from '../src/setupChecks';
+import { applyRecommended, classifyWalletSecret, findPlaceholders, isTelegramToken, parseHeliusInput, parseWalletList, renderEnv, upsertEnv } from '../src/setupChecks';
 import {
-  duration, FetchLike, formatOpen, formatPnl, formatStatus, formatTradeEvent, formatWallets, parseCommand,
+  allQuiet, describeActivity, duration, FetchLike, formatOpen, formatPnl, formatStatus, formatTradeEvent, formatWallets, parseCommand,
   TelegramBot, TelegramClient, TelegramError, TelegramUpdate, TradeFeed,
 } from '../src/telegram';
 import * as bip39 from 'bip39';
@@ -36,7 +36,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
-import { copySlots, dropReason, PROBATION_TRADES, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
+import { copySlots, dropReason, paperHints, PROBATION_TRADES, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
@@ -1656,7 +1656,13 @@ async function testTelegram(realLog: typeof console.log) {
   const status = formatStatus({
     now: NOW, startedAt: NOW - 9 * H - 5 * 60_000, dryRun: true, watching: 3, processed: 312, missedUnreadable: 0,
     lastSwap: { at: NOW - 4 * 60_000, wallet: W1 }, sleeps: [{ from: NOW - 6 * H, to: NOW - 30 * 60_000 }], nextReportAt: NOW + 80 * 60_000,
+    activity: [{ wallet: W1, at: NOW - 3 * H }, { wallet: W2, at: NOW - 2 * H }], rotating: false,
   });
+  assert(status.includes(`Last on-chain activity: ${shortAddress(W1)} 3h 00m ago · ${shortAddress(W2)} 2h 00m ago`), 'each copied wallet\'s real last activity is shown');
+  assert(status.includes('not a fault') && status.includes('npm run recommended'), 'when every wallet has been quiet an hour, it says so — and how to fix it');
+  assert(describeActivity([{ wallet: W1, at: NOW - 10_000 }, { wallet: W2, at: undefined }], NOW) === `${shortAddress(W1)} just now · ${shortAddress(W2)} not checked yet`, 'fresh and unknown activity read clearly');
+  assert(!allQuiet([{ wallet: W1, at: NOW - 3 * H }, { wallet: W2, at: NOW - 5 * 60_000 }], NOW) && !allQuiet([{ wallet: W1, at: undefined }], NOW) && !allQuiet([], NOW),
+    'not "all quiet" while any wallet is active, unchecked, or none are watched');
   assert(status.includes('Running 9h 05m · PAPER mode') && status.includes('312 transactions checked') && status.includes('Last trade seen 4m ago'), `status: ${status}`);
   assert(status.includes('Laptop slept 1× this run, 5h 30m in total') && status.includes('Next report in 1h 20m'), 'sleep and next report');
   assert(duration(59_000) === '1m' && duration(3 * 24 * H + 2 * H) === '3d 2h', 'durations read naturally');
@@ -1744,11 +1750,107 @@ async function testTelegram(realLog: typeof console.log) {
   realLog('✅ telegram: answers only your chat, read-only, token never logged, reports match the positions, alerts per TELEGRAM_TRADE_ALERTS');
 }
 
+// "0 transactions examined" used to mean either "the wallets are quiet" or
+// "the live feed is broken", with no way to tell. The activity check reads
+// each wallet's latest transactions directly: it reports real last activity,
+// and anything the feed should have delivered but didn't gets the wallet
+// re-subscribed.
+async function testActivityCheck(realLog: typeof console.log) {
+  let logCb: (l: { signature: string; err: unknown; logs: string[] }) => void = () => {};
+  let subscribeCalls = 0;
+  const removed: number[] = [];
+  let signatures: { signature: string; blockTime: number; err: unknown }[] = [];
+  const fakeConnection = {
+    onLogs(_pk: unknown, cb: typeof logCb) { logCb = cb; subscribeCalls++; return 100 + subscribeCalls; },
+    async removeOnLogsListener(id: number) { removed.push(id); },
+    async getParsedTransaction() { return { meta: null }; },
+    async getSignaturesForAddress() { return signatures; },
+  };
+  const watcher = new WalletWatcher(fakeConnection as any, [new PublicKey(TRACKED)], async () => {}, new RateLimiter(0));
+  const quiet = console.log;
+  const lines: string[] = [];
+  console.log = (...a: unknown[]) => { lines.push(a.join(' ')); };
+  try {
+    watcher.start();
+    const R = Date.now(); // subscribed about now
+    const sec = (ms: number) => Math.floor((R + ms) / 1000);
+    signatures = [
+      { signature: 'late', blockTime: sec(9.5 * 60_000), err: null },   // 30s ago: the feed may still deliver it
+      { signature: 'failed', blockTime: sec(7 * 60_000), err: { InstructionError: [] } }, // failed: never delivered on purpose
+      { signature: 'delivered', blockTime: sec(6 * 60_000), err: null }, // the feed delivered this one
+      { signature: 'missed', blockTime: sec(5 * 60_000), err: null },    // the feed never delivered this
+      { signature: 'before', blockTime: sec(-60 * 60_000), err: null },  // before we subscribed
+    ];
+    logCb({ signature: 'delivered', err: null, logs: [] });
+    await new Promise((r) => setTimeout(r, 20));
+    const missed = await watcher.checkActivity(TRACKED, R + 10 * 60_000);
+    assert(missed === 1, `exactly the one undelivered, successful, post-subscription, old-enough transaction counts as missed (got ${missed})`);
+    assert(removed.length === 1 && subscribeCalls === 2 && watcher.isWatching(TRACKED), 'the wallet is re-subscribed after a miss');
+    assert(watcher.stats().missedByFeed === 1 && lines.some((l) => l.includes('live feed missed 1')), 'and it says so');
+    assert(watcher.lastActivityOf(TRACKED) === sec(9.5 * 60_000) * 1000, 'last activity = its newest transaction');
+    logCb({ signature: 'late', err: null, logs: [] }); // the reconnected feed delivers the recent one
+    await new Promise((r) => setTimeout(r, 20));
+    assert(await watcher.checkActivity(TRACKED, R + 11 * 60_000) === 0 && removed.length === 1, 'the same miss is never counted twice');
+
+    signatures = [{ signature: 'old', blockTime: sec(-3 * 3_600_000), err: null }];
+    const w2 = new WalletWatcher(fakeConnection as any, [new PublicKey(TRACKED)], async () => {}, new RateLimiter(0));
+    w2.start();
+    await w2.checkActivity(TRACKED, R);
+    assert(w2.lastActivityOf(TRACKED) === sec(-3 * 3_600_000) * 1000 && w2.stats().missedByFeed === 0, 'a quiet wallet: real last activity hours ago, nothing missed');
+    await w2.stop();
+    await watcher.stop();
+  } finally {
+    console.log = quiet;
+  }
+
+  // Rotation uses it: a wallet dormant for hours is swapped on the first
+  // check, not after another WALLET_IDLE_MINUTES — but never for a wallet
+  // already known to be even quieter.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-dormant-'));
+  const [A, B, N1] = Array.from({ length: 3 }, () => Keypair.generate().publicKey.toBase58());
+  const T0 = Date.parse('2026-09-24T01:00:00Z');
+  const onChain = new Map<string, number>([[A, T0 - 3 * 3_600_000], [B, T0 - 5 * 60_000]]);
+  const watching = new Set<string>();
+  const watch = {
+    isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); },
+    lastActivityOf: (w: string) => onChain.get(w),
+  };
+  const roster = new WalletRoster([A, B, N1], 2, dir);
+  const rotation = new Rotation(roster, new PositionStore(dir), { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 90 }, () => {});
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  onChain.set(N1, T0 - 6 * 3_600_000); // the only substitute is even quieter than A
+  await rotation.tick(T0 + 30_000, watch, { setActiveWallets() {} });
+  assert(roster.active().join() === [A, B].join(), 'a dormant wallet is NOT swapped for one known to be even quieter (no churn)');
+  onChain.delete(N1); // substitute's activity unknown — worth a try
+  await rotation.tick(T0 + 60_000, watch, { setActiveWallets() {} });
+  assert(roster.active().join() === [B, N1].join() && watching.has(N1), 'a wallet dormant for 3 hours is swapped out on the first check');
+  realLog('✅ activity check: real last activity per wallet, a broken live feed is caught and reconnected, dormant wallets swapped at once');
+}
+
+// One command, same on Mac and Windows, instead of hand-editing .env.
+function testRecommendedSettings(realLog: typeof console.log) {
+  const before = 'PRIVATE_KEY_BASE58=k\r\nDISCOVERY=false\r\nMIN_TOKEN_AGE_MINUTES=30\r\nMIN_LIQUIDITY_USD=20000\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n';
+  const first = applyRecommended(before);
+  assert(first.changes.map((c) => c.key).join() === 'DISCOVERY,ACTIVE_WALLETS,MIN_TOKEN_AGE_MINUTES,MIN_LIQUIDITY_USD', 'turns on the scanner, 4 wallets, token check off');
+  assert(first.text.includes('DISCOVERY=true\r\nMIN_TOKEN_AGE_MINUTES=0\r\nMIN_LIQUIDITY_USD=0\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n') && first.text.includes('ACTIVE_WALLETS=4\r\n'),
+    'money settings untouched, line endings kept');
+  assert(applyRecommended(first.text).changes.length === 0, 'running it twice changes nothing');
+  assert(applyRecommended('ACTIVE_WALLETS=5\nDISCOVERY=true\nMIN_TOKEN_AGE_MINUTES=0\nMIN_LIQUIDITY_USD=0\n').changes.length === 0, 'a higher ACTIVE_WALLETS you chose is kept');
+
+  const cfg = loadConfig();
+  const hints = paperHints({ ...cfg, discovery: false, benchWallets: [], minTokenAgeMinutes: 30, minLiquidityUsd: 20_000 });
+  assert(hints.length === 2 && hints.every((h) => h.includes('npm run recommended')), 'startup and doctor point at the fix when the settings will keep a paper test quiet');
+  assert(paperHints({ ...cfg, discovery: true, minTokenAgeMinutes: 0, minLiquidityUsd: 0 }).length === 0, 'and say nothing once fixed');
+  realLog('✅ recommended settings: one command turns on the scanner and turns off the token check, leaves money settings alone');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
   await testDiscoveryInRotation(console.log);
   await testEmptySlotsFill(console.log);
+  await testActivityCheck(console.log);
+  testRecommendedSettings(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

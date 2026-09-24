@@ -8,6 +8,7 @@
 import { PublicKey } from '@solana/web3.js';
 import bs58 from 'bs58';
 import * as bip39 from 'bip39';
+import dotenv from 'dotenv';
 
 export type WalletSecretKind =
   | { kind: 'key' }
@@ -117,6 +118,42 @@ export function upsertEnv(text: string, updates: Record<string, string>, heading
     out += [...(heading ? ['', heading] : []), ...missing, ''].join(eol);
   }
   return out;
+}
+
+// The settings that keep a PAPER test busy enough to judge: the wallet
+// scanner on, several wallets at a time, and no token check (the wallets worth
+// copying mostly buy coins younger than 30 minutes, so the check skipped
+// nearly every copy). Money settings — DRY_RUN, buy size, position caps — are
+// never touched here.
+export const RECOMMENDED_SETTINGS: Record<string, { value: string; why: string }> = {
+  DISCOVERY: { value: 'true', why: 'wallet scanner on — finds wallets that are trading now and swaps out quiet ones' },
+  ACTIVE_WALLETS: { value: '4', why: 'copies 4 wallets at a time, not only the ones you typed in' },
+  MIN_TOKEN_AGE_MINUTES: { value: '0', why: 'copies new coins too (the token check skipped almost every copy)' },
+  MIN_LIQUIDITY_USD: { value: '0', why: 'copies smaller coins too' },
+};
+
+export interface SettingChange {
+  key: string;
+  from: string | null; // null = wasn't in .env
+  to: string;
+  why: string;
+}
+
+// Pure: .env text with the recommended settings applied, and what changed.
+// A higher ACTIVE_WALLETS you chose yourself is kept.
+export function applyRecommended(text: string): { text: string; changes: SettingChange[] } {
+  const current = dotenv.parse(text);
+  const updates: Record<string, string> = {};
+  const changes: SettingChange[] = [];
+  for (const [key, { value, why }] of Object.entries(RECOMMENDED_SETTINGS)) {
+    const from = current[key] !== undefined ? current[key].trim() : null;
+    if (from === value) continue;
+    if (key === 'ACTIVE_WALLETS' && from !== null && Number(from) >= Number(value)) continue;
+    updates[key] = value;
+    changes.push({ key, from, to: value, why });
+  }
+  if (changes.length === 0) return { text, changes };
+  return { text: upsertEnv(text, updates, '# ---- Added by: npm run recommended ----'), changes };
 }
 
 export function maskSecret(value: string): string {

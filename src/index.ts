@@ -17,10 +17,12 @@ import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
 import { discoverWallets, printDiscoveryReport } from './discovery';
-import { copySlots, Rotation, rotationOn, WalletRoster } from './walletRoster';
+import { copySlots, paperHints, Rotation, rotationOn, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 import { getSolPriceUsd } from './solPrice';
 import {
+  allQuiet,
+  describeActivity,
   duration,
   formatOpen,
   formatPnl,
@@ -29,6 +31,7 @@ import {
   formatTradeEvent,
   formatWallets,
   helpText,
+  quietHint,
   TelegramBot,
   TelegramClient,
   TradeFeed,
@@ -123,6 +126,11 @@ async function main(): Promise<void> {
           (config.discovery ? '; DISCOVERY on — finds new wallets itself when the bench runs low (paper-tested first).\n' : '.\n')
       : 'Wallets: fixed list (set BENCH_WALLETS to rotate in substitutes).\n'
   );
+  if (config.dryRun) {
+    const hints = paperHints(config);
+    for (const hint of hints) console.log(`💡 ${hint}`);
+    if (hints.length) console.log('');
+  }
 
   const connection = new Connection(config.heliusHttpsUrl, {
     wsEndpoint: config.heliusWssUrl,
@@ -229,6 +237,8 @@ async function main(): Promise<void> {
 
   console.log('');
   watcher.start();
+  watcher.startActivityChecks();
+  const activity = () => watcher.watchedWallets().map((wallet) => ({ wallet, at: watcher.lastActivityOf(wallet) }));
 
   // ---- Telegram: reports on your phone (optional; `npm run telegram`) ----
   const sleeps: { from: number; to: number }[] = [];
@@ -270,6 +280,8 @@ async function main(): Promise<void> {
             lastSwap,
             sleeps,
             nextReportAt: reportMs > 0 ? lastReportAt + reportMs : null,
+            activity: activity(),
+            rotating,
           }),
       },
       config.telegramReportHours
@@ -342,7 +354,7 @@ async function main(): Promise<void> {
   // numbers, in both DRY_RUN and real mode alike.
   const summaryTimer = setInterval(() => {
     if (rotation) rotation.tick(Date.now(), watcher, trader).catch(() => {});
-    reportWatcherHealth(watcher);
+    reportWatcherHealth(watcher, rotating);
     if (rotation) console.log(`   Wallets: ${rotation.describe()}`);
     printSummary(store, undefined, config.slippageBps, config).catch(() => {});
   }, config.summaryIntervalSeconds * 1000);
@@ -392,7 +404,7 @@ async function main(): Promise<void> {
     if (reportTimer) clearInterval(reportTimer);
     clearInterval(heartbeatTimer);
     telegram?.stop();
-    reportWatcherHealth(watcher);
+    reportWatcherHealth(watcher, rotating);
     trader.beginShutdown();
     await watcher.stop();
 
@@ -434,12 +446,17 @@ async function main(): Promise<void> {
   });
 }
 
-function reportWatcherHealth(watcher: WalletWatcher): void {
+function reportWatcherHealth(watcher: WalletWatcher, rotating: boolean): void {
   const s = watcher.stats();
   const lost = s.droppedStale + s.droppedOverflow;
+  const now = Date.now();
+  const activity = watcher.watchedWallets().map((wallet) => ({ wallet, at: watcher.lastActivityOf(wallet) }));
   console.log(
     `\n📊 Watcher: ${s.processed} transactions examined, ${s.queued} waiting` +
       (lost > 0 ? `, ${lost} skipped as stale (${s.droppedStale} timed out, ${s.droppedOverflow} overflowed)` : '') +
+      (activity.length > 0 ? `\n   Last on-chain activity: ${describeActivity(activity, now)}` : '') +
+      (allQuiet(activity, now) ? `\n   ${quietHint(rotating)}` : '') +
+      (s.missedByFeed > 0 ? `\n   📡 The live feed missed ${s.missedByFeed} transaction(s) so far; each time the wallet was reconnected.` : '') +
       (rpcRetries > 0 ? `\n   ${rpcRetries} RPC rate-limit retries so far — lower RPC_REQUESTS_PER_SECOND or watch fewer wallets.` : '') +
       (s.unreadableFormat > 0
         ? `\n   🚨 ${s.unreadableFormat} trade(s) were in a transaction format this build can't read — they were MISSED. Update the bot.`

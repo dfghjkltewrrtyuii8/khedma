@@ -60,6 +60,27 @@ export function copySlots(cfg: Pick<Config, 'trackedWallets' | 'activeWallets' |
   return Math.min(cfg.maxTrackedWallets, Math.max(cfg.trackedWallets.length, cfg.activeWallets));
 }
 
+// Pure: what in the settings will keep a paper test quiet, with the fix.
+// Shown at startup and by `npm run doctor` — the bot never changes .env itself.
+export function paperHints(
+  cfg: Pick<Config, 'benchWallets' | 'discovery' | 'trackedWallets' | 'minTokenAgeMinutes' | 'minLiquidityUsd'>
+): string[] {
+  const hints: string[] = [];
+  if (!rotationOn(cfg)) {
+    hints.push(
+      `wallet scanner off: only your ${cfg.trackedWallets.length} wallet(s) are copied, so whenever they're quiet nothing happens. ` +
+        'Fix: npm run recommended'
+    );
+  }
+  if (cfg.minTokenAgeMinutes > 0 || cfg.minLiquidityUsd > 0) {
+    hints.push(
+      `token check on (${cfg.minTokenAgeMinutes} min old / $${cfg.minLiquidityUsd.toLocaleString('en-US')} liquidity): the wallets worth copying ` +
+        'mostly buy newer coins, so most copies get skipped. For paper testing: npm run recommended'
+    );
+  }
+  return hints;
+}
+
 // Pure: should copying this wallet stop for good? Returns the reason, or null.
 export function dropReason(positions: readonly Position[], wallet: string, cfg: RotationConfig): string | null {
   const record = walletRecords(positions).get(wallet);
@@ -186,6 +207,8 @@ export interface WatchControl {
   isWatching(wallet: string): boolean;
   addWallet(wallet: string): void;
   removeWallet(wallet: string): Promise<void>;
+  // When the wallet last did anything on-chain (epoch ms), if known.
+  lastActivityOf?(wallet: string): number | undefined;
 }
 export interface BuyControl {
   setActiveWallets(wallets: string[] | null): void;
@@ -298,12 +321,23 @@ export class Rotation {
     if (this.cfg.walletIdleMinutes > 0) {
       const limitMs = this.cfg.walletIdleMinutes * 60_000;
       for (const w of this.roster.active()) {
-        if (this.roster.bench().length === 0) break; // nobody to swap in
-        const last = Math.max(this.lastBuy.get(w) ?? 0, this.activeSince.get(w) ?? now);
+        const bench = this.roster.bench();
+        if (bench.length === 0) break; // nobody to swap in
+        // Quiet since it got its slot — or since its last on-chain activity,
+        // if that was earlier: a wallet that hasn't done anything for hours
+        // is swapped out on the first check, not after another 90 minutes.
+        const since = this.activeSince.get(w) ?? now;
+        const onChain = watch.lastActivityOf?.(w);
+        const quietSince = onChain !== undefined ? Math.min(since, onChain) : since;
+        const last = Math.max(this.lastBuy.get(w) ?? 0, quietSince);
         if (now - last >= limitMs) {
+          // Never trade one quiet wallet for another already known to be at
+          // least as quiet — that only churns (and spams the alerts).
+          const nextUp = watch.lastActivityOf?.(bench[0]);
+          if (nextUp !== undefined && nextUp <= last) continue;
           this.roster.idle(w, now);
           this.log(
-            `🔄 Benched ${shortAddress(w)} — no buys in ${this.cfg.walletIdleMinutes} min while you were running. ` +
+            `🔄 Benched ${shortAddress(w)} — no buys in ${this.cfg.walletIdleMinutes}+ min. ` +
               'It goes to the back of the bench and gets another turn later.'
           );
         }

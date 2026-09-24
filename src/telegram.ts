@@ -316,6 +316,32 @@ export function formatWallets(input: WalletsInput): string {
   return lines.join('\n');
 }
 
+// When each copied wallet last did anything on-chain — the line that tells
+// "the wallets are quiet" apart from "the bot is broken".
+export interface WalletActivity {
+  wallet: string;
+  at: number | undefined; // epoch ms; undefined = not checked yet
+}
+
+export function describeActivity(list: WalletActivity[], now: number): string {
+  return list
+    .map(({ wallet, at }) =>
+      `${shortAddress(wallet)} ${at === undefined ? 'not checked yet' : now - at < 60_000 ? 'just now' : `${duration(now - at)} ago`}`
+    )
+    .join(' · ');
+}
+
+// True when every copied wallet is known to have done nothing for quietMs.
+export function allQuiet(list: WalletActivity[], now: number, quietMs = 60 * 60_000): boolean {
+  return list.length > 0 && list.every(({ at }) => at !== undefined && now - at >= quietMs);
+}
+
+export function quietHint(rotating: boolean): string {
+  return rotating
+    ? "💤 None of the wallets it copies has traded in the last hour — that's why nothing is happening, not a fault. Quiet wallets are swapped for active ones automatically."
+    : "💤 None of the wallets it copies has traded in the last hour — that's why nothing is happening, not a fault. Turn on the wallet scanner so quiet wallets get swapped for active ones: npm run recommended";
+}
+
 export interface StatusInput {
   now: number;
   startedAt: number;
@@ -326,6 +352,8 @@ export interface StatusInput {
   lastSwap: { at: number; wallet: string } | null;
   sleeps: { from: number; to: number }[];
   nextReportAt: number | null;
+  activity: WalletActivity[];
+  rotating: boolean;
 }
 
 export function formatStatus(s: StatusInput): string {
@@ -336,6 +364,10 @@ export function formatStatus(s: StatusInput): string {
       ? `Last trade seen ${duration(s.now - s.lastSwap.at)} ago (${shortAddress(s.lastSwap.wallet)})`
       : 'No trades seen yet from the wallets it copies',
   ];
+  if (s.activity.length > 0) {
+    lines.push(`Last on-chain activity: ${describeActivity(s.activity, s.now)}`);
+    if (allQuiet(s.activity, s.now)) lines.push(quietHint(s.rotating));
+  }
   if (s.sleeps.length > 0) {
     const total = s.sleeps.reduce((a, g) => a + (g.to - g.from), 0);
     const last = s.sleeps[s.sleeps.length - 1];

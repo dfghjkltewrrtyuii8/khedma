@@ -26,6 +26,17 @@ const TX_FETCH_RETRY_DELAY_MS = 1_500;
 const STALE_MS = 45_000; // older than this and the trade is not worth copying
 const MAX_QUEUE = 40;
 
+// The live feed (a WebSocket) can fail silently: the bot then looks exactly
+// like it does when the wallets are simply quiet — "0 transactions examined".
+// So every ACTIVITY_CHECK_MS each watched wallet's latest transactions are
+// also read directly (one cheap RPC call per wallet), which tells the two
+// cases apart: it gives each wallet's real last activity, and any successful
+// transaction the feed should have delivered but didn't means the feed broke
+// — that wallet is re-subscribed on the spot.
+const ACTIVITY_CHECK_MS = 5 * 60_000;
+const FEED_GRACE_MS = 60_000; // the feed delivers in seconds; a minute late means it missed it
+const SUBSCRIBE_MARGIN_MS = 15_000; // ignore transactions from the moment of subscribing
+
 // The newest transaction format we can read. Solana added version 1 in 2026;
 // asking for less makes the RPC refuse every trade sent in the newer format,
 // which is exactly how this bot once sat watching two busy wallets and saw
@@ -75,6 +86,15 @@ export interface WatcherStats {
   // Trades the network sent in a format too new for this build to read.
   // Anything above zero means the bot is blind to some of what it watches.
   unreadableFormat: number;
+  // Transactions the live feed never delivered, found by the activity check.
+  missedByFeed: number;
+}
+
+// What the activity check needs from the RPC: a wallet's latest signatures.
+export interface SignatureInfo {
+  signature: string;
+  blockTime?: number | null; // epoch seconds
+  err: unknown;
 }
 
 export class WalletWatcher {
@@ -87,6 +107,10 @@ export class WalletWatcher {
   private droppedStale = 0;
   private droppedOverflow = 0;
   private unreadableFormat = 0;
+  private missedByFeed = 0;
+  private lastActivity = new Map<string, number>(); // wallet -> epoch ms of its newest transaction we know of
+  private subscribedAt = new Map<string, number>();
+  private activityTimer: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly connection: Connection,
@@ -103,6 +127,70 @@ export class WalletWatcher {
     for (const wallet of this.trackedWallets) this.subscribe(wallet);
   }
 
+  // When each watched wallet last did anything on-chain (epoch ms), if known.
+  lastActivityOf(address: string): number | undefined {
+    return this.lastActivity.get(address);
+  }
+
+  watchedWallets(): string[] {
+    return [...this.subscriptions.keys()];
+  }
+
+  // Check every watched wallet now, then every ACTIVITY_CHECK_MS.
+  startActivityChecks(intervalMs: number = ACTIVITY_CHECK_MS): void {
+    const checkAll = () => {
+      for (const wallet of this.watchedWallets()) void this.checkActivity(wallet).catch(() => {});
+    };
+    checkAll();
+    this.activityTimer = setInterval(checkAll, intervalMs);
+  }
+
+  // Reads the wallet's latest transactions straight from the RPC: records its
+  // real last activity, and re-subscribes it if the live feed missed any.
+  // Returns how many the feed missed.
+  async checkActivity(address: string, now: number = Date.now()): Promise<number> {
+    if (this.stopped || !this.subscriptions.has(address)) return 0;
+    const signatures = (await this.rpcLimiter.schedule('getSignaturesForAddress', () =>
+      this.connection.getSignaturesForAddress(new PublicKey(address), { limit: 10 }, 'confirmed')
+    )) as SignatureInfo[];
+    const since = (this.subscribedAt.get(address) ?? now) + SUBSCRIBE_MARGIN_MS;
+    let missed = 0;
+    for (const s of signatures) {
+      if (!s.blockTime) continue;
+      const at = s.blockTime * 1000;
+      this.noteActivity(address, at);
+      if (s.err === null && at >= since && now - at >= FEED_GRACE_MS && !this.seenSignatures.has(s.signature)) {
+        missed += 1;
+        this.rememberSignature(s.signature); // counted once, never again
+      }
+    }
+    if (missed > 0 && !this.stopped && this.subscriptions.has(address)) {
+      this.missedByFeed += missed;
+      console.log(
+        `\n📡 The live feed missed ${missed} transaction(s) from ${shortAddress(address)} — reconnecting it. ` +
+          '(If this keeps happening, check HELIUS_WSS_URL or your internet connection.)'
+      );
+      await this.resubscribe(address);
+    }
+    return missed;
+  }
+
+  private noteActivity(address: string, at: number): void {
+    if (at > (this.lastActivity.get(address) ?? 0)) this.lastActivity.set(address, at);
+  }
+
+  private async resubscribe(address: string): Promise<void> {
+    const id = this.subscriptions.get(address);
+    if (id === undefined) return;
+    this.subscriptions.delete(address);
+    try {
+      await this.connection.removeOnLogsListener(id);
+    } catch {
+      // Already gone — that may be why it went quiet.
+    }
+    if (!this.stopped) this.subscribe(new PublicKey(address), false);
+  }
+
   isWatching(address: string): boolean {
     return this.subscriptions.has(address);
   }
@@ -111,6 +199,8 @@ export class WalletWatcher {
   addWallet(address: string): void {
     if (this.stopped) return;
     this.subscribe(new PublicKey(address));
+    // Learn its last activity right away (rotation benches wallets gone quiet).
+    if (this.activityTimer) void this.checkActivity(address).catch(() => {});
   }
 
   // Stop watching a wallet while running. Trades of its already in the queue
@@ -119,6 +209,7 @@ export class WalletWatcher {
     const id = this.subscriptions.get(address);
     if (id === undefined) return;
     this.subscriptions.delete(address);
+    this.subscribedAt.delete(address);
     try {
       await this.connection.removeOnLogsListener(id);
     } catch {
@@ -127,13 +218,15 @@ export class WalletWatcher {
     console.log(`👋 Stopped watching ${shortAddress(address)}`);
   }
 
-  private subscribe(wallet: PublicKey): void {
+  private subscribe(wallet: PublicKey, announce = true): void {
     const walletAddress = wallet.toBase58();
     if (this.subscriptions.has(walletAddress)) return;
+    this.subscribedAt.set(walletAddress, Date.now());
     const subscriptionId = this.connection.onLogs(
       wallet,
       (logs) => {
         if (this.stopped) return;
+        this.noteActivity(walletAddress, Date.now());
         if (logs.err) return; // failed transaction — nothing actually happened
         if (this.seenSignatures.has(logs.signature)) return;
         this.rememberSignature(logs.signature);
@@ -142,12 +235,13 @@ export class WalletWatcher {
       'confirmed'
     );
     this.subscriptions.set(walletAddress, subscriptionId);
-    console.log(`👀 Watching wallet ${walletAddress}`);
+    if (announce) console.log(`👀 Watching wallet ${walletAddress}`);
   }
 
   // Stop reacting to new activity immediately (used at shutdown).
   async stop(): Promise<void> {
     this.stopped = true;
+    if (this.activityTimer) clearInterval(this.activityTimer);
     this.queue = [];
     for (const id of this.subscriptions.values()) {
       try {
@@ -166,6 +260,7 @@ export class WalletWatcher {
       droppedOverflow: this.droppedOverflow,
       queued: this.queue.length,
       unreadableFormat: this.unreadableFormat,
+      missedByFeed: this.missedByFeed,
     };
   }
 

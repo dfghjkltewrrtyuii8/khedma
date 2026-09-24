@@ -21,7 +21,7 @@ import { loadKeypair } from './wallet';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } from './watcher';
 import { fetchGeckoTerminal, parseTrendingPools } from './discovery';
 import { explainTelegramError, TelegramClient } from './telegram';
-import { copySlots, rotationOn } from './walletRoster';
+import { copySlots, paperHints, rotationOn } from './walletRoster';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -239,6 +239,7 @@ async function main(): Promise<void> {
   console.log('\nSettings');
   if (config.dryRun) {
     ok(`DRY_RUN=true — paper trading, nothing will be sent (up to ${config.paperMaxOpenPositions} positions at once)`);
+    for (const hint of paperHints(config)) warn(hint);
   } else {
     warn('DRY_RUN=false — REAL trading with REAL SOL from this wallet');
     if (balanceSol !== null) {
