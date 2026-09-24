@@ -1831,11 +1831,17 @@ async function testActivityCheck(realLog: typeof console.log) {
 function testRecommendedSettings(realLog: typeof console.log) {
   const before = 'PRIVATE_KEY_BASE58=k\r\nDISCOVERY=false\r\nMIN_TOKEN_AGE_MINUTES=30\r\nMIN_LIQUIDITY_USD=20000\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n';
   const first = applyRecommended(before);
-  assert(first.changes.map((c) => c.key).join() === 'DISCOVERY,ACTIVE_WALLETS,MIN_TOKEN_AGE_MINUTES,MIN_LIQUIDITY_USD', 'turns on the scanner, 4 wallets, token check off');
-  assert(first.text.includes('DISCOVERY=true\r\nMIN_TOKEN_AGE_MINUTES=0\r\nMIN_LIQUIDITY_USD=0\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n') && first.text.includes('ACTIVE_WALLETS=4\r\n'),
+  assert(first.changes.map((c) => c.key).join() === 'DISCOVERY,ACTIVE_WALLETS,WALLET_IDLE_MINUTES,MIN_TOKEN_AGE_MINUTES,MIN_LIQUIDITY_USD',
+    'turns on the scanner, 6 wallets, 30-minute swaps, token check off');
+  assert(first.text.includes('DISCOVERY=true\r\nMIN_TOKEN_AGE_MINUTES=0\r\nMIN_LIQUIDITY_USD=0\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n') &&
+    first.text.includes('ACTIVE_WALLETS=6\r\n') && first.text.includes('WALLET_IDLE_MINUTES=30\r\n'),
     'money settings untouched, line endings kept');
   assert(applyRecommended(first.text).changes.length === 0, 'running it twice changes nothing');
-  assert(applyRecommended('ACTIVE_WALLETS=5\nDISCOVERY=true\nMIN_TOKEN_AGE_MINUTES=0\nMIN_LIQUIDITY_USD=0\n').changes.length === 0, 'a higher ACTIVE_WALLETS you chose is kept');
+  const mine = 'ACTIVE_WALLETS=8\nWALLET_IDLE_MINUTES=20\nDISCOVERY=true\nMIN_TOKEN_AGE_MINUTES=0\nMIN_LIQUIDITY_USD=0\n';
+  assert(applyRecommended(mine).changes.length === 0, 'more wallets or faster swaps you chose yourself are kept');
+  assert(applyRecommended(mine.replace('WALLET_IDLE_MINUTES=20', 'WALLET_IDLE_MINUTES=90')).changes.map((c) => c.key).join() === 'WALLET_IDLE_MINUTES' &&
+    applyRecommended(mine.replace('WALLET_IDLE_MINUTES=20', 'WALLET_IDLE_MINUTES=0')).changes.map((c) => c.key).join() === 'WALLET_IDLE_MINUTES',
+    'a slower 90, or 0 (never swap), becomes 30');
 
   const cfg = loadConfig();
   const hints = paperHints({ ...cfg, discovery: false, benchWallets: [], minTokenAgeMinutes: 30, minLiquidityUsd: 20_000 });

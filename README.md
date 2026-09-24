@@ -140,7 +140,8 @@ wallet quiet for days has nothing to copy). Every line is ✅, ⚠️ or ❌ wit
 fix next to it. Fix the ❌ lines, run it again, then start the bot.
 
 For a paper test that actually trades, switch on the recommended settings
-(the wallet scanner, 4 wallets at a time, no token check). Same command on
+(the wallet scanner, 6 wallets at a time, quiet ones swapped after 30
+minutes, no token check). Same command on
 Mac and Windows; it leaves every money setting alone:
 
 ```zsh
@@ -671,7 +672,7 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | `Config error: TRACKED_WALLETS has N addresses` | More wallets than `MAX_TRACKED_WALLETS` (default 6). Keep your best few — past that the watcher drops trades and nothing can be judged. |
 | Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
-| Bot runs but never buys (`0 transactions examined`) | Read the `Last on-chain activity:` line under each `📊 Watcher` summary (or send `/status` on Telegram). Wallets that last did something hours ago are simply **quiet** — nothing to copy. Fix: `npm run recommended` (wallet scanner on, 4 wallets at a time, token check off), then restart. If a wallet shows recent activity but nothing was examined, the live feed broke — the bot notices within 5 minutes (`📡 The live feed missed …`) and reconnects it by itself. |
+| Bot runs but never buys (`0 transactions examined`) | Read the `Last on-chain activity:` line under each `📊 Watcher` summary (or send `/status` on Telegram). Wallets that last did something hours ago are simply **quiet** — nothing to copy. Fix: `npm run recommended` (wallet scanner on, 6 wallets at a time, quiet ones swapped after 30 minutes, token check off), then restart. If a wallet shows recent activity but nothing was examined, the live feed broke — the bot notices within 5 minutes (`📡 The live feed missed …`) and reconnects it by itself. |
 | Every copy is `skip: token is … old` | The token check is on. For paper testing, `npm run recommended` turns it off. |
 | `🚨 … transaction format … can't read` | Solana introduced a newer transaction format than this build understands, so trades in it are **missed** — the bot will look idle while wallets are trading. Update the bot. (This happened once already: version 1 arrived in 2026 and needed `@solana/web3.js` 1.99.) |
 | `npm run discover` finds nothing | Read its report line: `0 trending pools` or a ⚠️ line means GeckoTerminal couldn't be reached or read (network, or they changed their format — send the output to whoever maintains the bot). Pools and trades read but `0 candidates` just means nobody passed the filter this hour; try again later. |
