@@ -1,7 +1,7 @@
 {
   "0": "scripts",
   "1": "walletRoster.ts",
-  "2": "setupChecks.ts",
+  "2": "setup.ts",
   "3": "pnl.ts",
   "4": "PositionStore",
   "5": "trader.ts",
@@ -11,5 +11,9 @@
   "9": "discovery.ts",
   "10": "WalletWatcher",
   "11": "telegramSetup.ts",
-  "12": "main"
+  "12": "main",
+  "13": "package.json",
+  "14": "setupChecks.ts",
+  "15": "dependencies",
+  "16": "devDependencies"
 }

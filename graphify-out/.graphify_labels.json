@@ -1,19 +1,20 @@
 {
   "0": "scripts",
-  "1": "walletRoster.ts",
+  "1": "shortAddress",
   "2": "setup.ts",
-  "3": "pnl.ts",
-  "4": "PositionStore",
-  "5": "trader.ts",
+  "3": "index.ts",
+  "4": "main",
+  "5": "copyGap.ts",
   "6": "logic-test.ts",
   "7": "compilerOptions",
   "8": "Solana Copy-Trading Bot",
   "9": "discovery.ts",
   "10": "WalletWatcher",
-  "11": "telegramSetup.ts",
-  "12": "main",
+  "11": "telegram.ts",
+  "12": "Prompter",
   "13": "package.json",
   "14": "setupChecks.ts",
   "15": "dependencies",
-  "16": "devDependencies"
+  "16": "createPrompter",
+  "17": "bs58"
 }
