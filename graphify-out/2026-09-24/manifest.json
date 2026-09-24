@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1790214644.908827,
-    "seen": 1790214664.7955816,
-    "ast_hash": "9504b4a97376bcd382566270641dcf8f",
+    "mtime": 1790257302.113431,
+    "seen": 1790257323.0547495,
+    "ast_hash": "f81a1ff922abaf2314d142ed896feba0",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790214567.5988052,
-    "seen": 1790214664.7956505,
-    "ast_hash": "90c9a914ca5fd61e21bc413b6e339a5f",
+    "mtime": 1790257261.1839266,
+    "seen": 1790257323.0548077,
+    "ast_hash": "cbcd7f4804b8db47d344e1b1953277aa",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790214512.9033766,
-    "seen": 1790214664.795656,
-    "ast_hash": "54a58c2f67dee7f727f2508acb2e1d79",
+    "mtime": 1790257261.1815991,
+    "seen": 1790257323.0548112,
+    "ast_hash": "7fe5942e919a31ebfab4064fd88bacc1",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -138,9 +138,9 @@
     "semantic_hash": ""
   },
   "src/setupChecks.ts": {
-    "mtime": 1790214512.9017363,
-    "seen": 1790214664.795624,
-    "ast_hash": "3de299e4f7046e49ec283416b46397e1",
+    "mtime": 1790257261.180611,
+    "seen": 1790257323.0547898,
+    "ast_hash": "3aa9ca9c70f9a06b42ed1659ca0e3232",
     "semantic_hash": ""
   },
   "src/alerts.ts": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "src/recommended.ts": {
-    "mtime": 1790208520.8427398,
-    "seen": 1790208954.5775528,
-    "ast_hash": "85b6de1ecbb7f4f8510aedbd266fac71",
+    "mtime": 1790257261.1808934,
+    "seen": 1790257323.054787,
+    "ast_hash": "92761ee2e03abbf86a3c39f81ca8e185",
     "semantic_hash": ""
   }
 }

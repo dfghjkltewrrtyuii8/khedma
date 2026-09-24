@@ -339,7 +339,7 @@
       "file_type": "code",
       "norm_label": "envvalues",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L208"
+      "source_location": "L212"
     },
     {
       "id": "src_setupchecks_settingchange",
@@ -352,7 +352,7 @@
       "file_type": "code",
       "norm_label": "settingchange",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L135"
+      "source_location": "L137"
     },
     {
       "id": "src_setupchecks_walletsecretkind",
@@ -1380,7 +1380,7 @@
       "file_type": "code",
       "norm_label": "testrobotwallets()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1902"
+      "source_location": "L1908"
     },
     {
       "id": "test_logic_test_testwalletrotation",
@@ -2412,7 +2412,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "src/recommended.ts",
-      "source_location": "L12"
+      "source_location": "L13"
     },
     {
       "id": "src_setupchecks_applyrecommended",
@@ -2424,7 +2424,7 @@
       "file_type": "code",
       "norm_label": "applyrecommended()",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L144"
+      "source_location": "L147"
     },
     {
       "id": "src_prompt_createprompter",
@@ -2568,7 +2568,7 @@
       "file_type": "code",
       "norm_label": "masksecret()",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L159"
+      "source_location": "L163"
     },
     {
       "id": "src_setupchecks_parseheliusinput",
@@ -2604,7 +2604,7 @@
       "file_type": "code",
       "norm_label": "renderenv()",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L218"
+      "source_location": "L222"
     },
     {
       "id": "src_wallet_loadkeypair",
@@ -3504,7 +3504,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1969"
+      "source_location": "L1975"
     },
     {
       "id": "test_logic_test_okmarket",
@@ -3648,7 +3648,7 @@
       "file_type": "code",
       "norm_label": "testrunsheets()",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1849"
+      "source_location": "L1855"
     },
     {
       "id": "test_logic_test_testsellusesonchainbalance",
@@ -4921,7 +4921,7 @@
       "file_type": "code",
       "norm_label": "env_path",
       "source_file": "src/recommended.ts",
-      "source_location": "L10"
+      "source_location": "L11"
     },
     {
       "id": "src_setupchecks",
@@ -4954,7 +4954,7 @@
       "file_type": "code",
       "norm_label": "recommended_settings",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L128"
+      "source_location": "L129"
     },
     {
       "id": "src_setupchecks_required_keys",
@@ -5119,7 +5119,7 @@
       "file_type": "code",
       "norm_label": "env_defaults",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L165"
+      "source_location": "L169"
     },
     {
       "id": "ref_dotenv",
@@ -5818,7 +5818,7 @@
       "node_kind": "heading",
       "norm_label": "5. run the bot (dry-run)",
       "source_file": "README.md",
-      "source_location": "L197"
+      "source_location": "L198"
     },
     {
       "id": "readme_6_stopping_the_bot",
@@ -5830,7 +5830,7 @@
       "node_kind": "heading",
       "norm_label": "6. stopping the bot",
       "source_file": "README.md",
-      "source_location": "L230"
+      "source_location": "L231"
     },
     {
       "id": "readme_7_going_live_only_when_you_re_ready",
@@ -5842,7 +5842,7 @@
       "node_kind": "heading",
       "norm_label": "7. going live (only when you're ready)",
       "source_file": "README.md",
-      "source_location": "L237"
+      "source_location": "L238"
     },
     {
       "id": "readme_automatic_wallet_discovery_discovery_true",
@@ -5854,7 +5854,7 @@
       "node_kind": "heading",
       "norm_label": "automatic wallet discovery (`discovery=true`)",
       "source_file": "README.md",
-      "source_location": "L567"
+      "source_location": "L568"
     },
     {
       "id": "readme_every_setting_reference",
@@ -5866,7 +5866,7 @@
       "node_kind": "heading",
       "norm_label": "every setting (reference)",
       "source_file": "README.md",
-      "source_location": "L150"
+      "source_location": "L151"
     },
     {
       "id": "readme_exiting_without_them",
@@ -5878,7 +5878,7 @@
       "node_kind": "heading",
       "norm_label": "exiting without them",
       "source_file": "README.md",
-      "source_location": "L608"
+      "source_location": "L609"
     },
     {
       "id": "readme_how_it_decides_what_is_a_buy_or_sell",
@@ -5890,7 +5890,7 @@
       "node_kind": "heading",
       "norm_label": "how it decides what is a \"buy\" or \"sell\"",
       "source_file": "README.md",
-      "source_location": "L483"
+      "source_location": "L484"
     },
     {
       "id": "readme_installing_for_a_friend_fresh_mac",
@@ -5902,7 +5902,7 @@
       "node_kind": "heading",
       "norm_label": "installing for a friend (fresh mac)",
       "source_file": "README.md",
-      "source_location": "L387"
+      "source_location": "L388"
     },
     {
       "id": "readme_safety_features_on_by_default",
@@ -5950,7 +5950,7 @@
       "node_kind": "heading",
       "norm_label": "telegram: p&l on your phone",
       "source_file": "README.md",
-      "source_location": "L330"
+      "source_location": "L331"
     },
     {
       "id": "readme_troubleshooting",
@@ -5962,7 +5962,7 @@
       "node_kind": "heading",
       "norm_label": "troubleshooting",
       "source_file": "README.md",
-      "source_location": "L658"
+      "source_location": "L659"
     },
     {
       "id": "readme_useful_extras",
@@ -5974,7 +5974,7 @@
       "node_kind": "heading",
       "norm_label": "useful extras",
       "source_file": "README.md",
-      "source_location": "L250"
+      "source_location": "L251"
     },
     {
       "id": "readme_wallet_rotation",
@@ -5986,7 +5986,7 @@
       "node_kind": "heading",
       "norm_label": "wallet rotation",
       "source_file": "README.md",
-      "source_location": "L524"
+      "source_location": "L525"
     },
     {
       "id": "readme_what_it_refuses_to_copy_quality_gates",
@@ -5998,7 +5998,7 @@
       "node_kind": "heading",
       "norm_label": "what it refuses to copy (quality gates)",
       "source_file": "README.md",
-      "source_location": "L500"
+      "source_location": "L501"
     },
     {
       "id": "readme_what_stuck_means",
@@ -6010,7 +6010,7 @@
       "node_kind": "heading",
       "norm_label": "what \"stuck\" means",
       "source_file": "README.md",
-      "source_location": "L647"
+      "source_location": "L648"
     },
     {
       "id": "readme_windows_powershell",
@@ -6022,7 +6022,7 @@
       "node_kind": "heading",
       "norm_label": "windows (powershell)",
       "source_file": "README.md",
-      "source_location": "L421"
+      "source_location": "L422"
     },
     {
       "id": "src_config_quote_mints",
@@ -8096,7 +8096,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/recommended.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -8252,7 +8252,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/setupChecks.ts",
-      "source_location": "L156",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -10460,7 +10460,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1970",
+      "source_location": "L1976",
       "weight": 1.0
     },
     {
@@ -10472,7 +10472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1971",
+      "source_location": "L1977",
       "weight": 1.0
     },
     {
@@ -10484,7 +10484,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1972",
+      "source_location": "L1978",
       "weight": 1.0
     },
     {
@@ -10496,7 +10496,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1973",
+      "source_location": "L1979",
       "weight": 1.0
     },
     {
@@ -10508,7 +10508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1974",
+      "source_location": "L1980",
       "weight": 1.0
     },
     {
@@ -10520,7 +10520,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1975",
+      "source_location": "L1981",
       "weight": 1.0
     },
     {
@@ -10532,7 +10532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1976",
+      "source_location": "L1982",
       "weight": 1.0
     },
     {
@@ -10544,7 +10544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1977",
+      "source_location": "L1983",
       "weight": 1.0
     },
     {
@@ -10556,7 +10556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1978",
+      "source_location": "L1984",
       "weight": 1.0
     },
     {
@@ -10568,7 +10568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1979",
+      "source_location": "L1985",
       "weight": 1.0
     },
     {
@@ -10580,7 +10580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1980",
+      "source_location": "L1986",
       "weight": 1.0
     },
     {
@@ -10592,7 +10592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1981",
+      "source_location": "L1987",
       "weight": 1.0
     },
     {
@@ -10604,7 +10604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1982",
+      "source_location": "L1988",
       "weight": 1.0
     },
     {
@@ -10616,7 +10616,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1983",
+      "source_location": "L1989",
       "weight": 1.0
     },
     {
@@ -10628,7 +10628,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1984",
+      "source_location": "L1990",
       "weight": 1.0
     },
     {
@@ -10640,7 +10640,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1985",
+      "source_location": "L1991",
       "weight": 1.0
     },
     {
@@ -10652,7 +10652,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1986",
+      "source_location": "L1992",
       "weight": 1.0
     },
     {
@@ -10664,7 +10664,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1987",
+      "source_location": "L1993",
       "weight": 1.0
     },
     {
@@ -10676,7 +10676,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1988",
+      "source_location": "L1994",
       "weight": 1.0
     },
     {
@@ -10688,7 +10688,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1989",
+      "source_location": "L1995",
       "weight": 1.0
     },
     {
@@ -10700,7 +10700,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1990",
+      "source_location": "L1996",
       "weight": 1.0
     },
     {
@@ -10712,7 +10712,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1991",
+      "source_location": "L1997",
       "weight": 1.0
     },
     {
@@ -10724,7 +10724,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1992",
+      "source_location": "L1998",
       "weight": 1.0
     },
     {
@@ -10736,7 +10736,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1993",
+      "source_location": "L1999",
       "weight": 1.0
     },
     {
@@ -10748,7 +10748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1994",
+      "source_location": "L2000",
       "weight": 1.0
     },
     {
@@ -10760,7 +10760,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1995",
+      "source_location": "L2001",
       "weight": 1.0
     },
     {
@@ -10772,7 +10772,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1996",
+      "source_location": "L2002",
       "weight": 1.0
     },
     {
@@ -10784,7 +10784,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1997",
+      "source_location": "L2003",
       "weight": 1.0
     },
     {
@@ -10796,7 +10796,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1998",
+      "source_location": "L2004",
       "weight": 1.0
     },
     {
@@ -10808,7 +10808,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1999",
+      "source_location": "L2005",
       "weight": 1.0
     },
     {
@@ -10820,7 +10820,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2000",
+      "source_location": "L2006",
       "weight": 1.0
     },
     {
@@ -10832,7 +10832,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2001",
+      "source_location": "L2007",
       "weight": 1.0
     },
     {
@@ -10844,7 +10844,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2002",
+      "source_location": "L2008",
       "weight": 1.0
     },
     {
@@ -10856,7 +10856,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2003",
+      "source_location": "L2009",
       "weight": 1.0
     },
     {
@@ -10868,7 +10868,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2004",
+      "source_location": "L2010",
       "weight": 1.0
     },
     {
@@ -10880,7 +10880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L2005",
+      "source_location": "L2011",
       "weight": 1.0
     },
     {
@@ -11636,7 +11636,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1840",
+      "source_location": "L1846",
       "weight": 1.0
     },
     {
@@ -11648,7 +11648,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1841",
+      "source_location": "L1847",
       "weight": 1.0
     },
     {
@@ -11660,7 +11660,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1910",
+      "source_location": "L1916",
       "weight": 1.0
     },
     {
@@ -11672,7 +11672,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1910",
+      "source_location": "L1916",
       "weight": 1.0
     },
     {
@@ -11684,7 +11684,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1930",
+      "source_location": "L1936",
       "weight": 1.0
     },
     {
@@ -11696,7 +11696,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1943",
+      "source_location": "L1949",
       "weight": 1.0
     },
     {
@@ -11708,7 +11708,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1944",
+      "source_location": "L1950",
       "weight": 1.0
     },
     {
@@ -11720,7 +11720,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1863",
+      "source_location": "L1869",
       "weight": 1.0
     },
     {
@@ -11732,7 +11732,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1867",
+      "source_location": "L1873",
       "weight": 1.0
     },
     {
@@ -11744,7 +11744,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1883",
+      "source_location": "L1889",
       "weight": 1.0
     },
     {
@@ -11756,7 +11756,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1893",
+      "source_location": "L1899",
       "weight": 1.0
     },
     {
@@ -13832,7 +13832,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/recommended.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -16244,7 +16244,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/recommended.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -17933,7 +17933,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L150",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -17966,7 +17966,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L197",
+      "source_location": "L198",
       "weight": 1.0
     },
     {
@@ -17977,7 +17977,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L230",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -17988,7 +17988,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L237",
+      "source_location": "L238",
       "weight": 1.0
     },
     {
@@ -17999,7 +17999,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L250",
+      "source_location": "L251",
       "weight": 1.0
     },
     {
@@ -18043,7 +18043,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L330",
+      "source_location": "L331",
       "weight": 1.0
     },
     {
@@ -18054,7 +18054,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L387",
+      "source_location": "L388",
       "weight": 1.0
     },
     {
@@ -18065,7 +18065,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L421",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -18076,7 +18076,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L483",
+      "source_location": "L484",
       "weight": 1.0
     },
     {
@@ -18087,7 +18087,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L500",
+      "source_location": "L501",
       "weight": 1.0
     },
     {
@@ -18098,7 +18098,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L524",
+      "source_location": "L525",
       "weight": 1.0
     },
     {
@@ -18109,7 +18109,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L608",
+      "source_location": "L609",
       "weight": 1.0
     },
     {
@@ -18131,7 +18131,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L647",
+      "source_location": "L648",
       "weight": 1.0
     },
     {
@@ -18142,7 +18142,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L658",
+      "source_location": "L659",
       "weight": 1.0
     },
     {
@@ -18153,7 +18153,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L567",
+      "source_location": "L568",
       "weight": 1.0
     },
     {
@@ -19330,7 +19330,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/recommended.ts",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
@@ -19341,7 +19341,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/recommended.ts",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -19451,7 +19451,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L128",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -19473,7 +19473,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L135",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -19484,7 +19484,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L144",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -19495,7 +19495,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L159",
+      "source_location": "L163",
       "weight": 1.0
     },
     {
@@ -19506,7 +19506,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L165",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -19528,7 +19528,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L208",
+      "source_location": "L212",
       "weight": 1.0
     },
     {
@@ -19539,7 +19539,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/setupChecks.ts",
-      "source_location": "L218",
+      "source_location": "L222",
       "weight": 1.0
     },
     {
@@ -20859,7 +20859,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1849",
+      "source_location": "L1855",
       "weight": 1.0
     },
     {
@@ -20870,7 +20870,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1902",
+      "source_location": "L1908",
       "weight": 1.0
     },
     {
@@ -20881,7 +20881,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "test/logic-test.ts",
-      "source_location": "L1969",
+      "source_location": "L1975",
       "weight": 1.0
     },
     {
@@ -24555,7 +24555,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1914",
+      "source_location": "L1920",
       "weight": 1.0
     },
     {
@@ -24567,7 +24567,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1916",
+      "source_location": "L1922",
       "weight": 1.0
     },
     {
@@ -24579,7 +24579,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1920",
+      "source_location": "L1926",
       "weight": 1.0
     },
     {
@@ -24591,7 +24591,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1922",
+      "source_location": "L1928",
       "weight": 1.0
     },
     {
@@ -24603,7 +24603,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1932",
+      "source_location": "L1938",
       "weight": 1.0
     },
     {
@@ -24615,7 +24615,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1946",
+      "source_location": "L1952",
       "weight": 1.0
     },
     {
@@ -24627,7 +24627,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1948",
+      "source_location": "L1954",
       "weight": 1.0
     },
     {
@@ -24639,7 +24639,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1949",
+      "source_location": "L1955",
       "weight": 1.0
     },
     {
@@ -24651,7 +24651,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1954",
+      "source_location": "L1960",
       "weight": 1.0
     },
     {
@@ -24663,7 +24663,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1957",
+      "source_location": "L1963",
       "weight": 1.0
     },
     {
@@ -24675,7 +24675,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1868",
+      "source_location": "L1874",
       "weight": 1.0
     },
     {
@@ -24687,7 +24687,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1869",
+      "source_location": "L1875",
       "weight": 1.0
     },
     {
@@ -24699,7 +24699,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "test/logic-test.ts",
-      "source_location": "L1871",
+      "source_location": "L1877",
       "weight": 1.0
     },
     {
@@ -25364,5 +25364,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "55446fec54b79039f7b2905eff0243c69db5febd"
+  "built_at_commit": "1ce2c2c5361033fd87634ad609674fc1359991bd"
 }
