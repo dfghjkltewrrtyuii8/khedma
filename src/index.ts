@@ -13,6 +13,7 @@ import { RateLimiter } from './rateLimiter';
 import { describeExitRules, exitRulesEnabled } from './exitRules';
 import { decideShutdown } from './shutdownDebounce';
 import { tokenGateEnabled } from './tokenMarket';
+import { paperModeWithFundsHint } from './setupChecks';
 import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
@@ -45,6 +46,7 @@ const JUPITER_MIN_GAP_MS = 1_100;
 // was asleep (a busy bot is late by seconds, not minutes).
 const HEARTBEAT_MS = 30_000;
 const SLEEP_GAP_MS = 3 * 60_000;
+const STATUS_EVERY_MS = 10 * 60_000; // an unchanged status block reprints this often at most
 
 // Set once Telegram is running, so even a crash can say so on your phone.
 let telegramForCrash: TelegramBot | null = null;
@@ -141,6 +143,8 @@ async function main(): Promise<void> {
   try {
     const balance = await connection.getBalance(keypair.publicKey);
     console.log(`Balance: ${(balance / 1e9).toFixed(4)} SOL`);
+    const fundsHint = paperModeWithFundsHint(config.dryRun, balance / 1e9, config.copyBuyAmountSol, config.minSolReserve);
+    if (fundsHint) console.log(`💡 ${fundsHint}`);
   } catch (error) {
     console.error(`\n❌ Could not reach Helius RPC: ${(error as Error).message}`);
     console.error('   Check HELIUS_HTTPS_URL in your .env.\n');
@@ -194,7 +198,7 @@ async function main(): Promise<void> {
         console.log(message);
         // Wallet swaps and finds go to your phone too; the routine
         // "looking…" lines stay in the terminal.
-        if (/^🔄|^🔎 Found/.test(message)) telegram?.send(message);
+        if (/^🔄|^🔎 Found|^🎓/.test(message)) telegram?.send(message);
       },
       config.discovery
         ? {
@@ -209,6 +213,18 @@ async function main(): Promise<void> {
         : null
     );
     toWatch = rotation.startup(Date.now());
+    if (!config.dryRun) {
+      // Say up front whether real money can move at all: wallets the scanner
+      // found trade on paper until they pass their trial, and muted ones
+      // aren't copied — so "real mode" alone doesn't mean real trades.
+      const real = rotation.realMoneyWallets().filter((w) => !walletMute(store.all(), w, Date.now(), config).muted);
+      console.log(
+        real.length > 0
+          ? `💰 Real money: buys from ${real.map(shortAddress).join(', ')} use real SOL; the others trade on paper until they pass their trial.`
+          : `💰 Real money: none of the wallets it copies has passed its trial yet (${config.probationTrades} paper copies, in profit), ` +
+              'so for now every copy is paper and nothing reaches Phantom. PROBATION_TRADES in .env sets the trial length.'
+      );
+    }
   }
 
   const limiter = new RateLimiter(JUPITER_MIN_GAP_MS);
@@ -374,9 +390,28 @@ async function main(): Promise<void> {
     }
   };
 
+  // The status block prints when something changed — a trade, a swap of
+  // wallets, a transaction examined — and at least every STATUS_EVERY_MS.
+  // Printing the same block every 30 seconds buried what mattered.
+  let lastStatusAt = 0;
+  let lastStatusKey = '';
+  const statusKey = () => {
+    const s = watcher.stats();
+    return [
+      store.all().map((p) => `${p.id}:${p.status}:${p.receivedSol}:${p.tokenAmountRaw}`).join(','),
+      s.processed, s.droppedStale, s.droppedOverflow, s.missedByFeed, s.unreadableFormat, rpcRetries,
+      rotation?.describe() ?? '',
+    ].join('|');
+  };
+
   const summaryTimer = setInterval(() => {
     if (rotation) rotation.tick(Date.now(), watcher, trader).catch(() => {});
     warnAboutRobots();
+    const now = Date.now();
+    const key = statusKey();
+    if (key === lastStatusKey && now - lastStatusAt < STATUS_EVERY_MS) return;
+    lastStatusKey = key;
+    lastStatusAt = now;
     reportWatcherHealth(watcher, rotating);
     if (rotation) console.log(`   Wallets: ${rotation.describe()}`);
     printSummary(store, undefined, config.slippageBps, config, false, { since: startedAt, label: runLabel }).catch(() => {});

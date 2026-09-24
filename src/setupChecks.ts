@@ -160,6 +160,17 @@ export function applyRecommended(text: string): { text: string; changes: Setting
   return { text: upsertEnv(text, updates, '# ---- Added by: npm run recommended ----'), changes };
 }
 
+// Pure: the warning for the most confusing setup of all — SOL in the wallet,
+// but paper mode on, so nothing will ever show up in Phantom. Null when it
+// doesn't apply.
+export function paperModeWithFundsHint(dryRun: boolean, balanceSol: number, buySol: number, reserveSol: number): string | null {
+  if (!dryRun || balanceSol < buySol + reserveSol) return null;
+  return (
+    `This wallet holds ${balanceSol.toFixed(4)} SOL, but DRY_RUN=true: every trade is paper and nothing ever ` +
+    'reaches Phantom. To trade real money, set DRY_RUN=false in .env.'
+  );
+}
+
 export function maskSecret(value: string): string {
   const text = value.trim();
   return text.length <= 4 ? '••••' : `••••${text.slice(-4)}`;
@@ -185,6 +196,7 @@ export const ENV_DEFAULTS: Record<string, string> = {
   WALLET_IDLE_MINUTES: '90',
   WALLET_MAX_TX_PER_10MIN: '150',
   DISCOVERY: 'false',
+  PROBATION_TRADES: '6',
   STOP_LOSS_PERCENT: '30',
   TRAILING_STOP_PERCENT: '30',
   TAKE_PROFIT_PERCENT: '0',
@@ -266,6 +278,7 @@ export function renderEnv(v: EnvValues): string {
     line('WALLET_IDLE_MINUTES'),
     line('WALLET_MAX_TX_PER_10MIN'),
     line('DISCOVERY'),
+    line('PROBATION_TRADES'),
     '',
     "# ---- Exits on your own terms (README: \"Exiting without them\") ----",
     line('STOP_LOSS_PERCENT'),

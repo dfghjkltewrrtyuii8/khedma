@@ -52,6 +52,9 @@ export interface Config {
   walletMaxTxPer10Min: number;
   // Automatic wallet discovery — see discovery.ts. Implies rotation.
   discovery: boolean;
+  // A discovered wallet trades on paper until this many of its copies have
+  // closed with a net profit; only then with real money. 0 = no trial.
+  probationTrades: number;
   // Reports on your phone over Telegram — see telegram.ts. On only when both
   // the token and the chat are set (`npm run telegram` fills them in).
   telegramBotToken: string;
@@ -175,6 +178,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
     walletMaxTxPer10Min: numberEnv('WALLET_MAX_TX_PER_10MIN', 150),
     discovery: (process.env.DISCOVERY ?? 'false').trim().toLowerCase() === 'true',
+    probationTrades: numberEnv('PROBATION_TRADES', 6),
     telegramBotToken: (process.env.TELEGRAM_BOT_TOKEN ?? '').trim(),
     telegramChatId: (process.env.TELEGRAM_CHAT_ID ?? '').trim(),
     telegramReportHours: numberEnv('TELEGRAM_REPORT_HOURS', 3),

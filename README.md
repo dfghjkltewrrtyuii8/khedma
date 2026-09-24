@@ -193,7 +193,8 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `SPEECH` | Your Mac **says** what happened after the chime — "Order filled", "Order sold". Default `true`; `false` for chimes only. |
 | `SPEECH_BUY` / `SPEECH_SELL` / `SPEECH_FAIL` | What it says for each event. Defaults `Order filled` / `Order sold` / `Sell failed. Position stuck.` |
 | `SPEECH_VOICE` / `SPEECH_RATE` | Optional voice name (Mac: list them with `say -v "?"`; Windows: `male`, `female`, or an exact name like `Microsoft David Desktop`) and, on Mac only, speed in words per minute (80–500, normal ≈175). Empty = the default voice. |
-| `SUMMARY_INTERVAL_SECONDS` | How often the P&L summary prints while running, in both DRY_RUN and real mode. Default `30`. |
+| `SUMMARY_INTERVAL_SECONDS` | How often the bot checks whether to print its status. It prints when something changed (a trade, a wallet swapped, a transaction examined) and at least every 10 minutes. Default `30`. |
+| `PROBATION_TRADES` | A wallet found by discovery trades on paper until this many of its copies have closed with a net profit; only then with real money. Default `6`; `0` = no trial (real money from its first copy). |
 
 ### 5. Run the bot (dry-run)
 
@@ -224,8 +225,9 @@ npm run alerts
 (`SOUNDS`, `SPEECH` and the `SOUND_*` / `SPEECH_*` settings in `.env` change
 or silence them.)
 
-A P&L summary prints every 30 seconds (`SUMMARY_INTERVAL_SECONDS` in `.env`)
-and on shutdown. Positions survive restarts — they're saved in
+The status and P&L summary print whenever something changes — a trade, a
+wallet swapped, a transaction examined — at least every 10 minutes, and on
+shutdown. Positions survive restarts — they're saved in
 `data/positions.json`.
 
 ### 6. Stopping the bot
@@ -590,7 +592,7 @@ turn good ones away on a guess.
 **Discovery nominates; the paper record decides.** The free feed only covers
 each token's recent trades, so "profitable" means "over the last few hours" —
 a noisy signal. So every discovered wallet is copied **on paper** until it has
-6 closed paper copies with a net profit, **even when `DRY_RUN=false`** — and its
+6 closed paper copies with a net profit (`PROBATION_TRADES`), **even when `DRY_RUN=false`** — and its
 paper positions never take up your real-money slots. Only then is it copied
 with real SOL. Wallets you listed yourself are never on probation, and a
 wallet dropped for losing is never re-discovered.

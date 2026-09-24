@@ -31,7 +31,8 @@ export type RotationConfig = Pick<
   Config,
   'walletMaxConsecutiveLosses' | 'walletDropAfterTrades' | 'walletIdleMinutes'
 > &
-  Partial<Pick<Config, 'walletMaxTxPer10Min'>>; // absent or 0 = never drop a wallet for trading too fast
+  Partial<Pick<Config, 'walletMaxTxPer10Min'>> & // absent or 0 = never drop a wallet for trading too fast
+  Partial<Pick<Config, 'probationTrades' | 'dryRun'>>; // trial length (default PROBATION_TRADES); paper or real mode
 
 // Every robot drop's reason starts with this, so it can be recognised later.
 export const ROBOT_REASON = 'robot';
@@ -248,6 +249,7 @@ export class Rotation {
   // that wallet must still be announced and get its idle clock started.
   private lastActive: string[] = [];
   private readonly robots = new Set<string>(); // dropped this run for trading like a machine
+  private readonly graduated = new Set<string>(); // discovered wallets already announced as past their trial
 
   constructor(
     private readonly roster: WalletRoster,
@@ -257,21 +259,55 @@ export class Rotation {
     private readonly discovery: DiscoveryHook | null = null
   ) {}
 
+  private trialLength(): number {
+    return this.cfg.probationTrades ?? PROBATION_TRADES;
+  }
+
   // True while a discovered wallet hasn't yet earned real-money copies.
   isPaperOnly(wallet: string): boolean {
     if (!this.roster.isDiscovered(wallet)) return false;
+    const needed = this.trialLength();
+    if (needed <= 0) return false; // PROBATION_TRADES=0: no trial
     const paper = walletRecords(this.store.all().filter((p) => p.dryRun)).get(wallet);
-    return !(paper && paper.closed >= PROBATION_TRADES && paper.netSol > 0);
+    return !(paper && paper.closed >= needed && paper.netSol > 0);
+  }
+
+  // The wallets being copied whose buys would use real money.
+  realMoneyWallets(): string[] {
+    return this.roster.active().filter((w) => !this.isPaperOnly(w));
+  }
+
+  // Say so once when a discovered wallet passes its trial.
+  private announceGraduates(active: string[], quiet: boolean): void {
+    for (const w of active) {
+      if (!this.roster.isDiscovered(w) || this.isPaperOnly(w) || this.graduated.has(w)) continue;
+      this.graduated.add(w);
+      if (quiet) continue;
+      this.log(
+        `🎓 ${shortAddress(w)} passed its trial (${this.trialLength()} paper copies, in profit) — ` +
+          (this.cfg.dryRun ? 'it will trade real money once DRY_RUN=false.' : 'its copies now use real money.')
+      );
+    }
   }
 
   // Start a discovery run in the background if the bench is running low.
   // Never blocks trading; new wallets land on the bench when it finishes.
-  private maybeDiscover(now: number): void {
+  // Start a discovery run when too few waiting wallets could actually help.
+  // A wallet already known to have been quiet longer than WALLET_IDLE_MINUTES
+  // doesn't count: it would be benched again the moment it got a slot. (It
+  // used to count, so a bench full of quiet wallets stopped discovery for
+  // good — and quiet wallets were just swapped for other quiet ones.)
+  private maybeDiscover(now: number, watch?: WatchControl): void {
     if (!this.discovery || this.pendingDiscovery) return;
-    if (this.roster.bench().length >= this.discovery.minBench) return;
+    const idleMs = this.cfg.walletIdleMinutes * 60_000;
+    const usable = this.roster.bench().filter((w) => {
+      const at = watch?.lastActivityOf?.(w);
+      return at === undefined || idleMs <= 0 || now - at < idleMs;
+    }).length;
+    if (usable >= this.discovery.minBench) return;
     if (now - this.lastDiscoveryAt < this.discovery.cooldownMs) return;
     this.lastDiscoveryAt = now;
-    this.log('🔎 Bench is low — looking for new wallets to try (a few minutes; trading carries on)…');
+    this.log('🔎 Not enough active wallets waiting — looking for new ones to try (a few minutes; trading carries on)…');
     this.pendingDiscovery = this.discovery
       .run(this.roster.known())
       .then((candidates) => {
@@ -342,6 +378,7 @@ export class Rotation {
     const active = this.roster.active();
     this.lastActive = active;
     for (const w of active) this.activeSince.set(w, now);
+    this.announceGraduates(active, true); // already past it at startup: counted, not announced
     for (const w of this.roster.all()) {
       if (!active.includes(w) && this.holdsPositionFrom(w) && !this.isRobot(w)) this.finishing.add(w);
     }
@@ -412,8 +449,9 @@ export class Rotation {
       if (watch.isWatching(w)) await watch.removeWallet(w);
     }
     this.lastActive = active;
+    this.announceGraduates(active, false);
     trader.setActiveWallets(active);
-    this.maybeDiscover(now);
+    this.maybeDiscover(now, watch);
   }
 
   describe(): string {
@@ -444,7 +482,7 @@ export function printRoster(roster: WalletRoster, positions?: readonly Position[
   const bench = roster.bench();
   console.log(`  Bench, next up first: ${bench.length ? bench.map(label).join(', ') : 'empty'}`);
   if (roster.all().some((w) => roster.isDiscovered(w))) {
-    console.log('  * found by discovery — traded on paper until it has 6 closed paper copies in profit');
+    console.log(`  * found by discovery — traded on paper until it has ${cfg?.probationTrades ?? PROBATION_TRADES} closed paper copies in profit`);
     for (const w of roster.active().filter((x) => roster.isDiscovered(x))) {
       console.log(`    ${shortAddress(w)} was picked because: ${roster.discoveredInfo(w)?.why ?? '?'}`);
     }

@@ -14,7 +14,7 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { soundFor, speechFor, speechArgs, windowsSoundFor } from './notify';
 import { RateLimiter, sleep } from './rateLimiter';
 import { describeExitRules, exitRulesEnabled } from './exitRules';
-import { findPlaceholders } from './setupChecks';
+import { findPlaceholders, paperModeWithFundsHint } from './setupChecks';
 import { getSolPriceUsd } from './solPrice';
 import { fetchDexscreenerMarket } from './tokenMarket';
 import { loadKeypair } from './wallet';
@@ -240,6 +240,8 @@ async function main(): Promise<void> {
   if (config.dryRun) {
     ok(`DRY_RUN=true — paper trading, nothing will be sent (up to ${config.paperMaxOpenPositions} positions at once)`);
     for (const hint of paperHints(config)) warn(hint);
+    const fundsHint = balanceSol === null ? null : paperModeWithFundsHint(true, balanceSol, config.copyBuyAmountSol, config.minSolReserve);
+    if (fundsHint) warn(fundsHint);
   } else {
     warn('DRY_RUN=false — REAL trading with REAL SOL from this wallet');
     if (balanceSol !== null) {

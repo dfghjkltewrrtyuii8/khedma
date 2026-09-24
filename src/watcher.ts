@@ -35,6 +35,7 @@ const MAX_QUEUE = 40;
 // — that wallet is re-subscribed on the spot.
 const ACTIVITY_CHECK_MS = 5 * 60_000;
 const FEED_GRACE_MS = 60_000; // the feed delivers in seconds; a minute late means it missed it
+const ACTIVITY_SPACING_MS = 2_000; // between one wallet's check and the next
 const SUBSCRIBE_MARGIN_MS = 15_000; // ignore transactions from the moment of subscribing
 
 // How fast a wallet is transacting, for spotting robots: every notification
@@ -163,10 +164,14 @@ export class WalletWatcher {
     if (times.length > TX_HISTORY_CAP) times.splice(0, times.length - TX_HISTORY_CAP);
   }
 
-  // Check every watched wallet now, then every ACTIVITY_CHECK_MS.
-  startActivityChecks(intervalMs: number = ACTIVITY_CHECK_MS): void {
+  // Check every watched wallet now, then every ACTIVITY_CHECK_MS — a couple
+  // of seconds apart, so the checks never queue up behind each other on the
+  // RPC (which used to print a burst of "rate limiter … queued" lines).
+  startActivityChecks(intervalMs: number = ACTIVITY_CHECK_MS, spacingMs: number = ACTIVITY_SPACING_MS): void {
     const checkAll = () => {
-      for (const wallet of this.watchedWallets()) void this.checkActivity(wallet).catch(() => {});
+      this.watchedWallets().forEach((wallet, i) => {
+        setTimeout(() => void this.checkActivity(wallet).catch(() => {}), i * spacingMs);
+      });
     };
     checkAll();
     this.activityTimer = setInterval(checkAll, intervalMs);

@@ -25,7 +25,7 @@ import { printSummary } from '../src/pnl';
 import { getSolPriceUsd } from '../src/solPrice';
 import { decideShutdown } from '../src/shutdownDebounce';
 import { soundFor, speechFor, speechArgs, windowsAlertInvocation, windowsSoundFor, WINDOWS_ALERT_SCRIPT } from '../src/notify';
-import { applyRecommended, classifyWalletSecret, findPlaceholders, isTelegramToken, parseHeliusInput, parseWalletList, renderEnv, upsertEnv } from '../src/setupChecks';
+import { applyRecommended, paperModeWithFundsHint, classifyWalletSecret, findPlaceholders, isTelegramToken, parseHeliusInput, parseWalletList, renderEnv, upsertEnv } from '../src/setupChecks';
 import {
   allQuiet, describeActivity, duration, FetchLike, formatOpen, formatPnl, formatStatus, formatTradeEvent, formatWallets, parseCommand,
   TelegramBot, TelegramClient, TelegramError, TelegramUpdate, TradeFeed,
@@ -1972,6 +1972,87 @@ async function testRobotWallets(realLog: typeof console.log) {
   realLog('✅ robot wallets: counted per wallet, dropped at once, unwatched, never re-found; 0 turns it off');
 }
 
+// A live run sat for hours copying quiet wallets: 5 were waiting on the
+// bench, so discovery never ran — but all 5 had gone quiet too, so quiet
+// wallets were only ever swapped for other quiet ones.
+async function testStaleBenchAndTrial(realLog: typeof console.log) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-stale-'));
+  const store = new PositionStore(dir);
+  const [A, B, S1, S2, S3] = Array.from({ length: 5 }, () => Keypair.generate().publicKey.toBase58());
+  const T0 = Date.parse('2026-09-24T18:00:00Z');
+  const onChain = new Map<string, number>([[S1, T0 - 3 * 3_600_000], [S2, T0 - 2 * 3_600_000], [S3, T0 - 4 * 3_600_000]]);
+  const watching = new Set<string>();
+  const watch = {
+    isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); },
+    lastActivityOf: (w: string) => onChain.get(w),
+  };
+  let runs = 0;
+  const searches = () => runs; // a function, so TypeScript doesn't narrow it between checks
+  const cfg = { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30 };
+  const hook = { minBench: 3, cooldownMs: 30 * 60_000, async run() { runs++; return []; } };
+  const rotation = new Rotation(new WalletRoster([A, B, S1, S2, S3], 2, dir), store, cfg, () => {}, hook);
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  assert(searches() === 0, 'at startup nothing is known about the bench yet: 3 waiting, no search');
+  await rotation.tick(T0 + 30_000, watch, { setActiveWallets() {} });
+  await rotation.pendingDiscovery;
+  assert(searches() === 1, 'a bench of 3 wallets that all went quiet hours ago no longer blocks the search for fresh ones');
+
+  const fresh = new Rotation(new WalletRoster([A, B, S1, S2, S3], 2, fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-fresh-'))), store, cfg, () => {}, hook);
+  fresh.startup(T0);
+  onChain.clear(); // nothing known about the bench: it counts as usable
+  await fresh.tick(T0 + 30_000, watch, { setActiveWallets() {} });
+  assert(searches() === 1, 'a bench whose wallets are not known to be quiet still counts');
+
+  // Trial length is a setting; passing it is announced once.
+  const tdir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-trial-'));
+  const tstore = new PositionStore(tdir);
+  const troster = new WalletRoster([A], 2, tdir);
+  const N = Keypair.generate().publicKey.toBase58();
+  troster.addDiscovered([{ wallet: N, pools: 2, medianReturnPct: 40, evidence: ['x'] }], T0);
+  const logs: string[] = [];
+  const trial = new Rotation(troster, tstore, { ...cfg, probationTrades: 3, dryRun: true }, (m) => logs.push(m));
+  trial.startup(T0);
+  assert(trial.isPaperOnly(N) && trial.realMoneyWallets().join() === A, 'a new find starts on its trial; your own wallet never has one');
+  for (let i = 0; i < 3; i++) {
+    const p = tstore.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: N, dryRun: true, spentSol: 0.01, tokenAmountRaw: '1' });
+    tstore.recordSell(p, 1n, 0.012);
+  }
+  assert(!trial.isPaperOnly(N) && trial.realMoneyWallets().includes(N), 'PROBATION_TRADES=3: three profitable paper copies pass the trial');
+  const w = new Set<string>([A, N]);
+  const quietWatch = { isWatching: (x: string) => w.has(x), addWallet: (x: string) => { w.add(x); }, async removeWallet(x: string) { w.delete(x); } };
+  await trial.tick(T0 + 30_000, quietWatch, { setActiveWallets() {} });
+  await trial.tick(T0 + 60_000, quietWatch, { setActiveWallets() {} });
+  assert(logs.filter((l) => l.startsWith('🎓')).length === 1 && logs.some((l) => l.includes('once DRY_RUN=false')), 'passing is announced once, and in paper mode says real money needs DRY_RUN=false');
+  const none = new Rotation(troster, new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-notrial-'))), { ...cfg, probationTrades: 0 }, () => {});
+  assert(!none.isPaperOnly(N), 'PROBATION_TRADES=0: no trial at all');
+  assert(loadConfig().probationTrades === 6, 'the trial stays 6 unless you change it');
+
+  // The confusing setup that hid every trade from Phantom.
+  assert(paperModeWithFundsHint(true, 0.1934, 0.01, 0.05)?.includes('DRY_RUN=true') === true, 'SOL in the wallet but paper mode on: said plainly');
+  assert(paperModeWithFundsHint(false, 0.1934, 0.01, 0.05) === null && paperModeWithFundsHint(true, 0.0009, 0.01, 0.05) === null, 'quiet in real mode, or with no real funds to use');
+
+  // Activity checks are spaced out instead of fired all at once.
+  const times: number[] = [];
+  const conn = {
+    onLogs() { return 1; }, async removeOnLogsListener() {}, async getParsedTransaction() { return { meta: null }; },
+    async getSignaturesForAddress() { times.push(Date.now()); return []; },
+  };
+  const three = [0, 1, 2].map(() => Keypair.generate().publicKey);
+  const watcher = new WalletWatcher(conn as any, three, async () => {}, new RateLimiter(0));
+  const loud = console.log;
+  console.log = () => {};
+  try {
+    watcher.start();
+    watcher.startActivityChecks(60_000, 40);
+    await new Promise((r) => setTimeout(r, 150));
+    await watcher.stop();
+  } finally {
+    console.log = loud;
+  }
+  assert(times.length === 3 && times[1] - times[0] >= 30 && times[2] - times[1] >= 30, `one wallet's check at a time (gaps ${times[1] - times[0]}ms, ${times[2] - times[1]}ms)`);
+  realLog('✅ stale bench + trial: quiet waiting wallets no longer block the search; trial length is a setting; paper-mode-with-SOL is called out');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -1981,6 +2062,7 @@ async function main() {
   testRecommendedSettings(console.log);
   await testRunSheets(console.log);
   await testRobotWallets(console.log);
+  await testStaleBenchAndTrial(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);
