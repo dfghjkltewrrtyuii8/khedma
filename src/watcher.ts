@@ -37,6 +37,13 @@ const ACTIVITY_CHECK_MS = 5 * 60_000;
 const FEED_GRACE_MS = 60_000; // the feed delivers in seconds; a minute late means it missed it
 const SUBSCRIBE_MARGIN_MS = 15_000; // ignore transactions from the moment of subscribing
 
+// How fast a wallet is transacting, for spotting robots: every notification
+// is timestamped (failed transactions too — robots spam those). Only the most
+// recent TX_HISTORY_CAP are kept per wallet, which is plenty to tell a robot
+// (thousands per window) from a person (a handful).
+export const ROBOT_WINDOW_MS = 10 * 60_000;
+const TX_HISTORY_CAP = 1_000;
+
 // The newest transaction format we can read. Solana added version 1 in 2026;
 // asking for less makes the RPC refuse every trade sent in the newer format,
 // which is exactly how this bot once sat watching two busy wallets and saw
@@ -109,6 +116,7 @@ export class WalletWatcher {
   private unreadableFormat = 0;
   private missedByFeed = 0;
   private lastActivity = new Map<string, number>(); // wallet -> epoch ms of its newest transaction we know of
+  private txTimes = new Map<string, number[]>(); // wallet -> when its recent notifications arrived, oldest first
   private subscribedAt = new Map<string, number>();
   private activityTimer: NodeJS.Timeout | null = null;
 
@@ -134,6 +142,25 @@ export class WalletWatcher {
 
   watchedWallets(): string[] {
     return [...this.subscriptions.keys()];
+  }
+
+  // How many transactions the wallet made in the last `windowMs`, as seen by
+  // the live feed (counts above TX_HISTORY_CAP read as the cap).
+  recentTxCount(address: string, now: number = Date.now(), windowMs: number = ROBOT_WINDOW_MS): number {
+    const times = this.txTimes.get(address);
+    if (!times) return 0;
+    const cutoff = now - windowMs;
+    let expired = 0;
+    while (expired < times.length && times[expired] < cutoff) expired++;
+    if (expired > 0) times.splice(0, expired);
+    return times.length;
+  }
+
+  private noteTx(address: string, at: number): void {
+    let times = this.txTimes.get(address);
+    if (!times) this.txTimes.set(address, (times = []));
+    times.push(at);
+    if (times.length > TX_HISTORY_CAP) times.splice(0, times.length - TX_HISTORY_CAP);
   }
 
   // Check every watched wallet now, then every ACTIVITY_CHECK_MS.
@@ -210,6 +237,7 @@ export class WalletWatcher {
     if (id === undefined) return;
     this.subscriptions.delete(address);
     this.subscribedAt.delete(address);
+    this.txTimes.delete(address);
     try {
       await this.connection.removeOnLogsListener(id);
     } catch {
@@ -227,6 +255,7 @@ export class WalletWatcher {
       (logs) => {
         if (this.stopped) return;
         this.noteActivity(walletAddress, Date.now());
+        this.noteTx(walletAddress, Date.now());
         if (logs.err) return; // failed transaction — nothing actually happened
         if (this.seenSignatures.has(logs.signature)) return;
         this.rememberSignature(logs.signature);

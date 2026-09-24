@@ -174,6 +174,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
 | `ACTIVE_WALLETS` | Rotation: how many wallets to copy at once; empty slots fill from the bench and discovery. Default `4`. |
 | `WALLET_DROP_AFTER_TRADES` | Rotation: drop a wallet once this many copies have closed at a net loss. Default `6`; `0` = only the losing streak. |
+| `WALLET_MAX_TX_PER_10MIN` | Rotation: drop a wallet for good if it makes more transactions than this in 10 minutes — a robot, not a trader. Default `150`; `0` = off. |
 | `WALLET_IDLE_MINUTES` | Rotation: bench a wallet after this many minutes without a buy while running. Default `90`; `0` = never. |
 | `DISCOVERY` | Find new wallets automatically when the bench runs low ([details](#automatic-wallet-discovery-discoverytrue)). Discovered wallets are paper-only until proven. Default `false`. |
 | `STOP_LOSS_PERCENT` | Sell if a position falls this far below what you paid. Default `30`; `0` = off. |
@@ -542,6 +543,12 @@ slots are filled from the bench straight away, including wallets that
   running (`WALLET_IDLE_MINUTES`). Quiet isn't bad — it may trade while you
   sleep — so it goes to the back of the bench and gets another turn later. Over
   a few sessions this favours wallets that trade during *your* hours.
+- **Drops robots at once**: a wallet making more than 150 transactions in 10
+  minutes (`WALLET_MAX_TX_PER_10MIN`) is a trading machine, not a person. It
+  floods the watcher, so everyone else's trades wait behind it, and it uses up
+  the free Helius allowance, one lookup per transaction. It's dropped for good
+  and no longer watched; any open copy from it is closed by your exit rules or
+  when you stop the bot.
 - **Never adds a wallet you didn't list** — unless you turn on
   [discovery](#automatic-wallet-discovery-discoverytrue).
 

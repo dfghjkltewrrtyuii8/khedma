@@ -356,8 +356,27 @@ async function main(): Promise<void> {
   // store plus an occasional (60s-cached) CoinGecko price fetch — no RPC or
   // Jupiter calls. Use `npm run summary` (or shut down) for marked-to-market
   // numbers, in both DRY_RUN and real mode alike.
+  // Without rotation nothing can be dropped, so a robot among your own
+  // wallets is pointed out instead (once per wallet per run).
+  const robotsWarned = new Set<string>();
+  const warnAboutRobots = () => {
+    if (rotation || config.walletMaxTxPer10Min <= 0) return;
+    for (const wallet of watcher.watchedWallets()) {
+      const count = watcher.recentTxCount(wallet);
+      if (count <= config.walletMaxTxPer10Min || robotsWarned.has(wallet)) continue;
+      robotsWarned.add(wallet);
+      const message =
+        `🤖 ${shortAddress(wallet)} made ${count} transactions in 10 minutes — that's a robot, not a trader. ` +
+        'It slows everything down and uses up your Helius allowance. Remove it from TRACKED_WALLETS, ' +
+        'or turn on the wallet scanner (npm run recommended) and the bot drops robots itself.';
+      console.log(`\n${message}`);
+      telegram?.send(message);
+    }
+  };
+
   const summaryTimer = setInterval(() => {
     if (rotation) rotation.tick(Date.now(), watcher, trader).catch(() => {});
+    warnAboutRobots();
     reportWatcherHealth(watcher, rotating);
     if (rotation) console.log(`   Wallets: ${rotation.describe()}`);
     printSummary(store, undefined, config.slippageBps, config, false, { since: startedAt, label: runLabel }).catch(() => {});

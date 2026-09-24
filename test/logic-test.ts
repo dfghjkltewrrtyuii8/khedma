@@ -36,7 +36,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
-import { copySlots, dropReason, paperHints, PROBATION_TRADES, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
+import { copySlots, dropReason, paperHints, PROBATION_TRADES, ROBOT_REASON, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 
@@ -1896,6 +1896,76 @@ async function testRunSheets(realLog: typeof console.log) {
   realLog('✅ run sheets: every start gets a fresh P&L sheet; history kept for the wallet rules; all-runs total one line away');
 }
 
+// A robot wallet (thousands of transactions an hour) floods the watcher and
+// burns the free Helius allowance — a live run examined ~10,000 of one
+// wallet's transactions an hour and copied none. Rotation drops it at once.
+async function testRobotWallets(realLog: typeof console.log) {
+  // The watcher counts every notification per wallet, over a sliding window.
+  let logCb: (l: { signature: string; err: unknown; logs: string[] }) => void = () => {};
+  const conn = {
+    onLogs(_pk: unknown, cb: typeof logCb) { logCb = cb; return 1; },
+    async removeOnLogsListener() {},
+    async getParsedTransaction() { return { meta: null }; },
+  };
+  const watcher = new WalletWatcher(conn as any, [new PublicKey(TRACKED)], async () => {}, new RateLimiter(0), 60_000, 5);
+  const quiet = console.log;
+  console.log = () => {};
+  try {
+    watcher.start();
+    for (let i = 0; i < 200; i++) logCb({ signature: `r${i}`, err: i % 2 ? { failed: true } : null, logs: [] });
+    assert(watcher.recentTxCount(TRACKED) === 200, 'every notification counts, failed ones too (robots spam those)');
+    assert(watcher.recentTxCount(TRACKED, Date.now() + 11 * 60_000) === 0, 'only the last 10 minutes count');
+    for (let i = 0; i < 1_500; i++) logCb({ signature: `s${i}`, err: { failed: true }, logs: [] });
+    assert(watcher.recentTxCount(TRACKED) === 1_000, 'memory stays bounded however fast a wallet goes');
+    await watcher.removeWallet(TRACKED);
+    assert(watcher.recentTxCount(TRACKED) === 0, 'forgotten once no longer watched');
+    await watcher.stop();
+  } finally {
+    console.log = quiet;
+  }
+
+  // Rotation drops it: no longer copied, no longer watched — not even to
+  // mirror sells of a coin we hold from it — and never re-found.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-robot-'));
+  const store = new PositionStore(dir);
+  const [A, R, N1] = Array.from({ length: 3 }, () => Keypair.generate().publicKey.toBase58());
+  store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: R, dryRun: true, spentSol: 0.03, tokenAmountRaw: '1' });
+  const cfg = { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 90, walletMaxTxPer10Min: 150 };
+  const rates = new Map<string, number>([[A, 150], [R, 1_612], [N1, 4]]);
+  const watching = new Set<string>();
+  const removed: string[] = [];
+  const watch = {
+    isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); },
+    async removeWallet(w: string) { watching.delete(w); removed.push(w); },
+    recentTxCount: (w: string) => rates.get(w) ?? 0,
+  };
+  const logs: string[] = [];
+  const roster = new WalletRoster([A, R, N1], 2, dir);
+  const rotation = new Rotation(roster, store, cfg, (m) => logs.push(m));
+  const T0 = Date.parse('2026-09-24T04:00:00Z');
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  let copying: string[] = [];
+  await rotation.tick(T0 + 30_000, watch, { setActiveWallets(w: string[] | null) { copying = w ?? []; } });
+  assert(roster.droppedReason(R)?.startsWith(ROBOT_REASON) === true && !copying.includes(R), 'a wallet making 1,612 transactions in 10 minutes is dropped as a robot');
+  assert(!watching.has(R) && removed.includes(R), 'and no longer watched, even though a coin copied from it is still open');
+  assert(copying.join() === [A, N1].join() && watching.has(N1), 'its slot goes to the next wallet at once');
+  assert(!roster.droppedReason(A), 'exactly 150 in 10 minutes is still allowed ("more than" the limit drops)');
+  assert(logs.some((l) => l.startsWith('🔄 Dropped') && l.includes('robot') && l.includes('exit rules')), 'the drop is announced (terminal + Telegram), mentioning the open copy');
+  assert(roster.known().has(R), 'discovery will never suggest it again');
+
+  const reloaded = new WalletRoster([A, R, N1], 2, dir);
+  reloaded.load();
+  const afterRestart = new Rotation(reloaded, store, cfg, () => {});
+  assert(!afterRestart.startup(T0 + 3_600_000).includes(R), 'after a restart it is not watched again just to mirror its sells');
+
+  const off = new Rotation(new WalletRoster([A, R], 2, fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-robot-off-'))), store, { ...cfg, walletMaxTxPer10Min: 0 }, () => {});
+  off.startup(T0);
+  const w2 = new Set<string>([A, R]);
+  await off.tick(T0 + 30_000, { ...watch, isWatching: (w: string) => w2.has(w), async removeWallet(w: string) { w2.delete(w); } }, { setActiveWallets() {} });
+  assert(w2.has(R), 'WALLET_MAX_TX_PER_10MIN=0 turns the rule off');
+  realLog('✅ robot wallets: counted per wallet, dropped at once, unwatched, never re-found; 0 turns it off');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -1904,6 +1974,7 @@ async function main() {
   await testActivityCheck(console.log);
   testRecommendedSettings(console.log);
   await testRunSheets(console.log);
+  await testRobotWallets(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

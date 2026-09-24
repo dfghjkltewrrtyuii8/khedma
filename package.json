@@ -1,6 +1,6 @@
 {
   "name": "khedma-copy-trader",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "private": true,
   "description": "Solana copy-trading bot: watches chosen wallets and mirrors their buys/sells via Jupiter Swap API v2",
   "scripts": {

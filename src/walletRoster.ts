@@ -30,7 +30,11 @@ import { shortAddress } from './watcher';
 export type RotationConfig = Pick<
   Config,
   'walletMaxConsecutiveLosses' | 'walletDropAfterTrades' | 'walletIdleMinutes'
->;
+> &
+  Partial<Pick<Config, 'walletMaxTxPer10Min'>>; // absent or 0 = never drop a wallet for trading too fast
+
+// Every robot drop's reason starts with this, so it can be recognised later.
+export const ROBOT_REASON = 'robot';
 
 interface RosterFile {
   dropped: Record<string, { reason: string; at: string }>;
@@ -186,6 +190,10 @@ export class WalletRoster {
     return this.ordered().slice(this.activeCount);
   }
 
+  droppedReason(wallet: string): string | undefined {
+    return this.state.dropped[wallet]?.reason;
+  }
+
   dropped(): { wallet: string; reason: string; at: string }[] {
     return Object.keys(this.state.dropped).map((w) => ({ wallet: w, ...this.state.dropped[w] }));
   }
@@ -209,6 +217,8 @@ export interface WatchControl {
   removeWallet(wallet: string): Promise<void>;
   // When the wallet last did anything on-chain (epoch ms), if known.
   lastActivityOf?(wallet: string): number | undefined;
+  // How many transactions it made in the last 10 minutes.
+  recentTxCount?(wallet: string, now: number): number;
 }
 export interface BuyControl {
   setActiveWallets(wallets: string[] | null): void;
@@ -237,6 +247,7 @@ export class Rotation {
   // re-read, because discovery can fill an empty slot between ticks — and
   // that wallet must still be announced and get its idle clock started.
   private lastActive: string[] = [];
+  private readonly robots = new Set<string>(); // dropped this run for trading like a machine
 
   constructor(
     private readonly roster: WalletRoster,
@@ -277,6 +288,35 @@ export class Rotation {
       });
   }
 
+  // A robot is never kept watched to mirror its sells: its flood of
+  // transactions is exactly what's being stopped. Its open copies are closed
+  // by the exit rules, or at shutdown.
+  private isRobot(wallet: string): boolean {
+    return this.robots.has(wallet) || (this.roster.droppedReason(wallet)?.startsWith(ROBOT_REASON) ?? false);
+  }
+
+  // Drop any watched wallet transacting faster than a person can: a robot
+  // wallet swamps the watcher (its trades queue ahead of everyone else's) and
+  // burns through the free Helius allowance, one lookup per transaction —
+  // and its trades aren't copyable anyway.
+  private dropRobots(now: number, watch: WatchControl): void {
+    const limit = this.cfg.walletMaxTxPer10Min ?? 0;
+    if (limit <= 0 || !watch.recentTxCount) return;
+    for (const w of [...this.roster.active(), ...this.finishing]) {
+      const count = watch.recentTxCount(w, now);
+      if (count <= limit) continue;
+      const holding = this.holdsPositionFrom(w);
+      this.roster.drop(w, `${ROBOT_REASON} — ${count} transactions in 10 minutes`, now);
+      this.robots.add(w);
+      this.finishing.delete(w);
+      this.log(
+        `🔄 Dropped ${shortAddress(w)} — robot: ${count} transactions in 10 minutes (no person trades that fast). ` +
+          'No longer watched.' +
+          (holding ? ' Its open copy will be closed by your exit rules, or when you stop the bot.' : '')
+      );
+    }
+  }
+
   private holdsPositionFrom(wallet: string): boolean {
     return this.store.all().some((p) => p.sourceWallet === wallet && (p.status === 'open' || p.status === 'stuck'));
   }
@@ -303,7 +343,7 @@ export class Rotation {
     this.lastActive = active;
     for (const w of active) this.activeSince.set(w, now);
     for (const w of this.roster.all()) {
-      if (!active.includes(w) && this.holdsPositionFrom(w)) this.finishing.add(w);
+      if (!active.includes(w) && this.holdsPositionFrom(w) && !this.isRobot(w)) this.finishing.add(w);
     }
     this.maybeDiscover(now);
     return [...active, ...this.finishing];
@@ -317,6 +357,7 @@ export class Rotation {
     const before = this.lastActive;
 
     this.applyDrops(now);
+    this.dropRobots(now, watch);
 
     if (this.cfg.walletIdleMinutes > 0) {
       const limitMs = this.cfg.walletIdleMinutes * 60_000;
@@ -347,7 +388,7 @@ export class Rotation {
     const active = this.roster.active();
     const activeSet = new Set(active);
     for (const w of before) {
-      if (!activeSet.has(w) && this.holdsPositionFrom(w)) this.finishing.add(w);
+      if (!activeSet.has(w) && this.holdsPositionFrom(w) && !this.isRobot(w)) this.finishing.add(w);
     }
     for (const w of active) {
       this.finishing.delete(w);
@@ -366,6 +407,9 @@ export class Rotation {
         this.finishing.delete(w);
         if (watch.isWatching(w)) await watch.removeWallet(w);
       }
+    }
+    for (const w of this.robots) {
+      if (watch.isWatching(w)) await watch.removeWallet(w);
     }
     this.lastActive = active;
     trader.setActiveWallets(active);

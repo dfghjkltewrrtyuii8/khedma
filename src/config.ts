@@ -47,6 +47,9 @@ export interface Config {
   activeWallets: number;
   walletDropAfterTrades: number;
   walletIdleMinutes: number;
+  // Rotation drops a wallet making more transactions than this in 10 minutes:
+  // that's a robot, not a trader. 0 = off.
+  walletMaxTxPer10Min: number;
   // Automatic wallet discovery — see discovery.ts. Implies rotation.
   discovery: boolean;
   // Reports on your phone over Telegram — see telegram.ts. On only when both
@@ -170,6 +173,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     activeWallets: numberEnv('ACTIVE_WALLETS', 4),
     walletDropAfterTrades: numberEnv('WALLET_DROP_AFTER_TRADES', 6),
     walletIdleMinutes: numberEnv('WALLET_IDLE_MINUTES', 90),
+    walletMaxTxPer10Min: numberEnv('WALLET_MAX_TX_PER_10MIN', 150),
     discovery: (process.env.DISCOVERY ?? 'false').trim().toLowerCase() === 'true',
     telegramBotToken: (process.env.TELEGRAM_BOT_TOKEN ?? '').trim(),
     telegramChatId: (process.env.TELEGRAM_CHAT_ID ?? '').trim(),
