@@ -8,7 +8,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { loadConfig } from './config';
 import { JupiterClient } from './jupiter';
 import { printSummary } from './pnl';
-import { PositionStore } from './positions';
+import { inRun, PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
 import { describeExitRules, exitRulesEnabled } from './exitRules';
 import { decideShutdown } from './shutdownDebounce';
@@ -219,7 +219,10 @@ async function main(): Promise<void> {
     const r = rotation;
     trader.setPaperOnly((wallet) => r.isPaperOnly(wallet));
   }
+  // This run's P&L sheet starts empty; earlier runs stay in the history.
   const startedAt = Date.now();
+  store.startRun(startedAt);
+  const runLabel = `this run (started ${new Date(startedAt).toTimeString().slice(0, 5)})`;
   let lastSwap: { at: number; wallet: string } | null = null;
   // Separate budget from Jupiter's: this one paces Helius RPC reads.
   const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
@@ -245,7 +248,8 @@ async function main(): Promise<void> {
   const reportMs = config.telegramReportHours * 3_600_000;
   let lastReportAt = Date.now();
   const reportInput = async () => ({
-    positions: [...store.all()],
+    positions: store.all().filter((p) => inRun(p, startedAt)),
+    allTime: store.all(),
     now: Date.now(),
     solPriceUsd: await getSolPriceUsd(),
     priceOf: (id: string) => trader.currentValue(id)?.valueSol,
@@ -257,7 +261,7 @@ async function main(): Promise<void> {
       config.telegramChatId,
       {
         pnl: async () =>
-          formatPnl({ ...(await reportInput()), title: 'P&L so far', recentSince: Date.now() - 24 * 3_600_000, recentLabel: 'Last 24h' }),
+          formatPnl({ ...(await reportInput()), title: `P&L — ${runLabel}` }),
         open: async () => formatOpen(await reportInput()),
         wallets: async () =>
           formatWallets({
@@ -324,7 +328,7 @@ async function main(): Promise<void> {
           const since = lastReportAt;
           lastReportAt = Date.now();
           telegram!.send(
-            formatPnl({ ...(await reportInput()), title: `${config.telegramReportHours}-hour report`, recentSince: since, recentLabel: 'Since last report' })
+            formatPnl({ ...(await reportInput()), title: `${config.telegramReportHours}-hour report — ${runLabel}`, recentSince: since, recentLabel: 'Since last report' })
           );
         }, reportMs)
       : null;
@@ -356,7 +360,7 @@ async function main(): Promise<void> {
     if (rotation) rotation.tick(Date.now(), watcher, trader).catch(() => {});
     reportWatcherHealth(watcher, rotating);
     if (rotation) console.log(`   Wallets: ${rotation.describe()}`);
-    printSummary(store, undefined, config.slippageBps, config).catch(() => {});
+    printSummary(store, undefined, config.slippageBps, config, false, { since: startedAt, label: runLabel }).catch(() => {});
   }, config.summaryIntervalSeconds * 1000);
 
   // Our own exits: price open positions and act without waiting for the
@@ -416,11 +420,12 @@ async function main(): Promise<void> {
 
     // Anything that could not be closed above is priced here, so the final
     // report shows what the leftovers are actually worth.
-    await printSummary(store, jupiter, config.slippageBps, config, true);
+    store.endRun(Date.now());
+    await printSummary(store, jupiter, config.slippageBps, config, true, { since: startedAt, label: runLabel });
     if (telegram) {
       telegram.send(
         `🔴 Bot stopped after ${duration(Date.now() - startedAt)}.\n\n` +
-          formatPnl({ ...(await reportInput()), title: 'Final P&L', recentSince: startedAt, recentLabel: 'This run' })
+          formatPnl({ ...(await reportInput()), title: `Final P&L — ${runLabel}` })
       );
       console.log('Sending the final report to Telegram…');
       await telegram.flush(10_000);

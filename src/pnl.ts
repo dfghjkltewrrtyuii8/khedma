@@ -8,7 +8,7 @@
 
 import { SOL_MINT } from './config';
 import { JupiterClient, JupiterError } from './jupiter';
-import { PositionStore } from './positions';
+import { inRun, PositionStore } from './positions';
 import { getSolPriceUsd } from './solPrice';
 import { Position } from './types';
 import { compareToSource, entryPhrase, summarizeComparisons } from './copyGap';
@@ -199,21 +199,35 @@ function printGroup(
   }
 }
 
+// One line with the totals over every run — shown under a single run's sheet
+// so the bigger picture is never lost. Empty when there's nothing beyond it.
+export function allRunsLine(all: readonly Position[], shown: readonly Position[], solPriceUsd: number | null): string {
+  const closed = all.filter((p) => p.status === 'closed');
+  if (closed.length <= shown.filter((p) => p.status === 'closed').length) return '';
+  const part = (label: string, group: Position[]) =>
+    group.length === 0 ? null : `${label} ${group.length} closed, ${formatSol(group.reduce((a, p) => a + p.receivedSol - p.spentSol, 0), solPriceUsd)}`;
+  const parts = [part('paper', closed.filter((p) => p.dryRun)), part('real', closed.filter((p) => !p.dryRun))].filter(Boolean);
+  return `All runs together: ${parts.join(' · ')}`;
+}
+
 // Pass `jupiter` to price open positions. Omit it to report them at cost —
 // used for the periodic in-run summary, so reporting never competes with
-// trading for the shared 1 request/second Jupiter budget.
+// trading for the shared 1 request/second Jupiter budget. Pass `run` to show
+// one run's sheet (everything since it started) instead of the whole history.
 export async function printSummary(
   store: PositionStore,
   jupiter?: JupiterClient,
   slippageBps = 300,
   walletGate?: WalletGateConfig,
-  detailed = false
+  detailed = false,
+  run?: { since: number; label: string }
 ): Promise<void> {
-  const positions = [...store.all()];
-  // Mute status is judged over ALL positions (simulated + real), exactly as
-  // the trader judges it, so the summary never disagrees with the bot.
+  const everything = [...store.all()];
+  const positions = run ? everything.filter((p) => inRun(p, run.since)) : everything;
+  // Mute status is judged over ALL positions (simulated + real) and every
+  // run, exactly as the trader judges it, so the summary never disagrees.
   const muteOf = (wallet: string): WalletMute =>
-    walletGate ? walletMute(positions, wallet, Date.now(), walletGate) : { muted: false };
+    walletGate ? walletMute(everything, wallet, Date.now(), walletGate) : { muted: false };
 
   let marks = new Map<string, Mark>();
   if (jupiter) {
@@ -223,13 +237,18 @@ export async function printSummary(
   const solPriceUsd = await getSolPriceUsd();
 
   console.log('\n════════════════ P&L SUMMARY ════════════════');
+  if (run) console.log(`This sheet: ${run.label}`);
   if (solPriceUsd !== null) console.log(`SOL price: $${solPriceUsd.toFixed(2)}`);
 
   if (positions.length === 0) {
-    console.log('No positions yet.');
+    console.log(run ? 'No trades yet this run.' : 'No positions yet.');
   } else {
     printGroup('SIMULATED (dry-run — no real money moved)', positions.filter((p) => p.dryRun), solPriceUsd, marks, muteOf, detailed);
     printGroup('REAL (actual on-chain trades)', positions.filter((p) => !p.dryRun), solPriceUsd, marks, muteOf, detailed);
+  }
+  if (run) {
+    const line = allRunsLine(everything, positions, solPriceUsd);
+    if (line) console.log(`\n${line}  (every run: npm run summary -- all)`);
   }
   console.log('═════════════════════════════════════════════\n');
 }

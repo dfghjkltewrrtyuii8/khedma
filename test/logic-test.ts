@@ -17,7 +17,7 @@ import { Keypair, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
 
 import { analyzeSwap, installedWeb3Version, MAX_TX_VERSION, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from '../src/watcher';
 import { RateLimiter } from '../src/rateLimiter';
-import { PositionStore } from '../src/positions';
+import { inRun, PositionStore } from '../src/positions';
 import { Trader } from '../src/trader';
 import { loadConfig, SOL_MINT } from '../src/config';
 import { JupiterOrder, OrderParams } from '../src/jupiter';
@@ -1844,6 +1844,58 @@ function testRecommendedSettings(realLog: typeof console.log) {
   realLog('✅ recommended settings: one command turns on the scanner and turns off the token check, leaves money settings alone');
 }
 
+// Each run gets its own P&L sheet; the history underneath is kept, because
+// wallet drops, mutes and probation are judged over every run.
+async function testRunSheets(realLog: typeof console.log) {
+  const H = 3_600_000;
+  const START = Date.parse('2026-09-24T20:00:00Z');
+  let n = 0;
+  const pos = (over: Partial<Position>): Position => ({
+    id: `r${++n}`, mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: TRACKED, dryRun: true, status: 'closed',
+    openedAt: new Date(START - 10 * H).toISOString(), closedAt: new Date(START - 9 * H).toISOString(),
+    spentSol: 0.01, tokenAmountRaw: '0', initialTokenAmountRaw: '1', receivedSol: 0.005, sellTxs: [], ...over,
+  });
+  const oldLoss = pos({});                                                                      // earlier run
+  const carried = pos({ closedAt: new Date(START + 1 * H).toISOString(), receivedSol: 0.02 });   // bought before, sold this run
+  const fresh = pos({ openedAt: new Date(START + 2 * H).toISOString(), closedAt: new Date(START + 3 * H).toISOString(), receivedSol: 0.03, dryRun: false });
+  const stuckOld = pos({ status: 'stuck', closedAt: undefined });
+  const openOld = pos({ status: 'open', closedAt: undefined });
+  assert(!inRun(oldLoss, START) && inRun(carried, START) && inRun(fresh, START) && inRun(stuckOld, START) && inRun(openOld, START),
+    'a run\'s sheet: opened or closed during it, plus anything still open or stuck');
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-runs-'));
+  const store = new PositionStore(dir);
+  assert(store.lastRun() === null, 'no run recorded yet');
+  store.startRun(START);
+  assert(store.lastRun()!.startedAt === new Date(START).toISOString() && !store.lastRun()!.endedAt, 'a run is recorded when the bot starts');
+  store.endRun(START + 5 * H);
+  assert(store.lastRun()!.endedAt === new Date(START + 5 * H).toISOString(), '…and its end when it stops');
+  assert(new PositionStore(dir).lastRun()!.startedAt === new Date(START).toISOString(), 'and it survives a restart of the summary command');
+  fs.writeFileSync(path.join(dir, 'run.json'), '{broken');
+  assert(store.lastRun() === null, 'an unreadable run file falls back to showing everything, never crashes');
+
+  // Printed sheet: only this run, with one line for all runs together.
+  (store as any).positions = [oldLoss, carried, fresh];
+  const printed: string[] = [];
+  const loud = console.log;
+  console.log = (...a: unknown[]) => { printed.push(a.join(' ')); };
+  try {
+    await printSummary(store, undefined, 300, undefined, false, { since: START, label: 'this run (started 23:00)' });
+  } finally {
+    console.log = loud;
+  }
+  const sheet = printed.join('\n');
+  assert(sheet.includes('This sheet: this run (started 23:00)'), 'the sheet says which run it covers');
+  assert(sheet.includes('Realized P&L (1 closed): +0.0100 SOL') && sheet.includes('Realized P&L (1 closed): +0.0200 SOL'), `this run only: the carried-over sell and the new real trade (${sheet})`);
+  assert(!sheet.includes('-0.0050'), 'the earlier run\'s loss is not on this run\'s sheet');
+  assert(/All runs together: paper 2 closed, \+0\.0050 SOL.* · real 1 closed, \+0\.0200 SOL/.test(sheet), 'one line keeps the all-runs total in view');
+
+  const phone = formatPnl({ positions: [carried, fresh], allTime: [oldLoss, carried, fresh], now: START + 4 * H, solPriceUsd: null, title: 'P&L — this run' });
+  assert(phone.includes('Closed 1 · 1 won / 0 lost') && phone.includes('All runs together: paper 2 closed'), 'Telegram shows this run, plus the all-runs line');
+  assert(!formatPnl({ positions: [fresh], allTime: [fresh], now: START, solPriceUsd: null, title: 'x' }).includes('All runs'), 'no all-runs line when this run is everything');
+  realLog('✅ run sheets: every start gets a fresh P&L sheet; history kept for the wallet rules; all-runs total one line away');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -1851,6 +1903,7 @@ async function main() {
   await testEmptySlotsFill(console.log);
   await testActivityCheck(console.log);
   testRecommendedSettings(console.log);
+  await testRunSheets(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

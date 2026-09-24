@@ -16,7 +16,7 @@
 // pure function over plain data, so it is tested offline.
 
 import type { TradeAlerts } from './config';
-import { TOKEN_ACCOUNT_RENT_SOL } from './pnl';
+import { allRunsLine, TOKEN_ACCOUNT_RENT_SOL } from './pnl';
 import { sleep } from './rateLimiter';
 import { Position, PositionStatus } from './types';
 import { walletRecords } from './walletGate';
@@ -250,7 +250,11 @@ function pnlGroup(label: string, positions: Position[], input: ReportInput, rece
   return lines;
 }
 
-export function formatPnl(input: ReportInput & { title: string; recentSince?: number; recentLabel?: string }): string {
+// `positions` is what the sheet covers (usually this run). Pass `allTime` to
+// add one line with the totals over every run.
+export function formatPnl(
+  input: ReportInput & { title: string; recentSince?: number; recentLabel?: string; allTime?: readonly Position[] }
+): string {
   const paper = input.positions.filter((p) => p.dryRun);
   const real = input.positions.filter((p) => !p.dryRun);
   const lines = [`📊 ${input.title}`];
@@ -262,6 +266,10 @@ export function formatPnl(input: ReportInput & { title: string; recentSince?: nu
       pnlGroup('💰 REAL MONEY', real, input, input.recentSince, input.recentLabel),
     ].filter((g) => g.length > 0);
     groups.forEach((g, i) => lines.push(...(i > 0 ? ['', ...g] : g)));
+  }
+  if (input.allTime) {
+    const line = allRunsLine(input.allTime, input.positions, input.solPriceUsd);
+    if (line) lines.push('', line);
   }
   return lines.join('\n');
 }
@@ -304,7 +312,7 @@ export interface WalletsInput {
 export function formatWallets(input: WalletsInput): string {
   const records = walletRecords(input.positions);
   const label = (w: string) => shortAddress(w) + (input.isDiscovered(w) ? '*' : '');
-  const lines = ['👛 Wallets', `Copying now (${input.copying.length}):`];
+  const lines = ['👛 Wallets (records over all runs — drops and probation are judged on them)', `Copying now (${input.copying.length}):`];
   for (const w of input.copying) {
     const r = records.get(w);
     const record = r ? `${r.closed} closed, ${r.wins}W/${r.losses}L, ${money(r.netSol, input.solPriceUsd)}` : 'no closed trades yet';

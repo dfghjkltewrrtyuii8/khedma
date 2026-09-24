@@ -6,16 +6,63 @@ import fs from 'fs';
 import path from 'path';
 import { ExitRule, Position, PositionStatus } from './types';
 
+// One run of the bot, from `npm start` to Ctrl+C. Every P&L sheet shows the
+// current (or latest) run on its own; the full history stays in
+// positions.json, because the wallet rules — drops, mutes, probation — are
+// judged over every run, not just this one.
+export interface RunInfo {
+  startedAt: string; // ISO
+  endedAt?: string;
+}
+
+// Pure: does this position belong on the sheet of a run that started at
+// `since`? Anything opened or closed during the run, plus anything still open
+// or stuck — those are live, whenever they were bought.
+export function inRun(p: Position, since: number): boolean {
+  if (p.status === 'open' || p.status === 'stuck') return true;
+  if ((Date.parse(p.openedAt) || 0) >= since) return true;
+  return p.closedAt !== undefined && (Date.parse(p.closedAt) || 0) >= since;
+}
+
 export class PositionStore {
   private positions: Position[] = [];
   private readonly dataDir: string;
   private readonly storePath: string;
+  private readonly runPath: string;
 
   // dataDir is overridable so tests can use a scratch directory and never
   // touch the real data/positions.json.
   constructor(dataDir: string = path.join(process.cwd(), 'data')) {
     this.dataDir = dataDir;
     this.storePath = path.join(dataDir, 'positions.json');
+    this.runPath = path.join(dataDir, 'run.json');
+  }
+
+  // Record that a run started / ended, so `npm run summary` can show it alone.
+  startRun(now: number): void {
+    this.writeRun({ startedAt: new Date(now).toISOString() });
+  }
+
+  endRun(now: number): void {
+    const run = this.lastRun();
+    if (run) this.writeRun({ ...run, endedAt: new Date(now).toISOString() });
+  }
+
+  lastRun(): RunInfo | null {
+    if (!fs.existsSync(this.runPath)) return null;
+    try {
+      const run = JSON.parse(fs.readFileSync(this.runPath, 'utf8')) as RunInfo;
+      return typeof run.startedAt === 'string' && !Number.isNaN(Date.parse(run.startedAt)) ? run : null;
+    } catch {
+      return null; // unreadable: fall back to showing everything
+    }
+  }
+
+  private writeRun(run: RunInfo): void {
+    fs.mkdirSync(this.dataDir, { recursive: true });
+    const tempPath = `${this.runPath}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(run, null, 2));
+    fs.renameSync(tempPath, this.runPath);
   }
 
   load(): void {

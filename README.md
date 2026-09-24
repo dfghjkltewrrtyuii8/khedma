@@ -251,8 +251,15 @@ history as SIMULATED; real trades are tracked separately.
 Print the P&L summary any time without starting the bot:
 
 ```zsh
-npm run summary
+npm run summary          # the latest run on its own (the current one, if the bot is running)
+npm run summary -- all   # every run together
 ```
+
+**Every start gets a fresh P&L sheet.** The terminal summaries, `/pnl` on
+Telegram and the final report when you stop all cover *this run* only, with
+one line underneath for all runs together. Nothing is deleted: the history
+stays in `data/positions.json`, because the wallet rules (drops, mutes,
+probation for discovered wallets) are judged over every run.
 
 Open positions are **marked to market** here: each one is priced with a
 quote-only Jupiter order (no taker, so nothing is balance-checked), showing
