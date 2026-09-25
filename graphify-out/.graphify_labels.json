@@ -2,7 +2,7 @@
   "0": "package.json",
   "1": "shortAddress",
   "2": "setupChecks.ts",
-  "3": "index.ts",
+  "3": "trader.ts",
   "4": "PositionStore",
   "5": "pnl.ts",
   "6": "notify.ts",
@@ -10,6 +10,10 @@
   "8": "Solana Copy-Trading Bot",
   "9": "discovery.ts",
   "10": "main",
-  "11": "logic-test.ts",
-  "12": "telegramSetup.ts"
+  "11": "telegram.ts",
+  "12": "index.ts",
+  "13": "doctor.ts",
+  "14": "logic-test.ts",
+  "15": "tokenAccounts.ts",
+  "16": "exitRules.ts"
 }

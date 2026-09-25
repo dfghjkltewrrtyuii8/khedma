@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1790337171.0914693,
-    "seen": 1790337636.0003657,
-    "ast_hash": "c0273d0c8a76a3892f596390d0592d95",
+    "mtime": 1790371008.4484935,
+    "seen": 1790371066.5494723,
+    "ast_hash": "697c5517179a35a329731c07e0852503",
     "semantic_hash": ""
   },
   "src/config.ts": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "src/watcher.ts": {
-    "mtime": 1790260517.025148,
-    "seen": 1790260733.3863096,
-    "ast_hash": "728056a5eca6e9035b033d8ded42d983",
+    "mtime": 1790370638.2304668,
+    "seen": 1790371066.5495286,
+    "ast_hash": "0de7714e03b33d899cafe0c2bac9900e",
     "semantic_hash": ""
   },
   "src/writeoff.ts": {
@@ -96,9 +96,9 @@
     "semantic_hash": "58600903ede80e486909d81180fe653f"
   },
   "test/logic-test.ts": {
-    "mtime": 1790337492.5697274,
-    "seen": 1790337636.0004108,
-    "ast_hash": "8f1c8ac4bd15d09ce390bb50d40fbde6",
+    "mtime": 1790370943.5813062,
+    "seen": 1790371066.5495317,
+    "ast_hash": "016c629b6fd96d3fda0f3fdfa4c37b37",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -108,9 +108,9 @@
     "semantic_hash": "3b65c385aefd3ec9cf283d2f1a0698c6"
   },
   "README.md": {
-    "mtime": 1790337202.6450505,
-    "seen": 1790337636.0004141,
-    "ast_hash": "69e401dca19aace0c17e7528cf1a3050",
+    "mtime": 1790371008.4483197,
+    "seen": 1790371066.549536,
+    "ast_hash": "a648a440109c1b068b961babab67ab51",
     "semantic_hash": ""
   },
   "src/tokenMarket.ts": {
@@ -162,15 +162,15 @@
     "semantic_hash": ""
   },
   "src/copyGap.ts": {
-    "mtime": 1790172323.9114778,
-    "seen": 1790172373.8096778,
-    "ast_hash": "81027bda22efbdcbe2296e72959fef50",
+    "mtime": 1790370896.1985679,
+    "seen": 1790371066.5494814,
+    "ast_hash": "d926ddbe5aae86e12d67051fb98dc537",
     "semantic_hash": ""
   },
   "src/walletRoster.ts": {
-    "mtime": 1790260600.309755,
-    "seen": 1790260733.386309,
-    "ast_hash": "555febde9242a65f513cfc46cff630ab",
+    "mtime": 1790370994.4238849,
+    "seen": 1790371066.5495274,
+    "ast_hash": "c2efa792648ae2b20e3be9c55bd038cf",
     "semantic_hash": ""
   },
   "src/discover.ts": {
