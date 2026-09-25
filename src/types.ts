@@ -29,7 +29,9 @@ export interface Position {
   status: PositionStatus;
   openedAt: string; // ISO timestamp
   closedAt?: string;
-  spentSol: number; // SOL we paid to open
+  spentSol: number; // SOL we paid to open — for real buys, everything that left the wallet (swap + fees + token-account rent)
+  swapSol?: number; // real buys: what went into the swap itself; the exit rules measure gains against this
+  rentBackSol?: number; // token-account rent returned when the emptied account was closed (counted in receivedSol)
   tokenAmountRaw: string; // raw token units still held (stringified bigint)
   initialTokenAmountRaw: string; // raw token units at open (for % display)
   receivedSol: number; // SOL received back from sells so far

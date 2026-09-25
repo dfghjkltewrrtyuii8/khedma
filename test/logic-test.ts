@@ -38,7 +38,8 @@ import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRule
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
 import { copySlots, dropReason, paperHints, PROBATION_TRADES, ROBOT_REASON, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
-import { SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
+import { SystemProgram, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
+import { closeAccounts, selectEmpty, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../src/tokenAccounts';
 
 const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -1635,7 +1636,7 @@ async function testTelegram(realLog: typeof console.log) {
   assert(pnl.includes('Since last report: 2 closed, -0.0025 SOL'), 'the recent window counts only trades closed inside it');
   assert(pnl.includes(`Best ${shortAddress(win.mint)} +100% · worst ${shortAddress(loss.mint)} -30%`), 'best and worst trade');
   assert(pnl.includes('Open 2 · worth now +0.0012 SOL (+$0.24) (1 priced)'), 'open positions are valued from the latest price, and say how many were priced');
-  assert(pnl.includes('about -0.0061 SOL on these 3'), 'paper results carry what real rent would have cost');
+  assert(pnl.includes('Real trades also pay small network fees') && pnl.includes('comes back after selling'), 'paper results say what real trades cost on top');
   assert(pnl.includes('💰 REAL MONEY') && pnl.includes('Closed 1 · 1 won / 0 lost') && pnl.includes('🔴 Stuck 1'), 'real money is reported separately, stuck ones flagged');
   assert(formatPnl({ positions: [], now: NOW, solPriceUsd: null, title: 'x' }).includes('No trades yet'), 'an empty report says so');
   assert(formatPnl({ positions: [win], now: NOW, solPriceUsd: null, title: 'x' }).includes('Total: +0.0100 SOL\n'), 'no USD when the price is unavailable — never a made-up number');
@@ -2053,6 +2054,163 @@ async function testStaleBenchAndTrial(realLog: typeof console.log) {
   realLog('✅ stale bench + trial: quiet waiting wallets no longer block the search; trial length is a setting; paper-mode-with-SOL is called out');
 }
 
+// Token-account rent: a night of real trading showed +$7.61 on the sheet while
+// the wallet fell from $27 to $14.88. Each new coin locks ~0.002 SOL of rent
+// in a token account; nothing closed those accounts, and the sheet recorded
+// only the 0.03 SOL swap as the cost. Now: the real cost is recorded, the
+// emptied account is closed after the sale, and the rent comes back.
+async function testRentReclaim(realLog: typeof console.log) {
+  const owner = Keypair.generate();
+  const acct = (amount: string, extra: Record<string, unknown> = {}) => ({
+    pubkey: Keypair.generate().publicKey,
+    account: { owner: TOKEN_PROGRAM_ID, lamports: 2_039_280, data: { parsed: { info: { mint: Keypair.generate().publicKey.toBase58(), state: 'initialized', tokenAmount: { amount }, ...extra } } } },
+  });
+  const empty1 = acct('0'), full = acct('5000'), frozen = acct('0', { state: 'frozen' });
+  const kept = acct('0');
+  const t22 = acct('0');
+  t22.account.owner = TOKEN_2022_PROGRAM_ID;
+  const stranger = acct('0');
+  stranger.account.owner = SystemProgram.programId; // not a token program: never touched
+  const picked = selectEmpty([empty1, full, frozen, kept, t22, stranger, { account: {} }] as any, new Set([kept.account.data.parsed.info.mint as string]));
+  assert(picked.map((a) => a.address.toBase58()).join() === [empty1.pubkey, t22.pubkey].map((k) => k.toBase58()).join(),
+    'only empty, unfrozen token accounts (both token programs) are picked — never one holding tokens, a coin the bot holds, or a non-token account');
+  assert(picked[1].programId.equals(TOKEN_2022_PROGRAM_ID) && picked[0].lamports === 2_039_280, 'each keeps its own program and rent');
+
+  // Batches of 8; a batch that fails is retried one by one, so one bad account never blocks the rest.
+  const BAD = Keypair.generate().publicKey;
+  const sent: string[][] = [];
+  const onChainClosed = new Set<string>();
+  let confirmThrows = false;
+  let landing = true; // does a sent transaction actually land?
+  const closeConn = {
+    async getMultipleAccountsInfo(keys: PublicKey[]) { return keys.map((k) => (onChainClosed.has(k.toBase58()) ? null : { lamports: 2_039_280 })); },
+    async getLatestBlockhash() { return { blockhash: Keypair.generate().publicKey.toBase58(), lastValidBlockHeight: 100 }; },
+    async sendRawTransaction(bytes: Uint8Array) {
+      const tx = Transaction.from(Buffer.from(bytes));
+      assert(tx.verifySignatures(), 'every close transaction is signed by the wallet');
+      assert(tx.instructions.every((ix) => ix.data.length === 1 && ix.data[0] === 9 && ix.keys[1].pubkey.equals(owner.publicKey) && ix.keys[2].pubkey.equals(owner.publicKey) && ix.keys[2].isSigner),
+        'CloseAccount (9), rent to the wallet, signed by the wallet');
+      const targets = tx.instructions.map((ix) => ix.keys[0].pubkey.toBase58());
+      if (targets.includes(BAD.toBase58())) throw new Error('simulation failed: non-native account can only be closed if its balance is zero');
+      sent.push(targets);
+      if (landing) targets.forEach((t) => onChainClosed.add(t));
+      return `sig${sent.length}`;
+    },
+    async getSignatureStatuses() {
+      if (confirmThrows) throw new Error('connection reset while confirming');
+      return { value: [{ confirmationStatus: 'confirmed', err: null }] };
+    },
+  };
+  const ten = Array.from({ length: 10 }, (_, i) => ({ address: i === 3 ? BAD : Keypair.generate().publicKey, programId: TOKEN_PROGRAM_ID, mint: 'm', lamports: 2_039_280 }));
+  const result = await closeAccounts(closeConn as any, owner, ten);
+  assert(result.closed.length === 9 && result.failed.length === 1 && result.failed[0].account.address.equals(BAD), 'the one account that can\'t be closed is reported; the other 9 are closed');
+  assert(Math.abs(result.reclaimedSol - 9 * 0.00203928) < 1e-12, 'rent is counted only for accounts actually closed');
+  assert(sent.map((b) => b.length).join('+') === '1+1+1+1+1+1+1+2',
+    `the failed batch of 8 was retried one by one (7 closed), then the last 2 went together (got ${sent.map((b) => b.length).join('+')})`);
+
+  // A confirmation that goes missing doesn't mean the close didn't happen: the chain decides.
+  sent.length = 0;
+  confirmThrows = true;
+  const three = Array.from({ length: 3 }, () => ({ address: Keypair.generate().publicKey, programId: TOKEN_PROGRAM_ID, mint: 'm', lamports: 2_039_280 }));
+  const unconfirmed = await closeAccounts(closeConn as any, owner, three);
+  assert(unconfirmed.closed.length === 3 && sent.length === 1, 'a close that landed but whose confirmation was lost is counted as closed, and not sent again');
+  confirmThrows = false;
+  landing = false;
+  const dropped = await closeAccounts(closeConn as any, owner, [{ address: Keypair.generate().publicKey, programId: TOKEN_PROGRAM_ID, mint: 'm', lamports: 2_039_280 }]);
+  assert(dropped.closed.length === 0 && dropped.reclaimedSol === 0 && /still open/.test(dropped.failed[0].error), 'a close that never landed is not counted — no rent is claimed that did not come back');
+  landing = true;
+
+  // The trader: real buy records its true cost; a take-profit measures against the swap; the sale closes the account.
+  const keypair = Keypair.generate();
+  const tx = new VersionedTransaction(new TransactionMessage({
+    payerKey: keypair.publicKey, recentBlockhash: '11111111111111111111111111111111',
+    instructions: [SystemProgram.transfer({ fromPubkey: keypair.publicKey, toPubkey: Keypair.generate().publicKey, lamports: 1 })],
+  }).compileToV0Message());
+  const txBase64 = Buffer.from(tx.serialize()).toString('base64');
+  const ATA = Keypair.generate().publicKey;
+  let lamports = 1_000_000_000;
+  let tokenAccount: { amount: string; open: boolean } | null = null;
+  let lastOrderWasBuy = true;
+  let lastOrderMint = MEME_MINT;
+  let closeInFlight = false;
+  let balanceReadDuringClose = false;
+  const jup = {
+    async getOrder(p: OrderParams): Promise<JupiterOrder> {
+      lastOrderWasBuy = p.inputMint === SOL_MINT;
+      lastOrderMint = lastOrderWasBuy ? p.outputMint : p.inputMint;
+      return { requestId: 'r', transactionBase64: txBase64, inAmountRaw: p.amountRaw, outAmountRaw: lastOrderWasBuy ? 5_000n : 39_500_000n };
+    },
+    async execute() {
+      await new Promise((r) => setTimeout(r, 100)); // a swap takes a moment to land
+      if (lastOrderWasBuy) {
+        lamports -= 30_000_000 + 2_039_280 + 5_000;
+        if (lastOrderMint === MEME_MINT) tokenAccount = { amount: '5000', open: true };
+      } else { lamports += 39_500_000 - 5_000; tokenAccount!.amount = '0'; }
+      return { signature: lastOrderWasBuy ? 'buysig' : 'sellsig' };
+    },
+  };
+  const conn = {
+    async getBalance() {
+      if (closeInFlight) balanceReadDuringClose = true;
+      return lamports;
+    },
+    async getMultipleAccountsInfo(keys: PublicKey[]) { return keys.map((k) => (k.equals(ATA) && tokenAccount && !tokenAccount.open ? null : { lamports: 2_039_280 })); },
+    async getParsedTokenAccountsByOwner() {
+      if (!tokenAccount || !tokenAccount.open) return { value: [] };
+      return { value: [{ pubkey: ATA, account: { owner: TOKEN_PROGRAM_ID, lamports: 2_039_280, data: { parsed: { info: { mint: MEME_MINT, state: 'initialized', tokenAmount: { amount: tokenAccount.amount } } } } } }] };
+    },
+    async getLatestBlockhash() { return { blockhash: Keypair.generate().publicKey.toBase58(), lastValidBlockHeight: 100 }; },
+    async sendRawTransaction(bytes: Uint8Array) {
+      closeInFlight = true;
+      await new Promise((r) => setTimeout(r, 60)); // a slow network
+      const closeTx = Transaction.from(Buffer.from(bytes));
+      assert(closeTx.instructions.length === 1 && closeTx.instructions[0].keys[0].pubkey.equals(ATA), 'the emptied account of the coin just sold is the one closed');
+      tokenAccount!.open = false;
+      lamports += 2_039_280 - 5_000;
+      closeInFlight = false;
+      return 'closesig';
+    },
+    async getSignatureStatuses() { return { value: [{ confirmationStatus: 'confirmed', err: null }] }; },
+  };
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-rent-')));
+  const cfg = { ...loadConfig(), dryRun: false, copyBuyAmountSol: 0.03, takeProfitPercent: 30, stopLossPercent: 30, trailingStopPercent: 0, exitRebuyCooldownHours: 0 };
+  const trader = new Trader(cfg, conn as any, keypair, jup as any, store, okMarket);
+  const said: string[] = [];
+  const loud = console.log;
+  console.log = (...a: unknown[]) => { said.push(a.join(' ')); };
+  try {
+    await trader.handleSwapEvent({ signature: 'b1', sourceWallet: TRACKED, side: 'buy', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    const pos = store.all()[0];
+    assert(pos && Math.abs(pos.spentSol - 0.03204428) < 1e-12 && pos.swapSol === 0.03, `the buy's true cost is recorded: swap + fee + rent (got ${pos?.spentSol})`);
+    await trader.checkExits();
+    assert(pos.status === 'closed' && pos.rentBackSol === undefined, 'the sale completes first; the account is closed right after, when no trade is waiting');
+    await trader.flushReclaims();
+    assert(pos.status === 'closed' && pos.exitRule === 'take-profit', 'take-profit +30% is measured against the 0.03 swap (0.0395 = +31.7%), not the rent-inflated cost (+23%)');
+    assert(Math.abs(pos.rentBackSol! - 0.00203928) < 1e-12 && Math.abs(pos.receivedSol - (0.039495 + 0.00203928)) < 1e-12, 'the rent comes back and counts toward what the trade returned');
+    assert(Math.abs((pos.receivedSol - pos.spentSol) - 0.00949) < 1e-9, 'the trade\'s result is exactly what the wallet gained: +0.0095 SOL');
+    assert(lamports === 1_000_000_000 + 9_490_000 - 5_000, 'and the fake wallet agrees to the lamport (the close costs its own tiny fee)');
+    assert(said.some((l) => l.includes('♻️') && l.includes('0.0020 SOL of rent is back')), 'the rent coming back is said out loud');
+
+    // A copied sale followed at once by a copied buy of another coin: the close
+    // must not land while the buy is measuring its cost, or the buy would be
+    // credited with that rent too (and the P&L would count it twice).
+    await trader.handleSwapEvent({ signature: 'b2', sourceWallet: TRACKED, side: 'buy', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    const second = store.byStatus('open').find((p) => p.mint === MEME_MINT)!;
+    const OTHER = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN';
+    const sale = trader.handleSwapEvent({ signature: 's2', sourceWallet: TRACKED, side: 'sell', mint: MEME_MINT, decimals: 5, tokenDeltaRaw: 100n, ownerPreTokenRaw: 100n, quoteSolEquivalent: 0.2 });
+    const buy = trader.handleSwapEvent({ signature: 'b3', sourceWallet: TRACKED, side: 'buy', mint: OTHER, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+    await Promise.all([sale, buy]);
+    await trader.flushReclaims();
+    const other = store.all().find((p) => p.mint === OTHER)!;
+    assert(second.status === 'closed' && Math.abs(second.rentBackSol! - 0.00203928) < 1e-12, 'the second sale\'s account is closed too');
+    assert(!balanceReadDuringClose, 'no balance was measured while an account close was landing');
+    assert(other && Math.abs(other.spentSol - 0.03204428) < 1e-12, `the next buy's cost is measured cleanly, not reduced by the returned rent (got ${other?.spentSol})`);
+  } finally {
+    console.log = loud;
+  }
+  realLog('✅ rent reclaim: true buy cost recorded, emptied accounts closed after selling, rent back — matches the official CloseAccount instruction');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2063,6 +2221,7 @@ async function main() {
   await testRunSheets(console.log);
   await testRobotWallets(console.log);
   await testStaleBenchAndTrial(console.log);
+  await testRentReclaim(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

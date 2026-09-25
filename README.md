@@ -330,6 +330,38 @@ anything, and any real tokens stay in your wallet):
 rm -rf data
 ```
 
+## Getting your rent back (`npm run reclaim`)
+
+Every new coin the bot buys with real money gets its own token account, and
+Solana makes your wallet lock **~0.002 SOL of rent** in it. At 0.03 SOL a
+trade that's ~7% of every trade — and it doesn't show in your balance.
+Selling empties the account but doesn't close it, so before version 1.10 the
+rent just stayed locked: a night of ~30 new coins locked ~$7 while the P&L
+sheet (which counted only the swap) showed a profit.
+
+Since 1.10 the bot:
+
+- **closes the emptied account right after each sale** (in the background —
+  trading never waits on it), so the rent comes straight back
+  (`♻️ Closed the emptied token account — 0.0020 SOL of rent is back`);
+- **records what a real buy actually cost** — the swap plus network fees plus
+  that rent — and adds the rent back when it returns, so the sheet matches
+  your wallet. Take-profit and stop-loss still measure against the swap itself.
+
+For accounts left behind by earlier versions (or by coins you sold yourself
+in Phantom), run this once, with the bot stopped:
+
+```zsh
+npm run reclaim
+```
+
+It lists how many empty accounts it found and how much SOL they hold, asks
+before doing anything, and closes them. Accounts that still hold tokens are
+never touched — Solana itself refuses to close those. `npm run doctor` tells
+you whenever there's rent waiting to come back.
+
+---
+
 ## Telegram: P&L on your phone
 
 Leave the bot running overnight and check it from your phone in the morning,
@@ -674,6 +706,7 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | `Config error: TRACKED_WALLETS has N addresses` | More wallets than `MAX_TRACKED_WALLETS` (default 6). Keep your best few — past that the watcher drops trades and nothing can be judged. |
 | Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
+| The P&L sheet shows a profit but the wallet went down | Rent: each new coin locks ~0.002 SOL in a token account (~7% of a 0.03 SOL trade), and versions before 1.10 neither counted it nor got it back. Run `npm run reclaim` (bot stopped) to close the empty accounts and get that SOL back; from 1.10 the bot does it after every sale and the sheet counts real costs. |
 | Bot runs but never buys (`0 transactions examined`) | Read the `Last on-chain activity:` line under each `📊 Watcher` summary (or send `/status` on Telegram). Wallets that last did something hours ago are simply **quiet** — nothing to copy. Fix: `npm run recommended` (wallet scanner on, 6 wallets at a time, quiet ones swapped after 30 minutes, token check off), then restart. If a wallet shows recent activity but nothing was examined, the live feed broke — the bot notices within 5 minutes (`📡 The live feed missed …`) and reconnects it by itself. |
 | Every copy is `skip: token is … old` | The token check is on. For paper testing, `npm run recommended` turns it off. |
 | `🚨 … transaction format … can't read` | Solana introduced a newer transaction format than this build understands, so trades in it are **missed** — the bot will look idle while wallets are trading. Update the bot. (This happened once already: version 1 arrived in 2026 and needed `@solana/web3.js` 1.99.) |

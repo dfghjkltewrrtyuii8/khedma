@@ -135,17 +135,14 @@ function printGroup(
       if (cmp.verdict) console.log(`        → ${cmp.verdict}`);
     }
 
-    // Paper trades are priced from quotes and pay no costs. Real ones do, and
-    // at small sizes the fixed part dominates — say so next to the numbers.
+    // Paper trades are priced from quotes and pay no costs. Real ones pay
+    // network fees; their token-account rent comes back when the emptied
+    // account is closed after selling.
     if (positions.some((p) => p.dryRun)) {
-      const avgSpent = closed.reduce((a, p) => a + p.spentSol, 0) / closed.length;
-      if (avgSpent > 0) {
-        console.log(
-          `  Not in these paper numbers: a real trade also locks ~${TOKEN_ACCOUNT_RENT_SOL.toFixed(4)} SOL of token-account rent ` +
-            `per new token, plus network fees — about ${((TOKEN_ACCOUNT_RENT_SOL / avgSpent) * 100).toFixed(0)}% of a ` +
-            `${avgSpent.toFixed(4)} SOL position before the price moves at all.`
-        );
-      }
+      console.log(
+        `  Not in these paper numbers: real trades also pay small network fees. (The ~${TOKEN_ACCOUNT_RENT_SOL.toFixed(4)} SOL ` +
+          'of rent each new coin needs comes back when the bot closes the emptied account after selling.)'
+      );
     }
 
     // Look at what actually happened. Only on demand (npm run summary /

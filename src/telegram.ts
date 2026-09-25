@@ -245,7 +245,7 @@ function pnlGroup(label: string, positions: Position[], input: ReportInput, rece
   // Paper trades pay nothing to hold a token; real ones do. At these sizes
   // that decides whether a small paper profit would have been real.
   if (positions[0].dryRun && closed.length > 0) {
-    lines.push(`Real trades would also lock ~${TOKEN_ACCOUNT_RENT_SOL.toFixed(3)} SOL rent + fees each: about -${(closed.length * TOKEN_ACCOUNT_RENT_SOL).toFixed(4)} SOL on these ${closed.length}.`);
+    lines.push(`Real trades also pay small network fees. (The ~${TOKEN_ACCOUNT_RENT_SOL.toFixed(3)} SOL rent each new coin needs comes back after selling.)`);
   }
   return lines;
 }

@@ -131,6 +131,15 @@ export class PositionStore {
     this.save();
   }
 
+  // Token-account rent that came back after the position closed. It's SOL
+  // returned to the wallet, so it counts toward what the trade got back.
+  addRentBack(position: Position, sol: number): void {
+    if (!(sol > 0)) return;
+    position.receivedSol += sol;
+    position.rentBackSol = (position.rentBackSol ?? 0) + sol;
+    this.save();
+  }
+
   // Remember the highest value a position has reached, so the trailing stop
   // survives a restart instead of resetting its peak to whatever it is worth
   // the moment the bot comes back up.

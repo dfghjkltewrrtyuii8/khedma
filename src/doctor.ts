@@ -22,6 +22,7 @@ import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast } 
 import { fetchGeckoTerminal, parseTrendingPools } from './discovery';
 import { explainTelegramError, TelegramClient } from './telegram';
 import { copySlots, paperHints, rotationOn } from './walletRoster';
+import { findEmptyAccounts } from './tokenAccounts';
 
 const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263';
 
@@ -149,6 +150,15 @@ async function main(): Promise<void> {
     const lamports = await withTimeout(connection.getBalance(keypair.publicKey), 15_000);
     balanceSol = lamports / 1e9;
     ok(`HTTPS RPC answers — wallet balance ${balanceSol.toFixed(4)} SOL`);
+    // SOL locked as rent in token accounts left empty by earlier sales
+    // doesn't show in the balance — say how much is waiting to come back.
+    const empty = await withTimeout(findEmptyAccounts(connection, keypair.publicKey), 20_000).catch(() => null);
+    if (empty && empty.length > 0) {
+      const locked = empty.reduce((a, e) => a + e.lamports, 0) / 1e9;
+      warn(`${empty.length} empty token account(s) hold ${locked.toFixed(4)} SOL of rent you can get back — run: npm run reclaim`);
+    } else if (empty) {
+      ok('no empty token accounts — no rent left locked');
+    }
   } catch (error) {
     bad(`HTTPS RPC failed: ${(error as Error).message}`, 'check the Helius API key (dashboard.helius.dev) — run: npm run setup');
   }

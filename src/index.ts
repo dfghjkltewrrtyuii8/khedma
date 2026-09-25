@@ -471,6 +471,7 @@ async function main(): Promise<void> {
     } catch (error) {
       console.error(`Error while closing positions: ${(error as Error).message}`);
     }
+    await trader.flushReclaims(); // close the accounts those last sells emptied, for their rent
 
     // Anything that could not be closed above is priced here, so the final
     // report shows what the leftovers are actually worth.

@@ -14,6 +14,7 @@ import { decideExit, exitRulesEnabled } from './exitRules';
 import { evaluateToken, fetchDexscreenerMarket, MarketSource, tokenGateEnabled } from './tokenMarket';
 import { Position, SwapEvent } from './types';
 import { walletMute } from './walletGate';
+import { closeAccounts, findEmptyAccounts } from './tokenAccounts';
 import { shortAddress } from './watcher';
 
 const SELL_ATTEMPTS = 3; // thin tokens can lose their route in seconds — retry, but don't loop forever
@@ -25,6 +26,11 @@ const BALANCE_CHECK_RETRY_DELAY_MS = 1_500;
 // Their sells are attributed to our position on the same token only within
 // this window, so a months-old position can't absorb an unrelated trade.
 const SOURCE_ATTRIBUTION_MS = 48 * 3_600_000;
+// A real buy costs the swap plus network fees plus, for a coin the wallet
+// hasn't held before, ~0.002 SOL of token-account rent. A balance change
+// larger than this over the swap means something else moved the wallet at the
+// same moment, so it isn't trusted as the buy's cost.
+const MAX_BUY_OVERHEAD_SOL = 0.02;
 
 export class Trader {
   private shuttingDown = false;
@@ -40,6 +46,12 @@ export class Trader {
   // When each position was last priced, so a sweep cut short picks up where
   // it stopped instead of re-checking the same ones first.
   private lastExitCheck = new Map<string, number>();
+  // Emptied token accounts waiting to be closed for their rent (see
+  // reclaimRent). Closing runs on the trade queue, but only when no trade is
+  // waiting: copies stay fast, and no trade's SOL measurement can overlap a
+  // rent refund landing (which would count that refund twice).
+  private reclaimQueue: Position[] = [];
+  private reclaimScheduled = false;
   // What each open position was worth at its last exit check, so reports can
   // show where things stand without spending Jupiter calls of their own.
   private marks = new Map<string, { valueSol: number; at: number }>();
@@ -118,6 +130,76 @@ export class Trader {
     return quoted;
   }
 
+  // What a real buy actually took out of the wallet: the swap plus network
+  // fees plus token-account rent. Recording only the swap amount made every
+  // real trade look ~7% better than it was — the sheet showed a profit while
+  // the wallet shrank.
+  private async settledSolSpent(beforeLamports: number | null, swapSol: number): Promise<number> {
+    if (beforeLamports === null) return swapSol;
+    for (let attempt = 1; attempt <= BALANCE_SETTLE_ATTEMPTS; attempt++) {
+      const after = await this.solBalanceLamports();
+      if (after !== null && after < beforeLamports) {
+        const spent = (beforeLamports - after) / 1e9;
+        if (spent >= swapSol * 0.5 && spent <= swapSol + MAX_BUY_OVERHEAD_SOL) return spent;
+        console.log(`   ⚠️ The wallet balance moved by ${spent.toFixed(4)} SOL during the buy — something else changed it; recording ${swapSol} SOL.`);
+        return swapSol;
+      }
+      await sleep(BALANCE_SETTLE_DELAY_MS);
+    }
+    return swapSol;
+  }
+
+  private queueReclaim(position: Position): void {
+    this.reclaimQueue.push(position);
+    this.scheduleReclaims();
+  }
+
+  private scheduleReclaims(): void {
+    // At shutdown the sells run outside the queue; flushReclaims() closes
+    // everything once they're all done instead.
+    if (this.reclaimScheduled || this.reclaimQueue.length === 0 || this.shuttingDown) return;
+    this.reclaimScheduled = true;
+    this.queue = this.queue
+      .then(async () => {
+        this.reclaimScheduled = false;
+        await this.runReclaims(false);
+      })
+      .catch(() => {});
+  }
+
+  private async runReclaims(evenIfTradesWait: boolean): Promise<void> {
+    while (this.reclaimQueue.length > 0) {
+      if (!evenIfTradesWait && this.pendingEvents > 0) return; // trades first; picked up again once they're done
+      await this.reclaimRent(this.reclaimQueue.shift()!);
+    }
+  }
+
+  // Close whatever is still waiting — at shutdown (after the last sells), and in tests.
+  async flushReclaims(): Promise<void> {
+    await this.queue;
+    await this.runReclaims(true);
+  }
+
+  // After a real position closes, close its now-empty token account so the
+  // ~0.002 SOL of rent returns to the wallet. Never fatal: if it can't be done
+  // now, `npm run reclaim` sweeps it up later.
+  private async reclaimRent(position: Position): Promise<void> {
+    try {
+      const empty = await findEmptyAccounts(this.connection, this.keypair.publicKey, { mint: position.mint });
+      if (empty.length === 0) return;
+      const result = await closeAccounts(this.connection, this.keypair, empty, undefined, { confirmTimeoutMs: 8_000 });
+      if (result.reclaimedSol > 0) {
+        this.store.addRentBack(position, result.reclaimedSol);
+        console.log(`   ♻️  Closed the emptied token account — ${result.reclaimedSol.toFixed(4)} SOL of rent is back in your wallet`);
+      }
+      if (result.failed.length > 0) {
+        console.log(`   (couldn't close ${result.failed.length} empty token account(s): ${result.failed[0].error.slice(0, 80)} — npm run reclaim can retry)`);
+      }
+    } catch (error) {
+      console.log(`   (couldn't close the emptied token account just now: ${(error as Error).message.slice(0, 80)} — npm run reclaim can do it later)`);
+    }
+  }
+
   // What the tracked wallet paid on the buy we're copying. Omitted when its
   // trade size couldn't be estimated, rather than recorded as a guess.
   private sourceBuyFields(event: SwapEvent): { sourceBuySol?: number; sourceBuyTokensRaw?: string } {
@@ -154,6 +236,7 @@ export class Trader {
       .catch(() => {})
       .finally(() => {
         this.pendingEvents--;
+        if (this.pendingEvents === 0) this.scheduleReclaims(); // any closes that waited on trades
       });
     return this.queue;
   }
@@ -294,9 +377,11 @@ export class Trader {
     // Read the balance BEFORE signing so the delta is unambiguous even if the
     // wallet already held some of this mint.
     const balanceBefore = (await this.tokenBalanceRaw(event.mint)) ?? 0n;
+    const solBefore = await this.solBalanceLamports();
     try {
       const signature = await this.signAndExecute(order.transactionBase64, order.requestId);
       const receivedRaw = await this.settledDeltaRaw(event.mint, balanceBefore, order.outAmountRaw);
+      const spentSol = await this.settledSolSpent(solBefore, this.config.copyBuyAmountSol);
       const receivedTokens = Number(receivedRaw) / 10 ** event.decimals;
       const position = this.store.openPosition({
         mint: event.mint,
@@ -304,14 +389,18 @@ export class Trader {
         sourceWallet: event.sourceWallet,
         ...this.sourceBuyFields(event),
         dryRun: false,
-        spentSol: this.config.copyBuyAmountSol,
+        spentSol,
+        swapSol: this.config.copyBuyAmountSol,
         tokenAmountRaw: receivedRaw.toString(),
         buyTx: signature,
       });
       const slippedPct = ((Number(receivedRaw) / Number(order.outAmountRaw) - 1) * 100).toFixed(2);
+      const overhead = spentSol - this.config.copyBuyAmountSol;
       console.log(
         `   ✅ REAL buy confirmed: ${receivedTokens.toLocaleString()} ${shortAddress(event.mint)} ` +
-          `for ${this.config.copyBuyAmountSol} SOL (quoted ${expectedTokens.toLocaleString()}, ${slippedPct}%)\n` +
+          `for ${this.config.copyBuyAmountSol} SOL` +
+          (overhead > 0.00001 ? ` + ${overhead.toFixed(4)} fees/rent (rent comes back after selling)` : '') +
+          ` (quoted ${expectedTokens.toLocaleString()}, ${slippedPct}%)\n` +
           `      position ${position.id}\n` +
           `      https://solscan.io/tx/${signature}`
       );
@@ -442,7 +531,10 @@ export class Trader {
             (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open') +
             `\n      https://solscan.io/tx/${signature}`
         );
-        const pnl = receivedSol - position.spentSol;
+        if (position.status === 'closed') this.queueReclaim(position);
+        // A closed trade's result: everything it returned (earlier partial sells
+        // and rent included) against everything it cost.
+        const pnl = position.status === 'closed' ? position.receivedSol - position.spentSol : receivedSol - position.spentSol;
         notify(
           pnl >= 0 ? '🟢 SOLD (profit)' : '🔴 SOLD (loss)',
           `${shortAddress(position.mint)}: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(4)} SOL`,
@@ -544,7 +636,9 @@ export class Trader {
         continue;
       }
 
-      const decision = decideExit(position, valueSol, this.config);
+      // Gains are measured against the swap itself (swapSol), not the fees and
+      // refundable rent on top, so a +30% take-profit means +30% on the trade.
+      const decision = decideExit({ ...position, spentSol: position.swapSol ?? position.spentSol }, valueSol, this.config);
       this.store.updatePeak(position, decision.peakValueSol);
       if (decision.action === 'hold') continue;
 
