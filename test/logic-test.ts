@@ -40,6 +40,7 @@ import { copySlots, dropReason, paperHints, PROBATION_TRADES, provenWinners, ROB
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import { closeAccounts, selectEmpty, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../src/tokenAccounts';
+import { HistoryTrade, judgeHistory, VetVerdict, vetWallet } from '../src/walletVetting';
 
 const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -1832,13 +1833,13 @@ async function testActivityCheck(realLog: typeof console.log) {
 function testRecommendedSettings(realLog: typeof console.log) {
   const before = 'PRIVATE_KEY_BASE58=k\r\nDISCOVERY=false\r\nMIN_TOKEN_AGE_MINUTES=30\r\nMIN_LIQUIDITY_USD=20000\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n';
   const first = applyRecommended(before);
-  assert(first.changes.map((c) => c.key).join() === 'DISCOVERY,ACTIVE_WALLETS,WALLET_IDLE_MINUTES,MIN_TOKEN_AGE_MINUTES,MIN_LIQUIDITY_USD',
-    'turns on the scanner, 6 wallets, 30-minute swaps, token check off');
+  assert(first.changes.map((c) => c.key).join() === 'DISCOVERY,ACTIVE_WALLETS,MAX_TRACKED_WALLETS,WALLET_IDLE_MINUTES,MIN_TOKEN_AGE_MINUTES,MIN_LIQUIDITY_USD',
+    'turns on the scanner, 10 wallets, 30-minute swaps, token check off');
   assert(first.text.includes('DISCOVERY=true\r\nMIN_TOKEN_AGE_MINUTES=0\r\nMIN_LIQUIDITY_USD=0\r\nCOPY_BUY_AMOUNT_SOL=0.05\r\nDRY_RUN=true\r\n') &&
-    first.text.includes('ACTIVE_WALLETS=6\r\n') && first.text.includes('WALLET_IDLE_MINUTES=30\r\n'),
+    first.text.includes('ACTIVE_WALLETS=10\r\n') && first.text.includes('MAX_TRACKED_WALLETS=10\r\n') && first.text.includes('WALLET_IDLE_MINUTES=30\r\n'),
     'money settings untouched, line endings kept');
   assert(applyRecommended(first.text).changes.length === 0, 'running it twice changes nothing');
-  const mine = 'ACTIVE_WALLETS=8\nWALLET_IDLE_MINUTES=20\nDISCOVERY=true\nMIN_TOKEN_AGE_MINUTES=0\nMIN_LIQUIDITY_USD=0\n';
+  const mine = 'ACTIVE_WALLETS=12\nMAX_TRACKED_WALLETS=12\nWALLET_IDLE_MINUTES=20\nDISCOVERY=true\nMIN_TOKEN_AGE_MINUTES=0\nMIN_LIQUIDITY_USD=0\n';
   assert(applyRecommended(mine).changes.length === 0, 'more wallets or faster swaps you chose yourself are kept');
   assert(applyRecommended(mine.replace('WALLET_IDLE_MINUTES=20', 'WALLET_IDLE_MINUTES=90')).changes.map((c) => c.key).join() === 'WALLET_IDLE_MINUTES' &&
     applyRecommended(mine.replace('WALLET_IDLE_MINUTES=20', 'WALLET_IDLE_MINUTES=0')).changes.map((c) => c.key).join() === 'WALLET_IDLE_MINUTES',
@@ -2294,6 +2295,135 @@ async function testWinnersFirst(realLog: typeof console.log) {
   realLog('✅ winners first: proven wallets get slots first, a benched winner returns as soon as it trades again, entry gap measured on the swap');
 }
 
+// Vetting: a found wallet is judged by its own recent trades before it gets a
+// slot — live runs copied wallets that hardly bought, or flipped coins faster
+// than a copy can follow.
+async function testWalletVetting(realLog: typeof console.log) {
+  const MIN = 60_000;
+  const NOW = Date.parse('2026-09-26T01:00:00Z');
+  const [A, B, C, D, E] = Array.from({ length: 5 }, () => Keypair.generate().publicKey.toBase58());
+  // A round trip: buy `sol` of a coin at `start` minutes ago, sell it all `hold` minutes later for sol*(1+ret).
+  const trip = (mint: string, startMinAgo: number, holdMin: number, sol: number, ret: number): HistoryTrade[] => [
+    { side: 'buy', mint, sol, tokenRaw: 1000n, at: NOW - startMinAgo * MIN },
+    { side: 'sell', mint, sol: sol * (1 + ret), tokenRaw: 1000n, at: NOW - (startMinAgo - holdMin) * MIN },
+  ];
+  const timesOf = (trades: HistoryTrade[], extra: number[] = []) => [...trades.map((t) => t.at), ...extra];
+  const judge = (trades: HistoryTrade[], extra: number[] = [], minBuy = 0.05) => judgeHistory(timesOf(trades, extra), trades, NOW, minBuy);
+
+  const good = [...trip(A, 240, 12, 0.5, 0.3), ...trip(B, 180, 20, 0.5, 0.2), ...trip(C, 120, 8, 0.5, -0.15), ...trip(D, 60, 15, 0.5, 0.25), ...trip(E, 30, 10, 0.5, 0.1)];
+  const ok = judge(good);
+  assert(ok.ok && ok.stats.roundTrips === 5 && ok.stats.wins === 4 && Math.abs(ok.stats.netSol - 0.35) < 1e-9 && ok.stats.medianHoldMinutes === 12,
+    `an active, profitable wallet that holds long enough passes (${ok.reason})`);
+  assert(/5 buys in 3\.7h · 5 trades 4W\/1L · net \+0\.350 SOL · holds ~12 min/.test(ok.reason), `with a one-line summary (${ok.reason})`);
+
+  const flipper = [...trip(A, 200, 1, 2, 0.05), ...trip(B, 150, 2, 2, 0.04), ...trip(C, 100, 1, 2, -0.1), ...trip(D, 50, 2, 2, 0.06)];
+  assert(/flips coins in ~1 min/.test(judge(flipper).reason) || /flips coins in ~2 min/.test(judge(flipper).reason), `a wallet that flips in 1–2 minutes is turned away (${judge(flipper).reason})`);
+
+  const quiet = [...trip(A, 20 * 60, 30, 0.5, 0.3), ...trip(B, 15 * 60, 30, 0.5, 0.3), ...trip(C, 8 * 60, 30, 0.5, 0.3), ...trip(D, 90, 30, 0.5, 0.3)];
+  assert(/too quiet: ~0\.2 buys an hour/.test(judge(quiet).reason), `4 buys in 20 hours is too quiet for a slot (${judge(quiet).reason})`);
+
+  const stale = [...trip(A, 9 * 60, 20, 0.5, 0.3), ...trip(B, 8 * 60, 20, 0.5, 0.3), ...trip(C, 7 * 60, 20, 0.5, 0.3), ...trip(D, 6 * 60, 20, 0.5, 0.3)];
+  assert(/hasn't bought for 6\.0h/.test(judge(stale, [NOW - 5 * MIN]).reason), `a wallet that stopped buying hours ago waits (${judge(stale, [NOW - 5 * MIN]).reason})`);
+
+  const dust = good.map((t) => ({ ...t, sol: t.sol! / 100 }));
+  assert(/buys are ~0\.005 SOL — under MIN_TRACKED_BUY_SOL \(0\.05\)/.test(judge(dust).reason), `buys too small to copy are turned away (${judge(dust).reason})`);
+
+  const machine = Array.from({ length: 40 }, (_, i) => NOW - i * 15_000); // 40 transactions in 10 minutes
+  assert(/machine speed/.test(judgeHistory(machine, [], NOW, 0.05).reason), 'a machine-speed wallet is turned away');
+
+  const loser = [...trip(A, 240, 12, 0.5, -0.3), ...trip(B, 180, 20, 0.5, 0.2), ...trip(C, 120, 8, 0.5, -0.15), ...trip(D, 60, 15, 0.5, -0.25)];
+  assert(/won only 1 of 4/.test(judge(loser).reason), `a wallet that loses most trades is turned away (${judge(loser).reason})`);
+  const bleeder = [...trip(A, 240, 12, 0.5, 0.05), ...trip(B, 180, 20, 0.5, 0.05), ...trip(C, 120, 8, 0.5, -0.6), ...trip(D, 60, 15, 0.5, -0.1)];
+  assert(/lost 0\.300 SOL over 4/.test(judge(bleeder).reason), `winning half but losing money overall is turned away (${judge(bleeder).reason})`);
+  assert(/only 2 finished trade/.test(judge([...trip(A, 100, 12, 0.5, 0.3), ...trip(B, 60, 12, 0.5, 0.3), { side: 'buy', mint: C, sol: 0.5, tokenRaw: 10n, at: NOW - 30 * MIN }, { side: 'buy', mint: D, sol: 0.5, tokenRaw: 10n, at: NOW - 20 * MIN }]).reason),
+    'too few finished trades to judge');
+
+  // A trip closes once 90%+ is sold; a sell of a coin bought before the sample is ignored.
+  const partial: HistoryTrade[] = [
+    { side: 'sell', mint: E, sol: 9, tokenRaw: 500n, at: NOW - 300 * MIN },
+    { side: 'buy', mint: A, sol: 1, tokenRaw: 100n, at: NOW - 200 * MIN },
+    { side: 'sell', mint: A, sol: 0.7, tokenRaw: 50n, at: NOW - 190 * MIN },
+    { side: 'sell', mint: A, sol: 0.6, tokenRaw: 45n, at: NOW - 180 * MIN },
+  ];
+  const p = judge(partial);
+  assert(p.stats.roundTrips === 1 && Math.abs(p.stats.netSol - 0.3) < 1e-9 && p.stats.medianHoldMinutes === 10, 'partial sells add up to one round trip; the pre-sample sell is ignored');
+
+  // Reading real transaction shapes: failed ones are never fetched; swaps are parsed.
+  const fetched: string[] = [];
+  const txs: Record<string, ParsedTransactionWithMeta> = {};
+  const sigs: { signature: string; blockTime: number; err: unknown }[] = [];
+  let k = 0;
+  for (const [mint, startMinAgo, ret] of [[A, 200, 0.3], [B, 150, 0.2], [C, 100, -0.1], [D, 50, 0.25]] as [string, number, number][]) {
+    const b = `b${k}`, s2 = `s${k++}`;
+    txs[b] = makeTx({ mint, solPre: 2e9, solPost: 1.5e9, tokenPre: 0n, tokenPost: 1000n });
+    txs[s2] = makeTx({ mint, solPre: 1e9, solPost: 1e9 + (0.5 * (1 + ret)) * 1e9, tokenPre: 1000n, tokenPost: 0n });
+    sigs.push({ signature: b, blockTime: Math.floor((NOW - startMinAgo * MIN) / 1000), err: null });
+    sigs.push({ signature: s2, blockTime: Math.floor((NOW - (startMinAgo - 12) * MIN) / 1000), err: null });
+  }
+  sigs.push({ signature: 'failed', blockTime: Math.floor((NOW - 10 * MIN) / 1000), err: { InstructionError: [0, 'x'] } });
+  const conn = {
+    async getSignaturesForAddress() { return sigs; },
+    async getParsedTransaction(sig: string) { fetched.push(sig); return txs[sig] ?? null; },
+  };
+  const v = await vetWallet(conn as any, new RateLimiter(0), TRACKED, 0.05, NOW);
+  assert(v.ok && v.stats.roundTrips === 4 && v.stats.wins === 3 && v.stats.buys === 4 && v.stats.transactions === 9, `vetWallet reads and judges real transaction shapes (${v.reason})`);
+  assert(!fetched.includes('failed') && fetched.length === 8, 'a failed transaction is never fetched (it changed nothing)');
+
+  // In the rotation: nominees are vetted before they're added…
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-vetting-'));
+  const store = new PositionStore(dir);
+  const [U, L1, L2, W, G, X] = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
+  const verdict = (ok: boolean, reason: string): VetVerdict => ({ ok, reason, stats: {} as any });
+  const verdicts: Record<string, VetVerdict> = {
+    [G]: verdict(true, '9 buys in 4.0h · 5 trades 4W/1L · net +0.300 SOL · holds ~12 min'),
+    [X]: verdict(false, 'flips coins in ~1 min — over before a copy lands'),
+    [L1]: verdict(false, 'too quiet: ~0.2 buys an hour'),
+    [L2]: verdict(true, '6 buys in 3.0h · 4 trades 3W/1L · net +0.100 SOL · holds ~9 min'),
+  };
+  const vetted: string[] = [];
+  const nominee = (w: string) => ({ wallet: w, pools: 1, medianReturnPct: 30, evidence: ['x'] });
+  const roster = new WalletRoster([U], 3, dir);
+  roster.addDiscovered([nominee(L1), nominee(W), nominee(L2)], NOW - 3 * 24 * 60 * MIN); // found before vetting existed
+  // W's copies made money: a proven winner, never vetted.
+  for (const back of [0.07, 0.06]) { const pos = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: W, dryRun: false, spentSol: 0.05, tokenAmountRaw: '1' }); store.recordSell(pos, 1n, back); }
+  const logs: string[] = [];
+  let nominees = [nominee(G), nominee(X)];
+  const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30, probationTrades: 0 }, (m) => logs.push(m), {
+    minBench: 99, cooldownMs: 60 * MIN,
+    run: async () => { const n = nominees; nominees = []; return n; },
+    vet: async (w) => { vetted.push(w); return verdicts[w]; },
+  });
+  const watching = new Set<string>();
+  const watch = { isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); } };
+  const trader = { setActiveWallets() {} };
+  rotation.startup(NOW).forEach((w) => watching.add(w));
+  assert(roster.active().join() === [W, U, L1].join(), 'starts with the winner, your own wallet, then the found ones');
+  await rotation.pendingDiscovery;
+  assert(vetted.join() === [G, X].join(), 'both nominees were checked');
+  assert(roster.all().includes(G) && !roster.all().includes(X) && roster.known(NOW).has(X), 'the one that passed is on the bench; the one that failed is remembered, not added');
+  assert(logs.some((l) => l.includes(`✅ ${shortAddress(G)} — 9 buys`)) && logs.some((l) => l.includes(`❌ ${shortAddress(X)} — flips coins`)), 'each verdict is shown');
+  assert(logs.some((l) => /🔎 Found 1 new wallet\(s\) to try: .*\.$/.test(l) && !l.includes('paper-tested')), 'no "paper-tested first" when there is no trial');
+  assert(!roster.known(NOW + 8 * 24 * 60 * MIN).has(X), 'a turned-away wallet is forgotten after a week — it may be worth another look by then');
+
+  // …and wallets found before vetting existed are checked one at a time, copied ones first.
+  vetted.length = 0;
+  await rotation.tick(NOW + MIN, watch, trader); await rotation.pendingVet;
+  assert(vetted.join() === L1, 'the copied wallet L1 is checked first (the winner and your own wallet never are)');
+  assert(!roster.all().includes(L1) && logs.some((l) => l.includes(`🧪 Removed ${shortAddress(L1)} from the copy list — too quiet`)), 'it failed, so it is off the roster');
+  await rotation.tick(NOW + 2 * MIN, watch, trader); await rotation.pendingVet;
+  assert(roster.active().join() === [W, U, L2].join() && watching.has(L2) && !watching.has(L1), 'its slot goes to the next wallet at once');
+  assert(vetted.join() === [L1, L2].join() && logs.some((l) => l.includes(`🧪 Checked ${shortAddress(L2)}: ✅ 6 buys`)), 'then L2 is checked, and passes');
+  await rotation.tick(NOW + 3 * MIN, watch, trader); await rotation.pendingVet;
+  assert(vetted.join() === [L1, L2].join(), 'nothing is checked twice (G was vetted when found)');
+  assert(!roster.needsVetting(L2, NOW + 2 * 24 * 60 * MIN) && roster.needsVetting(L2, NOW + 4 * 24 * 60 * MIN), 'a passed wallet is checked again after 3 days');
+  assert(!logs.some((l) => l.startsWith('🎓')), 'with no trial, nobody "passes a trial of 0 paper copies"');
+
+  const reloaded = new WalletRoster([U], 3, dir);
+  reloaded.load();
+  assert(reloaded.known(NOW).has(L1) && !reloaded.needsVetting(G, NOW + MIN), 'verdicts survive a restart');
+  realLog('✅ wallet vetting: found wallets are judged by their own trades — quiet, flippers, dust, machines and losers are turned away');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2306,6 +2436,7 @@ async function main() {
   await testStaleBenchAndTrial(console.log);
   await testRentReclaim(console.log);
   await testWinnersFirst(console.log);
+  await testWalletVetting(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

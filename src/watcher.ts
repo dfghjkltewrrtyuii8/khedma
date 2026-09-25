@@ -408,7 +408,8 @@ export function shortAddress(address: string): string {
 export async function analyzeSwap(
   tx: ParsedTransactionWithMeta,
   signature: string,
-  walletAddress: string
+  walletAddress: string,
+  quiet = false // reading history (vetting): no per-transaction notes
 ): Promise<SwapEvent | null> {
   const meta = tx.meta!;
 
@@ -457,7 +458,7 @@ export async function analyzeSwap(
   }
   if (changedTokens.length === 0) return null;
   if (changedTokens.length > 1) {
-    console.log(`   (skipping tx ${signature}: multiple tokens changed at once — too complex to mirror)`);
+    if (!quiet) console.log(`   (skipping tx ${signature}: multiple tokens changed at once — too complex to mirror)`);
     return null;
   }
 

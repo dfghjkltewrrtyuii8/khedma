@@ -31,6 +31,7 @@ import { Position } from './types';
 import { Candidate } from './discovery';
 import { walletRecords } from './walletGate';
 import { shortAddress } from './watcher';
+import { VetVerdict } from './walletVetting';
 
 export type RotationConfig = Pick<
   Config,
@@ -47,7 +48,15 @@ interface RosterFile {
   idled: Record<string, string>; // wallet -> when it was last benched for being quiet
   // Wallets the bot found itself (DISCOVERY=true), oldest first.
   discovered: { wallet: string; at: string; why: string }[];
+  // Found wallets that vetting turned away (their own recent trades said no),
+  // remembered for REJECT_MEMORY_MS so discovery doesn't suggest them again.
+  rejected: Record<string, { reason: string; at: string }>;
+  // Found wallets that passed vetting, and when (re-checked after REVET_MS).
+  vetted: Record<string, string>;
 }
+
+const REJECT_MEMORY_MS = 7 * 24 * 3_600_000;
+const REVET_MS = 3 * 24 * 3_600_000;
 
 // A wallet is a proven winner once at least this many of its copies have
 // closed, with a net profit across them.
@@ -128,7 +137,7 @@ export function dropReason(positions: readonly Position[], wallet: string, cfg: 
 // stored: your .env order, with dropped wallets removed and recently-benched
 // ones moved to the back. Editing the .env just works.
 export class WalletRoster {
-  private state: RosterFile = { dropped: {}, idled: {}, discovered: [] };
+  private state: RosterFile = { dropped: {}, idled: {}, discovered: [], rejected: {}, vetted: {} };
   private winners: () => Map<string, number> = () => new Map();
   private readonly dataDir: string;
   private readonly file: string;
@@ -145,7 +154,13 @@ export class WalletRoster {
   load(): void {
     if (!fs.existsSync(this.file)) return;
     const parsed = JSON.parse(fs.readFileSync(this.file, 'utf8')) as Partial<RosterFile>;
-    this.state = { dropped: parsed.dropped ?? {}, idled: parsed.idled ?? {}, discovered: parsed.discovered ?? [] };
+    this.state = {
+      dropped: parsed.dropped ?? {},
+      idled: parsed.idled ?? {},
+      discovered: parsed.discovered ?? [],
+      rejected: parsed.rejected ?? {},
+      vetted: parsed.vetted ?? {},
+    };
   }
 
   private save(): void {
@@ -171,9 +186,40 @@ export class WalletRoster {
   }
 
   // Everything the bot already knows about — so discovery never re-suggests a
-  // wallet that's listed, on the bench, or was dropped for losing.
-  known(): Set<string> {
-    return new Set([...this.all(), ...Object.keys(this.state.dropped)]);
+  // wallet that's listed, on the bench, dropped for losing, or recently
+  // turned away by vetting.
+  known(now: number = Date.now()): Set<string> {
+    const rejected = Object.keys(this.state.rejected).filter((w) => now - Date.parse(this.state.rejected[w].at) < REJECT_MEMORY_MS);
+    return new Set([...this.all(), ...Object.keys(this.state.dropped), ...rejected]);
+  }
+
+  // A found wallet that failed vetting: off the roster (it stops being copied;
+  // the rotation keeps watching it while a copied position is open).
+  reject(wallet: string, reason: string, now: number): void {
+    this.state.discovered = this.state.discovered.filter((d) => d.wallet !== wallet);
+    delete this.state.vetted[wallet];
+    delete this.state.idled[wallet];
+    this.state.rejected[wallet] = { reason, at: new Date(now).toISOString() };
+    for (const w of Object.keys(this.state.rejected)) {
+      if (now - Date.parse(this.state.rejected[w].at) >= REJECT_MEMORY_MS) delete this.state.rejected[w];
+    }
+    this.save();
+  }
+
+  rejectedCount(now: number = Date.now()): number {
+    return Object.values(this.state.rejected).filter((r) => now - Date.parse(r.at) < REJECT_MEMORY_MS).length;
+  }
+
+  markVetted(wallet: string, now: number): void {
+    this.state.vetted[wallet] = new Date(now).toISOString();
+    this.save();
+  }
+
+  // A found wallet not vetted in the last REVET_MS (or ever).
+  needsVetting(wallet: string, now: number): boolean {
+    if (!this.isDiscovered(wallet)) return false; // your own picks are yours to judge
+    const at = this.state.vetted[wallet];
+    return !at || now - Date.parse(at) >= REVET_MS;
   }
 
   // Add newly discovered wallets to the back of the bench. Returns the ones added.
@@ -280,6 +326,10 @@ export interface DiscoveryHook {
   run(exclude: Set<string>): Promise<Candidate[]>;
   minBench: number; // run when fewer than this many wallets are waiting
   cooldownMs: number; // and not more often than this
+  // Judge a wallet by its own recent trades (walletVetting.ts). When given,
+  // only wallets that pass get onto the roster, and ones already on it are
+  // re-checked one at a time.
+  vet?(wallet: string): Promise<VetVerdict>;
 }
 
 // A discovered wallet trades on PAPER until it has proven itself: this many
@@ -306,6 +356,8 @@ export class Rotation {
   private readonly winnerSeen = new Map<string, number>();
   private readonly winnerChecks = new Set<Promise<void>>();
   private readonly recalled = new Set<string>(); // announced as back this tick
+  // The one roster check in progress, if any — exposed so tests can await it.
+  pendingVet: Promise<void> | null = null;
 
   constructor(
     private readonly roster: WalletRoster,
@@ -399,6 +451,7 @@ export class Rotation {
 
   // Say so once when a discovered wallet passes its trial.
   private announceGraduates(active: string[], quiet: boolean): void {
+    if (this.trialLength() <= 0) return; // no trial, nothing to pass
     for (const w of active) {
       if (!this.roster.isDiscovered(w) || this.isPaperOnly(w) || this.graduated.has(w)) continue;
       this.graduated.add(w);
@@ -428,19 +481,78 @@ export class Rotation {
     if (now - this.lastDiscoveryAt < this.discovery.cooldownMs) return;
     this.lastDiscoveryAt = now;
     this.log('🔎 Not enough active wallets waiting — looking for new ones to try (a few minutes; trading carries on)…');
-    this.pendingDiscovery = this.discovery
-      .run(this.roster.known())
-      .then((candidates) => {
-        const added = this.roster.addDiscovered(candidates, Date.now());
+    const discovery = this.discovery;
+    this.pendingDiscovery = discovery
+      .run(this.roster.known(now))
+      .then(async (candidates) => {
+        const passed = discovery.vet ? await this.vetCandidates(candidates, discovery.vet) : candidates;
+        const added = this.roster.addDiscovered(passed, Date.now());
+        if (discovery.vet) for (const w of added) this.roster.markVetted(w, Date.now());
         this.log(
           added.length
-            ? `🔎 Found ${added.length} new wallet(s) to try: ${added.map(shortAddress).join(', ')} — paper-tested first.`
+            ? `🔎 Found ${added.length} new wallet(s) to try: ${added.map(shortAddress).join(', ')}` +
+                (this.trialLength() > 0 ? ' — paper-tested first.' : '.')
             : '🔎 No new wallets passed the filter this time; will look again later.'
         );
       })
       .catch((error) => this.log(`🔎 Discovery failed: ${(error as Error).message}`))
       .finally(() => {
         this.pendingDiscovery = null;
+      });
+  }
+
+  // Check each nominee's own recent trades; only the ones that pass are kept.
+  private async vetCandidates(candidates: Candidate[], vet: (wallet: string) => Promise<VetVerdict>): Promise<Candidate[]> {
+    if (candidates.length === 0) return [];
+    this.log(`🧪 Checking ${candidates.length} nominee(s) against their own recent trades…`);
+    const passed: Candidate[] = [];
+    for (const c of candidates) {
+      let verdict: VetVerdict;
+      try {
+        verdict = await vet(c.wallet);
+      } catch (error) {
+        this.log(`   ⚠️ ${shortAddress(c.wallet)}: couldn't read its trades (${(error as Error).message.slice(0, 80)}) — skipped for now`);
+        continue;
+      }
+      if (verdict.ok) {
+        passed.push(c);
+        this.log(`   ✅ ${shortAddress(c.wallet)} — ${verdict.reason}`);
+      } else {
+        this.roster.reject(c.wallet, verdict.reason, Date.now());
+        this.log(`   ❌ ${shortAddress(c.wallet)} — ${verdict.reason}`);
+      }
+    }
+    return passed;
+  }
+
+  // Wallets found before vetting existed (or vetted days ago) are checked one
+  // at a time, copied ones first. One that fails is taken off the roster and
+  // its slot goes to the next wallet. Proven winners are left alone: the
+  // bot's own copies of them are better evidence than any history.
+  private maybeVetRoster(now: number): void {
+    const vet = this.discovery?.vet;
+    if (!vet || this.pendingVet || this.pendingDiscovery) return;
+    const winners = provenWinners(this.store.all());
+    const wallet = [...this.roster.active(), ...this.roster.bench()].find(
+      (w) => !winners.has(w) && this.roster.needsVetting(w, now)
+    );
+    if (!wallet) return;
+    this.pendingVet = vet(wallet)
+      .then((verdict) => {
+        // Changed meanwhile: dropped, or its copies made it a proven winner.
+        if (!this.roster.needsVetting(wallet, Date.now()) || provenWinners(this.store.all()).has(wallet)) return;
+        if (verdict.ok) {
+          this.roster.markVetted(wallet, Date.now());
+          this.log(`🧪 Checked ${shortAddress(wallet)}: ✅ ${verdict.reason}`);
+        } else {
+          const copying = this.roster.active().includes(wallet);
+          this.roster.reject(wallet, verdict.reason, Date.now());
+          this.log(`🧪 Removed ${shortAddress(wallet)}${copying ? ' from the copy list' : ' from the bench'} — ${verdict.reason}.`);
+        }
+      })
+      .catch(() => {}) // tried again at a later tick
+      .finally(() => {
+        this.pendingVet = null;
       });
   }
 
@@ -575,6 +687,7 @@ export class Rotation {
     trader.setActiveWallets(active);
     this.maybeDiscover(now, watch);
     this.checkBenchedWinners(now, watch);
+    this.maybeVetRoster(now);
   }
 
   describe(): string {
@@ -616,6 +729,8 @@ export function printRoster(roster: WalletRoster, positions?: readonly Position[
   for (const d of roster.dropped()) {
     console.log(`  Dropped ${shortAddress(d.wallet)} — ${d.reason} (${new Date(d.at).toLocaleString()})`);
   }
+  const rejected = roster.rejectedCount();
+  if (rejected > 0) console.log(`  ${rejected} found wallet(s) turned away by vetting in the last 7 days (their own recent trades didn't qualify)`);
   if (winners.size > 0) {
     console.log(`  ⭐ proven winner (${PROVEN_MIN_TRADES}+ closed copies, net profit) — first claim on a slot; brought back as soon as it trades again`);
   }

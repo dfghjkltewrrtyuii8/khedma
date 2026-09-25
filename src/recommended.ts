@@ -1,5 +1,5 @@
 // `npm run recommended`: puts the settings that keep the bot busy into .env —
-// the wallet scanner on, 6 wallets at a time, quiet ones swapped after 30
+// the wallet scanner on, 10 wallets at a time, quiet ones swapped after 30
 // minutes, no token check — the
 // same way on a Mac and on Windows. Every other line of .env stays exactly as
 // it was, and nothing that decides how much money is used is touched.

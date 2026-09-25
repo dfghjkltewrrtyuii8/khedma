@@ -118,7 +118,7 @@ for you. Have them ready:
 | Your Phantom **private key** or **recovery phrase** | Phantom → Settings → Manage Accounts → your account → Show Private Key (or Show Recovery Phrase). Typing is hidden. The wizard shows the wallet **address** it derives so you can check it matches Phantom before it's saved. |
 | Helius **API key** | Free account at <https://dashboard.helius.dev> → copy the API key. Paste the key alone or the full RPC URL. |
 | Jupiter **API key** | Free key at <https://portal.jup.ag>. **One key per bot** — a key is limited to 1 request/second, so two bots on one key starve each other. |
-| **Wallets to copy** | Up to 6 addresses, separated by commas or spaces. |
+| **Wallets to copy** | Up to 10 addresses, separated by commas or spaces. |
 
 Everything else starts at safe defaults, including `DRY_RUN=true`. Re-running
 the wizard keeps your current values (just press Return) and backs up the old
@@ -140,7 +140,7 @@ wallet quiet for days has nothing to copy). Every line is ✅, ⚠️ or ❌ wit
 fix next to it. Fix the ❌ lines, run it again, then start the bot.
 
 For a paper test that actually trades, switch on the recommended settings
-(the wallet scanner, 6 wallets at a time, quiet ones swapped after 30
+(the wallet scanner, 10 wallets at a time, quiet ones swapped after 30
 minutes, no token check). Same command on
 Mac and Windows; it leaves every money setting alone:
 
@@ -171,7 +171,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `MIN_LIQUIDITY_USD` | Don't copy a token with less than this much liquidity in its deepest pool. Default `20000`. |
 | `WALLET_MAX_CONSECUTIVE_LOSSES` | Mute a tracked wallet after this many copied losses in a row. Default `3`; `0` = never mute. |
 | `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
-| `MAX_TRACKED_WALLETS` | The bot refuses to start with more tracked wallets than this. Default `6`. |
+| `MAX_TRACKED_WALLETS` | The most wallets copied at once; the bot refuses to start with more tracked wallets than this. Default `10`. |
 | `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
 | `ACTIVE_WALLETS` | Rotation: how many wallets to copy at once; empty slots fill from the bench and discovery. Default `4`. |
 | `WALLET_DROP_AFTER_TRADES` | Rotation: drop a wallet once this many copies have closed at a net loss. Default `6`; `0` = only the losing streak. |
@@ -611,7 +611,7 @@ hours on wallets that aren't working.
 A fixed list goes stale: wallets that made money last month stop, and good
 traders move to new addresses once people copy them. With `DISCOVERY=true`
 the bot finds new wallets by itself whenever the bench runs low (fewer than
-3 waiting, at most every 30 minutes, in the background — trading carries on).
+3 waiting, at most every 45 minutes, in the background — trading carries on).
 
 **Where it looks — deliberately not a leaderboard.** Leaderboards are
 dominated by launch snipers, whose whole edge is being first — exactly what a
@@ -624,9 +624,33 @@ budget), reads their recent trades, and keeps wallets that:
 - did it on **two or more** trending tokens (or +20% on one),
 - aren't bots (20+ trades in one window) and aren't dust.
 
-These are deliberately loose. Discovery only nominates; the paper record
-below is what decides, so it's better to let more wallets try out than to
-turn good ones away on a guess.
+These are deliberately loose — discovery only nominates.
+
+**Then each nominee is vetted on its own trades** (🧪). A profitable round
+trip or two on trending tokens can be luck, and live runs showed what it
+missed: most picks hardly bought anything, so their slots sat idle, and some
+flipped coins in and out within a couple of minutes — faster than a copy can
+follow (their +3%, the copy −15%). So the bot reads each nominee's last 40
+transactions from Helius (about 40 lookups each) and keeps it only if it:
+
+- buys **at least once an hour** on average, and has bought in the **last 3 hours**,
+- makes buys **at least `MIN_TRACKED_BUY_SOL`** in size (smaller ones are skipped as dust, so the slot would do nothing),
+- **holds for 3+ minutes** typically (quicker flips are over before a copy lands),
+- **won at least half** of 3+ finished trades, and **made money** over them,
+- isn't a machine (60+ transactions an hour).
+
+Each verdict is printed (`✅ … 9 buys in 4.0h · 5 trades 4W/1L · net +0.300 SOL
+· holds ~12 min` or `❌ … flips coins in ~1 min — over before a copy lands`). A
+turned-away wallet isn't suggested again for a week. Wallets found before
+vetting existed are checked the same way, one at a time, copied ones first —
+one that fails leaves the roster and its slot goes to the next wallet
+(`🧪 Removed …`). Passed wallets are re-checked every 3 days. Proven winners
+(⭐) and wallets you listed yourself are never vetted: your own copies of a
+winner are better evidence than its history, and your picks are yours.
+
+Past results don't promise future ones; vetting only turns away wallets that
+clearly can't work for a copy bot. What your copies actually earn still
+decides after that.
 
 **Discovery nominates; the paper record decides.** The free feed only covers
 each token's recent trades, so "profitable" means "over the last few hours" —
@@ -710,11 +734,12 @@ wallet and **no fake P&L is recorded**. Stuck positions:
 | Summary reports `RPC rate-limit retries` | You're exceeding your Helius plan. Lower `RPC_REQUESTS_PER_SECOND` or watch fewer wallets — every retry is a delayed or dropped trade. |
 | Summary reports transactions `skipped as stale` | The watcher fell behind and discarded trades too old to copy (>45s). Same fix as above. |
 | `no route for …` when buying | Token too new/illiquid for Jupiter — the bot just skips it. |
-| `Config error: TRACKED_WALLETS has N addresses` | More wallets than `MAX_TRACKED_WALLETS` (default 6). Keep your best few — past that the watcher drops trades and nothing can be judged. |
+| `Config error: TRACKED_WALLETS has N addresses` | More wallets than `MAX_TRACKED_WALLETS` (default 10). Keep your best few — past that the watcher drops trades and nothing can be judged. |
+| `⚠️ Trades are being missed — too much to watch` | The wallets being copied make more transactions than the free Helius plan can look up in time. Lower `ACTIVE_WALLETS` in `.env` (e.g. to 6) and restart. |
 | Everything is `skip: token is … old` or `not listed on any DEX yet` | Working as intended — those are the trades that lost before. Lower `MIN_TOKEN_AGE_MINUTES` / `MIN_LIQUIDITY_USD` only knowing why they're there. |
 | `token lookup failed` on every buy | Dexscreener unreachable (network/firewall). The bot skips rather than buys blind. Test it: `curl -s https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112 \| head -c 200` |
 | The P&L sheet shows a profit but the wallet went down | Rent: each new coin locks ~0.002 SOL in a token account (~7% of a 0.03 SOL trade), and versions before 1.10 neither counted it nor got it back. Run `npm run reclaim` (bot stopped) to close the empty accounts and get that SOL back; from 1.10 the bot does it after every sale and the sheet counts real costs. |
-| Bot runs but never buys (`0 transactions examined`) | Read the `Last on-chain activity:` line under each `📊 Watcher` summary (or send `/status` on Telegram). Wallets that last did something hours ago are simply **quiet** — nothing to copy. Fix: `npm run recommended` (wallet scanner on, 6 wallets at a time, quiet ones swapped after 30 minutes, token check off), then restart. If a wallet shows recent activity but nothing was examined, the live feed broke — the bot notices within 5 minutes (`📡 The live feed missed …`) and reconnects it by itself. |
+| Bot runs but never buys (`0 transactions examined`) | Read the `Last on-chain activity:` line under each `📊 Watcher` summary (or send `/status` on Telegram). Wallets that last did something hours ago are simply **quiet** — nothing to copy. Fix: `npm run recommended` (wallet scanner on, 10 wallets at a time, quiet ones swapped after 30 minutes, token check off), then restart. If a wallet shows recent activity but nothing was examined, the live feed broke — the bot notices within 5 minutes (`📡 The live feed missed …`) and reconnects it by itself. |
 | Every copy is `skip: token is … old` | The token check is on. For paper testing, `npm run recommended` turns it off. |
 | `🚨 … transaction format … can't read` | Solana introduced a newer transaction format than this build understands, so trades in it are **missed** — the bot will look idle while wallets are trading. Update the bot. (This happened once already: version 1 arrived in 2026 and needed `@solana/web3.js` 1.99.) |
 | `npm run discover` finds nothing | Read its report line: `0 trending pools` or a ⚠️ line means GeckoTerminal couldn't be reached or read (network, or they changed their format — send the output to whoever maintains the bot). Pools and trades read but `0 candidates` just means nobody passed the filter this hour; try again later. |

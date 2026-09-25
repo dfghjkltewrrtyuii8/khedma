@@ -18,6 +18,7 @@ import { Trader } from './trader';
 import { loadKeypair } from './wallet';
 import { walletMute } from './walletGate';
 import { discoverWallets, printDiscoveryReport } from './discovery';
+import { vetWallet } from './walletVetting';
 import { copySlots, paperHints, Rotation, rotationOn, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 import { getSolPriceUsd } from './solPrice';
@@ -172,6 +173,10 @@ async function main(): Promise<void> {
     if (mute.muted) console.log(`🔇 ${shortAddress(wallet.toBase58())} is muted — ${mute.reason}`);
   }
 
+  // Paces Helius RPC reads (a separate budget from Jupiter's): the watcher's
+  // lookups, and vetting wallets by their own recent trades.
+  const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
+
   // Rotation: decide which wallets get a slot before watching anything.
   const rotating = rotationOn(config);
   const slots = rotating ? copySlots(config) : config.trackedWallets.length;
@@ -203,12 +208,13 @@ async function main(): Promise<void> {
       config.discovery
         ? {
             minBench: 3,
-            cooldownMs: 30 * 60_000,
+            cooldownMs: 45 * 60_000, // each run also vets up to 8 nominees (~40 Helius lookups each)
             run: async (exclude) => {
               const report = await discoverWallets(exclude);
               printDiscoveryReport(report);
               return report.candidates;
             },
+            vet: (wallet) => vetWallet(connection, rpcLimiter, wallet, config.minTrackedBuySol),
           }
         : null
     );
@@ -240,8 +246,6 @@ async function main(): Promise<void> {
   store.startRun(startedAt);
   const runLabel = `this run (started ${new Date(startedAt).toTimeString().slice(0, 5)})`;
   let lastSwap: { at: number; wallet: string } | null = null;
-  // Separate budget from Jupiter's: this one paces Helius RPC reads.
-  const rpcLimiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
   const watcher = new WalletWatcher(
     connection,
     toWatch.map((w) => new PublicKey(w)),
@@ -513,7 +517,10 @@ function reportWatcherHealth(watcher: WalletWatcher, rotating: boolean): void {
   const activity = watcher.watchedWallets().map((wallet) => ({ wallet, at: watcher.lastActivityOf(wallet) }));
   console.log(
     `\n📊 Watcher: ${s.processed} transactions examined, ${s.queued} waiting` +
-      (lost > 0 ? `, ${lost} skipped as stale (${s.droppedStale} timed out, ${s.droppedOverflow} overflowed)` : '') +
+      (lost > 0
+        ? `, ${lost} skipped as stale (${s.droppedStale} timed out, ${s.droppedOverflow} overflowed)` +
+          '\n   ⚠️ Trades are being missed — too much to watch for the free Helius plan. Lower ACTIVE_WALLETS in .env (e.g. to 6).'
+        : '') +
       (activity.length > 0 ? `\n   Last on-chain activity: ${describeActivity(activity, now)}` : '') +
       (allQuiet(activity, now) ? `\n   ${quietHint(rotating)}` : '') +
       (s.missedByFeed > 0 ? `\n   📡 The live feed missed ${s.missedByFeed} transaction(s) so far; each time the wallet was reconnected.` : '') +

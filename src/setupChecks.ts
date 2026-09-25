@@ -121,14 +121,15 @@ export function upsertEnv(text: string, updates: Record<string, string>, heading
 }
 
 // The settings that keep the bot busy enough to judge: the wallet scanner on,
-// 6 wallets at a time (the most the free Helius plan follows reliably), quiet
+// 10 wallets at a time (machine-speed wallets are dropped and found ones vetted), quiet
 // ones swapped after 30 minutes, and no token check (the wallets worth
 // copying mostly buy coins younger than 30 minutes, so the check skipped
 // nearly every copy). Money settings — DRY_RUN, buy size, position caps — are
 // never touched here.
 export const RECOMMENDED_SETTINGS: Record<string, { value: string; why: string }> = {
   DISCOVERY: { value: 'true', why: 'wallet scanner on — finds wallets that are trading now and swaps out quiet ones' },
-  ACTIVE_WALLETS: { value: '6', why: 'copies 6 wallets at a time (the most the free Helius plan follows reliably)' },
+  ACTIVE_WALLETS: { value: '10', why: 'copies 10 wallets at a time (machine-speed wallets are dropped and new ones vetted, so the watcher keeps up)' },
+  MAX_TRACKED_WALLETS: { value: '10', why: 'allows those 10 (it was 6)' },
   WALLET_IDLE_MINUTES: { value: '30', why: 'swaps out a wallet that has gone 30 minutes without buying, instead of 90' },
   MIN_TOKEN_AGE_MINUTES: { value: '0', why: 'copies new coins too (the token check skipped almost every copy)' },
   MIN_LIQUIDITY_USD: { value: '0', why: 'copies smaller coins too' },
@@ -142,8 +143,8 @@ export interface SettingChange {
 }
 
 // Pure: .env text with the recommended settings applied, and what changed.
-// A higher ACTIVE_WALLETS or a shorter WALLET_IDLE_MINUTES you chose yourself
-// is kept.
+// A higher ACTIVE_WALLETS / MAX_TRACKED_WALLETS or a shorter
+// WALLET_IDLE_MINUTES you chose yourself is kept.
 export function applyRecommended(text: string): { text: string; changes: SettingChange[] } {
   const current = dotenv.parse(text);
   const updates: Record<string, string> = {};
@@ -151,7 +152,7 @@ export function applyRecommended(text: string): { text: string; changes: Setting
   for (const [key, { value, why }] of Object.entries(RECOMMENDED_SETTINGS)) {
     const from = current[key] !== undefined ? current[key].trim() : null;
     if (from === value) continue;
-    if (key === 'ACTIVE_WALLETS' && from !== null && Number(from) >= Number(value)) continue;
+    if ((key === 'ACTIVE_WALLETS' || key === 'MAX_TRACKED_WALLETS') && from !== null && Number(from) >= Number(value)) continue;
     if (key === 'WALLET_IDLE_MINUTES' && from !== null && Number(from) > 0 && Number(from) <= Number(value)) continue;
     updates[key] = value;
     changes.push({ key, from, to: value, why });
@@ -189,7 +190,7 @@ export const ENV_DEFAULTS: Record<string, string> = {
   MIN_LIQUIDITY_USD: '20000',
   WALLET_MAX_CONSECUTIVE_LOSSES: '3',
   WALLET_MUTE_HOURS: '24',
-  MAX_TRACKED_WALLETS: '6',
+  MAX_TRACKED_WALLETS: '10',
   BENCH_WALLETS: '',
   ACTIVE_WALLETS: '4',
   WALLET_DROP_AFTER_TRADES: '6',
