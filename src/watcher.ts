@@ -207,6 +207,19 @@ export class WalletWatcher {
     return missed;
   }
 
+  // When a wallet — watched or not — last did anything on-chain: one cheap
+  // lookup. Rotation uses it to notice a benched winner trading again.
+  async probeActivity(address: string): Promise<number | undefined> {
+    if (this.stopped) return undefined;
+    const signatures = (await this.rpcLimiter.schedule('getSignaturesForAddress', () =>
+      this.connection.getSignaturesForAddress(new PublicKey(address), { limit: 1 }, 'confirmed')
+    )) as SignatureInfo[];
+    const blockTime = signatures[0]?.blockTime;
+    if (!blockTime) return undefined;
+    this.noteActivity(address, blockTime * 1000);
+    return blockTime * 1000;
+  }
+
   private noteActivity(address: string, at: number): void {
     if (at > (this.lastActivity.get(address) ?? 0)) this.lastActivity.set(address, at);
   }

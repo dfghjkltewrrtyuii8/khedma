@@ -12,6 +12,11 @@
 //     WALLET_IDLE_MINUTES while the bot was running. Quiet isn't bad — it may
 //     just trade while you're asleep — so it gets another turn later. Over a
 //     few sessions this naturally favours wallets that trade during YOUR hours.
+//   - PROVEN WINNERS come first: a wallet whose copies have made money (at
+//     least PROVEN_MIN_TRADES closed, net profit) gets a slot ahead of untried
+//     ones. When one goes quiet it is benched like any other, but the bot
+//     keeps an eye on it and brings it straight back the moment it trades
+//     again — instead of leaving the best wallet at the back of a long line.
 //
 // A wallet that loses its slot stops being COPIED immediately, but stays
 // WATCHED until every position copied from it has closed, so its sells are
@@ -42,6 +47,25 @@ interface RosterFile {
   idled: Record<string, string>; // wallet -> when it was last benched for being quiet
   // Wallets the bot found itself (DISCOVERY=true), oldest first.
   discovered: { wallet: string; at: string; why: string }[];
+}
+
+// A wallet is a proven winner once at least this many of its copies have
+// closed, with a net profit across them.
+export const PROVEN_MIN_TRADES = 2;
+
+// How often a benched winner is checked for trading again (one cheap RPC
+// lookup each), and how recent that trading must be to bring it back — so an
+// old transaction can't pull it in only to be benched again minutes later.
+const WINNER_CHECK_MS = 5 * 60_000;
+const WINNER_RECENT_MS = 2 * WINNER_CHECK_MS;
+
+// Pure: the proven winners and their net SOL — paper and real copies both count.
+export function provenWinners(positions: readonly Position[]): Map<string, number> {
+  const winners = new Map<string, number>();
+  for (const r of walletRecords(positions).values()) {
+    if (r.closed >= PROVEN_MIN_TRADES && r.netSol > 0) winners.set(r.wallet, r.netSol);
+  }
+  return winners;
 }
 
 // How many discovered wallets to remember. Past this, the oldest that isn't
@@ -105,6 +129,7 @@ export function dropReason(positions: readonly Position[], wallet: string, cfg: 
 // ones moved to the back. Editing the .env just works.
 export class WalletRoster {
   private state: RosterFile = { dropped: {}, idled: {}, discovered: [] };
+  private winners: () => Map<string, number> = () => new Map();
   private readonly dataDir: string;
   private readonly file: string;
 
@@ -171,15 +196,26 @@ export class WalletRoster {
     return added;
   }
 
+  // Where proven winners come from (see provenWinners); without it, nobody
+  // is ranked and the order is your .env order.
+  rankBy(winners: () => Map<string, number>): void {
+    this.winners = winners;
+  }
+
+  // Wallets that went quiet wait at the back, longest-waiting first. Everyone
+  // else: proven winners first (best first), then your .env order.
   private ordered(): string[] {
     const pool = this.all();
     const index = new Map(pool.map((w, i) => [w, i]));
+    const winners = this.winners();
     const idledAt = (w: string) => (this.state.idled[w] ? Date.parse(this.state.idled[w]) : -Infinity);
     return pool
       .filter((w) => !this.state.dropped[w])
       .sort((a, b) => {
         const byIdle = idledAt(a) - idledAt(b); // NaN when neither was ever benched
-        return (Number.isNaN(byIdle) ? 0 : byIdle) || index.get(a)! - index.get(b)!;
+        if (!Number.isNaN(byIdle) && byIdle !== 0) return byIdle;
+        const byWinnings = (winners.get(b) ?? 0) - (winners.get(a) ?? 0);
+        return byWinnings || index.get(a)! - index.get(b)!;
       });
   }
 
@@ -208,6 +244,18 @@ export class WalletRoster {
     this.state.idled[wallet] = new Date(now).toISOString();
     this.save();
   }
+
+  // When it was benched for going quiet (epoch ms), if it's waiting for that.
+  idledAt(wallet: string): number | undefined {
+    const at = this.state.idled[wallet];
+    return at ? Date.parse(at) : undefined;
+  }
+
+  // No longer waiting at the back: it takes its place by rank again.
+  release(wallet: string): void {
+    delete this.state.idled[wallet];
+    this.save();
+  }
 }
 
 // What the rotation needs from the watcher and the trader — interfaces, so
@@ -220,6 +268,8 @@ export interface WatchControl {
   lastActivityOf?(wallet: string): number | undefined;
   // How many transactions it made in the last 10 minutes.
   recentTxCount?(wallet: string, now: number): number;
+  // When a wallet that ISN'T watched last did anything on-chain (epoch ms).
+  probeActivity?(wallet: string): Promise<number | undefined>;
 }
 export interface BuyControl {
   setActiveWallets(wallets: string[] | null): void;
@@ -250,6 +300,12 @@ export class Rotation {
   private lastActive: string[] = [];
   private readonly robots = new Set<string>(); // dropped this run for trading like a machine
   private readonly graduated = new Set<string>(); // discovered wallets already announced as past their trial
+  // Benched winners: when each was last checked, and the newest on-chain
+  // activity those checks found.
+  private readonly winnerChecked = new Map<string, number>();
+  private readonly winnerSeen = new Map<string, number>();
+  private readonly winnerChecks = new Set<Promise<void>>();
+  private readonly recalled = new Set<string>(); // announced as back this tick
 
   constructor(
     private readonly roster: WalletRoster,
@@ -257,7 +313,71 @@ export class Rotation {
     private readonly cfg: RotationConfig,
     private readonly log: (message: string) => void = console.log,
     private readonly discovery: DiscoveryHook | null = null
-  ) {}
+  ) {
+    roster.rankBy(() => provenWinners(store.all()));
+  }
+
+  // Waits for winner checks in flight (tests).
+  async settleWinnerChecks(): Promise<void> {
+    await Promise.all([...this.winnerChecks]);
+  }
+
+  // Start a check on each benched winner that's due one. Never blocks: what a
+  // check finds is acted on at the next tick.
+  private checkBenchedWinners(now: number, watch: WatchControl): void {
+    if (!watch.probeActivity) return;
+    const winners = provenWinners(this.store.all());
+    for (const w of this.roster.bench()) {
+      if (!winners.has(w) || this.roster.idledAt(w) === undefined) continue;
+      if (now - (this.winnerChecked.get(w) ?? -Infinity) < WINNER_CHECK_MS) continue;
+      this.winnerChecked.set(w, now);
+      const check: Promise<void> = watch
+        .probeActivity(w)
+        .then((at) => {
+          if (at !== undefined && at > (this.winnerSeen.get(w) ?? 0)) this.winnerSeen.set(w, at);
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.winnerChecks.delete(check);
+        });
+      this.winnerChecks.add(check);
+    }
+  }
+
+  // A benched winner seen trading since it was benched goes straight back to
+  // the copy list; the lowest-ranked wallet there makes room.
+  private recallWinners(now: number): void {
+    const winners = provenWinners(this.store.all());
+    const before = this.roster.active();
+    const back: string[] = [];
+    for (const w of this.roster.bench()) {
+      const benchedAt = this.roster.idledAt(w);
+      const seen = this.winnerSeen.get(w);
+      if (!winners.has(w) || benchedAt === undefined || seen === undefined) continue;
+      if (seen <= benchedAt || now - seen > WINNER_RECENT_MS) continue;
+      this.roster.release(w);
+      this.winnerSeen.delete(w);
+      back.push(w);
+    }
+    if (back.length === 0) return;
+    const after = new Set(this.roster.active());
+    for (const w of back.filter((x) => after.has(x))) {
+      const r = walletRecords(this.store.all()).get(w)!;
+      this.recalled.add(w);
+      // Its quiet-clock starts now, as for any wallet taking a slot — the
+      // old one would bench it again on the spot.
+      this.activeSince.set(w, now);
+      this.lastBuy.delete(w);
+      this.log(
+        `🔄 ${shortAddress(w)} ⭐ is trading again — one of your best wallets (${r.wins}W/${r.losses}L, net ` +
+          `${r.netSol >= 0 ? '+' : ''}${r.netSol.toFixed(4)} SOL), so it's back on the copy list.`
+      );
+    }
+    const bumped = before.filter((w) => !after.has(w));
+    if (bumped.length > 0) {
+      this.log(`🔄 ${bumped.map(shortAddress).join(', ')} moved to the bench to make room — first in line for the next free slot.`);
+    }
+  }
 
   private trialLength(): number {
     return this.cfg.probationTrades ?? PROBATION_TRADES;
@@ -395,6 +515,8 @@ export class Rotation {
 
     this.applyDrops(now);
     this.dropRobots(now, watch);
+    this.recalled.clear();
+    this.recallWinners(now);
 
     if (this.cfg.walletIdleMinutes > 0) {
       const limitMs = this.cfg.walletIdleMinutes * 60_000;
@@ -432,7 +554,7 @@ export class Rotation {
       if (!before.includes(w)) {
         this.activeSince.set(w, now);
         this.lastBuy.delete(w);
-        this.log(`🔄 Now copying ${shortAddress(w)} (from the bench).`);
+        if (!this.recalled.has(w)) this.log(`🔄 Now copying ${shortAddress(w)} (from the bench).`);
       }
       if (!watch.isWatching(w)) watch.addWallet(w);
     }
@@ -452,10 +574,12 @@ export class Rotation {
     this.announceGraduates(active, false);
     trader.setActiveWallets(active);
     this.maybeDiscover(now, watch);
+    this.checkBenchedWinners(now, watch);
   }
 
   describe(): string {
-    const active = this.roster.active().map(shortAddress).join(', ') || 'none';
+    const winners = provenWinners(this.store.all());
+    const active = this.roster.active().map((w) => shortAddress(w) + (winners.has(w) ? '⭐' : '')).join(', ') || 'none';
     const onProbation = this.roster.active().filter((w) => this.isPaperOnly(w)).length;
     const parts = [`copying ${active}`, `${this.roster.bench().length} on the bench`];
     if (onProbation) parts.push(`${onProbation} found by discovery, paper-only until proven`);
@@ -468,7 +592,9 @@ export class Rotation {
 
 // For `npm run summary`: the full roster, with reasons.
 export function printRoster(roster: WalletRoster, positions?: readonly Position[], cfg?: RotationConfig): void {
-  const label = (w: string) => shortAddress(w) + (roster.isDiscovered(w) ? '*' : '');
+  const winners = positions ? provenWinners(positions) : new Map<string, number>();
+  if (positions) roster.rankBy(() => winners);
+  const label = (w: string) => shortAddress(w) + (roster.isDiscovered(w) ? '*' : '') + (winners.has(w) ? '⭐' : '');
   console.log('── WALLET ROTATION ──');
   console.log(`  Copying now: ${roster.active().map(label).join(', ') || 'none'}`);
   // A drop already earned is applied when the bot next starts; say so here
@@ -489,6 +615,9 @@ export function printRoster(roster: WalletRoster, positions?: readonly Position[
   }
   for (const d of roster.dropped()) {
     console.log(`  Dropped ${shortAddress(d.wallet)} — ${d.reason} (${new Date(d.at).toLocaleString()})`);
+  }
+  if (winners.size > 0) {
+    console.log(`  ⭐ proven winner (${PROVEN_MIN_TRADES}+ closed copies, net profit) — first claim on a slot; brought back as soon as it trades again`);
   }
   console.log('  To give every wallet a fresh start, delete data/wallets.json (with the bot stopped).\n');
 }

@@ -578,6 +578,13 @@ slots are filled from the bench straight away, including wallets that
   running (`WALLET_IDLE_MINUTES`). Quiet isn't bad — it may trade while you
   sleep — so it goes to the back of the bench and gets another turn later. Over
   a few sessions this favours wallets that trade during *your* hours.
+- **Puts proven winners first** (⭐): a wallet whose copies have made money
+  — at least 2 closed, net profit — gets a slot ahead of untried ones. When
+  one goes quiet it's benched like any other, but the bot checks on it every
+  5 minutes and brings it straight back the moment it trades again
+  (`🔄 … ⭐ is trading again`); the lowest-ranked wallet makes room and is first
+  in line for the next free slot. (Before, the best wallet could sit at the
+  back of a long bench while untried ones got its turns.)
 - **Drops robots at once**: a wallet making more than 150 transactions in 10
   minutes (`WALLET_MAX_TX_PER_10MIN`) is a trading machine, not a person. It
   floods the watcher, so everyone else's trades wait behind it, and it uses up

@@ -34,7 +34,9 @@ function priceOf(sol: number | undefined, raw: string | undefined): number | nul
 export function compareToSource(p: Position): CopyComparison {
   const theirEntry = priceOf(p.sourceBuySol, p.sourceBuyTokensRaw);
   const theirExit = priceOf(p.sourceSellSol, p.sourceSellTokensRaw);
-  const ourEntry = priceOf(p.spentSol, p.initialTokenAmountRaw);
+  // The swap alone: spentSol also holds our fees and the refundable rent,
+  // which is no part of the price we paid per token.
+  const ourEntry = priceOf(p.swapSol ?? p.spentSol, p.initialTokenAmountRaw);
   return {
     ourReturnPct: p.status === 'closed' && p.spentSol > 0 ? ((p.receivedSol - p.spentSol) / p.spentSol) * 100 : null,
     theirReturnPct: theirEntry !== null && theirExit !== null ? (theirExit / theirEntry - 1) * 100 : null,

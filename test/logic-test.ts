@@ -36,7 +36,7 @@ import { Position } from '../src/types';
 import { walletMute, walletRecords } from '../src/walletGate';
 import { decideExit, describeExitRules, exitRulesEnabled } from '../src/exitRules';
 import { compareToSource, entryPhrase, summarizeComparisons } from '../src/copyGap';
-import { copySlots, dropReason, paperHints, PROBATION_TRADES, ROBOT_REASON, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
+import { copySlots, dropReason, paperHints, PROBATION_TRADES, provenWinners, ROBOT_REASON, Rotation, rotationOn, WalletRoster } from '../src/walletRoster';
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import { closeAccounts, selectEmpty, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../src/tokenAccounts';
@@ -2211,6 +2211,89 @@ async function testRentReclaim(realLog: typeof console.log) {
   realLog('✅ rent reclaim: true buy cost recorded, emptied accounts closed after selling, rent back — matches the official CloseAccount instruction');
 }
 
+// A wallet whose copies make money gets first claim on a slot, and when it
+// goes quiet and is benched it comes back as soon as it trades again —
+// instead of waiting at the back of a long bench (a live run lost its best
+// wallet that way, and trading dried up).
+async function testWinnersFirst(realLog: typeof console.log) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-winners-'));
+  const store = new PositionStore(dir);
+  const [U1, U2, W, U3] = Array.from({ length: 4 }, () => Keypair.generate().publicKey.toBase58());
+  const copy = (wallet: string, back: number) => {
+    const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: wallet, dryRun: false, spentSol: 0.05, tokenAmountRaw: '100' });
+    store.recordSell(p, 100n, back);
+  };
+  copy(W, 0.06); copy(W, 0.045); copy(W, 0.058); // 2W/1L, net +0.013
+  copy(U3, 0.06); // one win is not proof yet
+  const winners = provenWinners(store.all());
+  assert(winners.size === 1 && Math.abs(winners.get(W)! - 0.013) < 1e-12, 'a proven winner: 2+ closed copies with a net profit (one lucky win is not enough)');
+
+  const MIN = 60_000;
+  const T0 = Date.parse('2026-09-25T18:00:00Z');
+  const roster = new WalletRoster([U1, U2, W, U3], 2, dir);
+  const logs: string[] = [];
+  const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30 }, (m) => logs.push(m));
+  const watching = new Set<string>();
+  const onChain = new Map<string, number>();
+  const probed: string[] = [];
+  let probeAt: number | undefined;
+  const watch = {
+    isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); },
+    lastActivityOf: (w: string) => onChain.get(w),
+    async probeActivity(w: string) { probed.push(w); if (probeAt !== undefined) onChain.set(w, probeAt); return probeAt; },
+  };
+  let copying: string[] | null = null;
+  const trader = { setActiveWallets(ws: string[] | null) { copying = ws; } };
+  const tick = async (at: number) => { await rotation.tick(at, watch, trader); await rotation.settleWinnerChecks(); };
+
+  roster.idle(U3, T0 - 60 * MIN); // a quiet non-winner, already waiting on the bench
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  assert(roster.active().join() === [W, U1].join(), 'the proven winner gets a slot first, though it is third in the list');
+  assert(rotation.describe().includes(`${shortAddress(W)}⭐`), 'and is marked ⭐ in the status line');
+
+  // W goes quiet for 30 minutes (U1 keeps buying): benched like any other wallet.
+  rotation.noteBuy(U1, T0 + 30 * MIN);
+  probeAt = T0 + 25 * MIN; // recent, but from before it was benched
+  await tick(T0 + 31 * MIN);
+  assert(roster.active().join() === [U1, U2].join() && roster.bench().join() === [U3, W].join(), 'quiet W is benched to the back');
+  await tick(T0 + 32 * MIN);
+  assert(!roster.active().includes(W), 'activity from BEFORE it was benched does not bring it back');
+
+  probeAt = T0 + 33 * MIN; // it trades again…
+  await tick(T0 + 36 * MIN); // …seen by the next check, 5 minutes on
+  await tick(T0 + 45 * MIN);
+  assert(!roster.active().includes(W), 'activity 12 minutes old is too stale to bring it back (it would only be benched again)');
+
+  probeAt = T0 + 48 * MIN;
+  await tick(T0 + 50 * MIN);
+  const before = logs.length;
+  await tick(T0 + 51 * MIN);
+  assert(roster.active().join() === [W, U1].join() && copying!.join() === [W, U1].join() && watching.has(W), 'trading again → straight back on the copy list');
+  assert(roster.bench()[0] === U2, 'the lowest-ranked wallet made room, and is first in line for the next slot');
+  const said = logs.slice(before);
+  assert(said.some((l) => l.includes(`${shortAddress(W)} ⭐ is trading again`) && l.includes('2W/1L') && l.includes('+0.0130 SOL')), 'the comeback is announced with its record');
+  assert(said.some((l) => l.includes(`${shortAddress(U2)} moved to the bench to make room`)), 'and so is the wallet making room');
+  assert(!said.some((l) => l.includes(`Now copying ${shortAddress(W)}`)), 'announced once, not twice');
+  assert(probed.length > 0 && probed.every((w) => w === W), 'only benched winners are checked — never the whole bench');
+  rotation.noteBuy(U1, T0 + 60 * MIN);
+  await tick(T0 + 61 * MIN);
+  assert(roster.active().includes(W), 'and it keeps its slot for a full quiet period, like any wallet that just got one');
+
+  // The watcher's lookup works for a wallet it isn't watching.
+  const sigTime = Math.floor((T0 + 50 * MIN) / 1000);
+  const watcher = new WalletWatcher({ async getSignaturesForAddress() { return [{ signature: 's', blockTime: sigTime, err: null }]; } } as any, [], async () => {}, new RateLimiter(0));
+  assert(await watcher.probeActivity(W) === sigTime * 1000 && watcher.lastActivityOf(W) === sigTime * 1000, 'probeActivity reads an unwatched wallet\'s latest transaction');
+
+  // Entry gap: our price per token is the swap alone, not the fees and refundable rent.
+  const gap = compareToSource({
+    id: 'g', mint: MEME_MINT, decimals: 6, sourceWallet: W, dryRun: false, openedAt: new Date().toISOString(), sellTxs: [], tokenAmountRaw: '0',
+    status: 'closed', spentSol: 0.0516, swapSol: 0.05, initialTokenAmountRaw: '1000', receivedSol: 0.06,
+    sourceBuySol: 5, sourceBuyTokensRaw: '100000',
+  });
+  assert(Math.abs(gap.entryGapPct!) < 1e-9, `same price per token as theirs reads as 0%, not +3% of rent and fees (got ${gap.entryGapPct})`);
+  realLog('✅ winners first: proven wallets get slots first, a benched winner returns as soon as it trades again, entry gap measured on the swap');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2222,6 +2305,7 @@ async function main() {
   await testRobotWallets(console.log);
   await testStaleBenchAndTrial(console.log);
   await testRentReclaim(console.log);
+  await testWinnersFirst(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);
