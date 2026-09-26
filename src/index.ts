@@ -228,7 +228,7 @@ async function main(): Promise<void> {
       console.log(
         real.length > 0
           ? `💰 Real money: buys from ${real.map(shortAddress).join(', ')} use real SOL; the others trade on paper until they pass their trial.`
-          : `💰 Real money: none of the wallets it copies has passed its trial yet (${config.probationTrades} paper copies, in profit), ` +
+          : `💰 Real money: none of the wallets it copies has passed its trial yet (${config.probationTrades} copies, in profit), ` +
               'so for now every copy is paper and nothing reaches Phantom. PROBATION_TRADES in .env sets the trial length.'
       );
     }

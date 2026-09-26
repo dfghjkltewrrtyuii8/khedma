@@ -686,10 +686,13 @@ decides after that.
 **Discovery nominates; the paper record decides.** The free feed only covers
 each token's recent trades, so "profitable" means "over the last few hours" —
 a noisy signal. So every discovered wallet is copied **on paper** until it has
-6 closed paper copies with a net profit (`PROBATION_TRADES`), **even when `DRY_RUN=false`** — and its
+6 closed copies with a net profit (`PROBATION_TRADES`), **even when `DRY_RUN=false`** — and its
 paper positions never take up your real-money slots. Only then is it copied
-with real SOL. Wallets you listed yourself are never on probation, and a
-wallet dropped for losing is never re-discovered.
+with real SOL. Real copies count too: a wallet that already made money with
+real copies (while the trial was off, say) has passed, so turning the trial
+back on never sends a proven wallet back to paper. Wallets you listed
+yourself are never on probation, and a wallet dropped for losing is never
+re-discovered.
 
 Run it by hand to see what it finds and why, before turning it on:
 

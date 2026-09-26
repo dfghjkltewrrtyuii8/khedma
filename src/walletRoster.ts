@@ -438,7 +438,8 @@ export interface DiscoveryHook {
 }
 
 // A discovered wallet trades on PAPER until it has proven itself: this many
-// closed paper copies with a net profit. Only then can it be copied with real
+// closed copies with a net profit (paper, or real ones from before the trial
+// was turned on). Only then can it be copied with real
 // money (when DRY_RUN=false). Wallets you listed yourself are never on probation.
 export const PROBATION_TRADES = 6;
 
@@ -634,8 +635,11 @@ export class Rotation {
     if (!this.roster.isDiscovered(wallet)) return false;
     const needed = this.trialLength();
     if (needed <= 0) return false; // PROBATION_TRADES=0: no trial
-    const paper = walletRecords(this.store.all().filter((p) => p.dryRun)).get(wallet);
-    return !(paper && paper.closed >= needed && paper.netSol > 0);
+    // Every copy counts, paper or real: a wallet that already made money with
+    // real copies (a proven winner, say) has passed — turning the trial back
+    // on must not send it back to paper.
+    const record = walletRecords(this.store.all()).get(wallet);
+    return !(record && record.closed >= needed && record.netSol > 0);
   }
 
   // The wallets being copied whose buys would use real money.
@@ -651,7 +655,7 @@ export class Rotation {
       this.graduated.add(w);
       if (quiet) continue;
       this.log(
-        `🎓 ${shortAddress(w)} passed its trial (${this.trialLength()} paper copies, in profit) — ` +
+        `🎓 ${shortAddress(w)} passed its trial (${this.trialLength()} copies, in profit) — ` +
           (this.cfg.dryRun ? 'it will trade real money once DRY_RUN=false.' : 'its copies now use real money.')
       );
     }
@@ -852,26 +856,40 @@ export class Rotation {
     this.dropRobots(now, watch);
     this.wake(now, watch);
 
+    // Quiet wallets give way — each to its own replacement: the best-ranked
+    // waiting wallet not already taken this tick and not known to be at
+    // least as quiet as it. (Comparing every quiet wallet with the one best
+    // waiting wallet, then refilling from the whole bench, let staler wallets
+    // back in — and a live run swapped 5–7 wallets back and forth every 30
+    // seconds.) A wallet whose activity isn't known yet is worth one try.
     const idleMs = this.cfg.walletIdleMinutes * 60_000;
     if (idleMs > 0) {
-      const benchedNow = this.benchedNow;
-      for (const w of this.roster.active()) {
-        if (this.announced.has(w)) continue; // just got its slot
-        const waiting = this.roster.bench().filter((x) => !benchedNow.has(x));
-        if (waiting.length === 0) break; // nobody to swap in
-        const last = this.lastSign(w, now, watch);
-        if (now - last >= idleMs) {
-          // Never trade one quiet wallet for another already known to be at
-          // least as quiet — that only churns (and spams the alerts).
-          const nextUp = watch.lastActivityOf?.(waiting[0]);
-          if (nextUp !== undefined && nextUp <= last) continue;
-          this.roster.idle(w, now);
-          benchedNow.add(w);
-          this.log(
-            `🔄 Benched ${shortAddress(w)} — no buys in ${this.cfg.walletIdleMinutes}+ min. ` +
-              'It waits on the bench and gets a slot again when it trades.'
-          );
-        }
+      const lastOf = (w: string) => this.lastSign(w, now, watch);
+      const quiet = this.roster
+        .active()
+        .filter((w) => !this.announced.has(w) && now - lastOf(w) >= idleMs)
+        .sort((a, b) => lastOf(a) - lastOf(b)); // quietest first
+      const waiting = this.roster.bench().filter((x) => !this.benchedNow.has(x));
+      const taken = new Set<string>();
+      for (const w of quiet) {
+        const last = lastOf(w);
+        const next = waiting.find((x) => {
+          if (taken.has(x) || dropReason(this.store.all(), x, this.cfg) !== null) return false;
+          const seen = watch.lastActivityOf?.(x);
+          return seen === undefined || seen > last;
+        });
+        if (!next) continue; // nobody waiting would do better
+        taken.add(next);
+        this.roster.idle(w, now);
+        this.benchedNow.add(w);
+        this.log(
+          `🔄 Benched ${shortAddress(w)} — no buys in ${this.cfg.walletIdleMinutes}+ min. ` +
+            'It waits on the bench and gets a slot again when it trades.'
+        );
+        const ctx = this.rankContext();
+        if (ctx.awake.has(next)) this.whyNew.set(next, " — it's trading right now");
+        else if (this.roster.idledAt(next) !== undefined && (ctx.hourScore(next) ?? 0) >= 0.5) this.whyNew.set(next, ' — it usually trades at this hour');
+        this.takeSlot(next, now);
       }
     }
     this.fillSlots(now);
@@ -948,7 +966,7 @@ export function printRoster(roster: WalletRoster, positions?: readonly Position[
   console.log(`  Bench, next up first: ${bench.length ? bench.map(label).join(', ') : 'empty'}`);
   if (roster.all().some((w) => roster.isDiscovered(w))) {
     const trial = cfg?.probationTrades ?? PROBATION_TRADES;
-    console.log(trial > 0 ? `  * found by discovery — traded on paper until it has ${trial} closed paper copies in profit` : '  * found by discovery');
+    console.log(trial > 0 ? `  * found by discovery — traded on paper until it has ${trial} closed copies in profit` : '  * found by discovery');
     for (const w of roster.active().filter((x) => roster.isDiscovered(x))) {
       console.log(`    ${shortAddress(w)} was picked because: ${roster.discoveredInfo(w)?.why ?? '?'}`);
     }

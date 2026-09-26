@@ -2025,6 +2025,14 @@ async function testStaleBenchAndTrial(realLog: typeof console.log) {
   await trial.tick(T0 + 30_000, quietWatch, { setActiveWallets() {} });
   await trial.tick(T0 + 60_000, quietWatch, { setActiveWallets() {} });
   assert(logs.filter((l) => l.startsWith('🎓')).length === 1 && logs.some((l) => l.includes('once DRY_RUN=false')), 'passing is announced once, and in paper mode says real money needs DRY_RUN=false');
+  // Turning the trial on later doesn't demote a wallet that already made money with real copies.
+  const R = Keypair.generate().publicKey.toBase58();
+  troster.addDiscovered([{ wallet: R, pools: 2, medianReturnPct: 40, evidence: ['x'] }], T0);
+  for (let i = 0; i < 3; i++) {
+    const p = tstore.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: R, dryRun: false, spentSol: 0.05, tokenAmountRaw: '1' });
+    tstore.recordSell(p, 1n, 0.058);
+  }
+  assert(!trial.isPaperOnly(R), 'three profitable REAL copies pass the trial too — a proven wallet is never sent back to paper');
   const none = new Rotation(troster, new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-notrial-'))), { ...cfg, probationTrades: 0 }, () => {});
   assert(!none.isPaperOnly(N), 'PROBATION_TRADES=0: no trial at all');
   assert(loadConfig().probationTrades === 6, 'the trial stays 6 unless you change it');
@@ -2597,6 +2605,35 @@ async function testHourMatching(realLog: typeof console.log) {
     assert(r.active().join() === B && r.bench().join() === [C, A].join(), 'quiet A is benched, and goes behind the others though this is its usual hour');
     await rot.tick(T0 + 92 * MIN, w3, { setActiveWallets() {} }); // B benched in turn; A's hour is up
     assert(r.bench()[0] === A || r.active().join() === A, 'an hour later, its usual hours count again');
+  }
+  // 6. A live run swapped 5–7 wallets every 30 seconds, back and forth: all
+  //    quiet wallets were compared with the ONE best waiting wallet, then the
+  //    slots were refilled from the whole bench — staler wallets included.
+  //    Each quiet wallet now needs its own replacement, known to be more
+  //    active than it; exactly that one takes its slot.
+  {
+    const pdir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-pingpong-'));
+    const [A, B, C, F, D, E] = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
+    const r = new WalletRoster([A, B, C, F, D, E], 3, pdir);
+    const H = 60 * MIN;
+    const lastSeen = new Map<string, number>([[A, T0 - 11 * H], [B, T0 - 15 * H], [C, T0 - 9 * H], [F, T0 - 6 * MIN], [D, T0 - 10 * H], [E, T0 - 14 * H]]);
+    const w6 = new Set<string>();
+    const watch6 = {
+      isWatching: (w: string) => w6.has(w), addWallet: (w: string) => { w6.add(w); }, async removeWallet(w: string) { w6.delete(w); },
+      lastActivityOf: (w: string) => lastSeen.get(w),
+    };
+    const said: string[] = [];
+    const rot = new Rotation(r, new PositionStore(pdir), { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30 }, (m) => said.push(m));
+    rot.startup(T0).forEach((w) => w6.add(w));
+    assert(r.active().join() === [A, B, C].join(), 'three dormant wallets copied; F (active 6 min ago), D (10h) and E (14h) waiting');
+    await rot.tick(T0 + MIN, watch6, { setActiveWallets() {} });
+    assert(new Set(r.active()).size === 3 && [C, F, D].every((w) => r.active().includes(w)),
+      `B (15h) gives way to F, A (11h) to D (10h); C (9h) stays — E (14h) is no improvement (${r.active().map(shortAddress).join(', ')})`);
+    assert(said.filter((l) => l.startsWith('🔄 Benched')).length === 2, 'two swaps, not three');
+    const before = said.length;
+    for (let i = 2; i <= 6; i++) await rot.tick(T0 + i * MIN, watch6, { setActiveWallets() {} });
+    assert(said.slice(before).filter((l) => l.startsWith('🔄')).length === 0 && [C, F, D].every((w) => r.active().includes(w)),
+      'and then it holds: nobody waiting is more active, so nothing swaps back and forth');
   }
   realLog('✅ hour matching: asleep wallets kept, free slots go to who usually trades now, a waking wallet replaces a quiet one, no churn');
 }
