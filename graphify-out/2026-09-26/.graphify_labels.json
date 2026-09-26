@@ -1,0 +1,14 @@
+{
+  "0": "package.json",
+  "1": "shortAddress",
+  "2": "setupChecks.ts",
+  "3": "tokenMarket.ts",
+  "4": "PositionStore",
+  "5": "pnl.ts",
+  "6": "doctor.ts",
+  "7": "compilerOptions",
+  "8": "Solana Copy-Trading Bot",
+  "9": "logic-test.ts",
+  "10": "WalletWatcher",
+  "11": "main"
+}
