@@ -8,7 +8,12 @@
   "6": "notify.ts",
   "7": "compilerOptions",
   "8": "Solana Copy-Trading Bot",
-  "9": "index.ts",
+  "9": "doctor.ts",
   "10": "main",
-  "11": "telegram.ts"
+  "11": "index.ts",
+  "12": "package.json",
+  "13": "tokenAccounts.ts",
+  "14": "createPrompter",
+  "15": "dependencies",
+  "16": "applyRecommended"
 }

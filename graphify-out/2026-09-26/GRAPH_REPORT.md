@@ -1,17 +1,17 @@
 # Graph Report - khedma  (2026-09-26)
 
 ## Corpus Check
-- 38 files · ~72,172 words
+- 38 files · ~72,778 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: .example 1, (none) 1)
 
 ## Summary
-- 590 nodes · 2049 edges · 12 communities
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 317 edges (avg confidence: 0.8)
+- 590 nodes · 2055 edges · 12 communities
+- Extraction: 84% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 319 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f5ae0ca2`
+- Built from commit: `4fc2d138`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -76,11 +76,11 @@ Nodes (31): bump(), discoverWallets(), DISCOVERY_RULES, DiscoveryReport, FetchJs
 
 ### Community 4 - "logic-test.ts"
 Cohesion: 0.08
-Nodes (39): loadConfig(), printSummary(), inRun(), PositionStore, sleep(), decideShutdown(), ShutdownDecision, main() (+31 more)
+Nodes (42): loadConfig(), printSummary(), inRun(), PositionStore, RunInfo, sleep(), decideShutdown(), ShutdownDecision (+34 more)
 
 ### Community 5 - "pnl.ts"
-Cohesion: 0.09
-Nodes (34): avg(), compareToSource(), CopyComparison, entryPhrase(), pct(), priceOf(), summarizeComparisons(), WalletComparison (+26 more)
+Cohesion: 0.10
+Nodes (31): avg(), compareToSource(), CopyComparison, entryPhrase(), pct(), priceOf(), summarizeComparisons(), WalletComparison (+23 more)
 
 ### Community 6 - "notify.ts"
 Cohesion: 0.16
@@ -117,7 +117,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.060) - this node is a cross-community bridge._
 - **Why does `WalletRoster` connect `WalletRoster` to `index.ts`, `main`, `discovery.ts`, `logic-test.ts`?**
   _High betweenness centrality (0.056) - this node is a cross-community bridge._
-- **Why does `PositionStore` connect `logic-test.ts` to `WalletRoster`, `discovery.ts`, `pnl.ts`, `index.ts`, `main`?**
+- **Why does `@solana/web3.js` connect `index.ts` to `setupChecks.ts`, `discovery.ts`, `logic-test.ts`?**
   _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `main()` (e.g. with `.all()` and `.byStatus()`) actually correct?**
   _`main()` has 26 INFERRED edges - model-reasoned connections that need verification._
@@ -126,4 +126,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `name`, `version`, `private` to the rest of the system?**
   _118 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `WalletRoster` be split into smaller, more focused modules?**
-  _Cohesion score 0.07587719298245614 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0781786941580756 - nodes in this community are weakly interconnected._
