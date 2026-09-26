@@ -9,11 +9,20 @@
 // copy -15%). A wallet's own history answers both, so each one's last few dozen
 // transactions are read and judged on:
 //
-//   - does it buy often enough to be worth a slot, and still now?
+//   - is it still alive (anything in the last few days)?
+//   - does it buy often enough, in the hours it trades, to be worth a slot?
 //   - are its buys big enough that the bot copies them (MIN_TRACKED_BUY_SOL)?
 //   - does it hold long enough for a copy to catch the move?
 //   - over the trades it finished, did it win more than it lost, and net a profit?
 //   - is it a machine (transactions faster than a person trades)?
+//
+// A wallet that passes all of that but hasn't bought for a few hours is
+// ASLEEP, not bad: people trade at their own hours. The first version turned
+// those away for a week — 12 of 33 rejections in a live run, most of them
+// checked overnight. Now they're kept on the bench and brought in when they
+// trade again. From the same list of transactions the bot learns each
+// wallet's usual hours, so when a slot opens it can pick the wallet most
+// likely to be trading at that hour.
 //
 // Past results don't promise future ones — this only turns away the wallets
 // that clearly can't work for a copy bot. What the bot's own copies earn still
@@ -24,15 +33,82 @@ import { RateLimiter } from './rateLimiter';
 import { analyzeSwap, MAX_TX_VERSION } from './watcher';
 
 export const VET_RULES = {
-  signatures: 40, // recent transactions read per wallet: one lookup for the list, one per transaction
-  minBuys: 4, // fewer than this is too little to judge
-  minBuysPerHour: 1, // over the stretch those transactions cover — a quiet wallet leaves its slot idle
-  maxLastBuyAgeHours: 3, // and it must still be at it
+  historySignatures: 1000, // one lookup: timestamps only — for its usual hours, and whether it's alive
+  hoursWindowDays: 14, // usual hours are learned from this recent stretch
+  signatures: 40, // the most recent of those are read in full (one lookup each) to judge its trading
+  maxQuietDays: 3, // nothing at all for this long: gone, not asleep
+  minBuys: 4, // fewer than this is too little to judge — it's mostly doing something other than trading
+  minBuysPerActiveHour: 0.5, // a buy every two hours, counting only the hours it's active
+  maxLastBuyAgeHours: 3, // good record but no buy for this long: asleep, kept for later
   maxTxPerHour: 60, // faster than a person trades — and every transaction costs an RPC lookup to watch
   minRoundTrips: 3, // coins it both bought and sold inside the sample
   minMedianHoldMinutes: 3, // quicker flips are over before a copy lands and gets priced
   minWinRate: 0.5,
 };
+
+const HOUR_MS = 3_600_000;
+
+// A wallet's usual hours: for each hour of the day (UTC, index 0-23), the
+// share of observed days it did something in that hour. null = that hour was
+// never covered by its history.
+export type HourProfile = (number | null)[];
+
+// Pure: usual hours from transaction timestamps (the last `windowDays`).
+export function hourProfile(times: number[], windowDays = VET_RULES.hoursWindowDays): HourProfile | null {
+  if (times.length < 2) return null;
+  const newest = Math.max(...times);
+  const recent = times.filter((t) => t >= newest - windowDays * 24 * HOUR_MS);
+  const slots = new Set(recent.map((t) => Math.floor(t / HOUR_MS)));
+  const first = Math.floor(Math.min(...recent) / HOUR_MS);
+  const last = Math.floor(newest / HOUR_MS);
+  const observed = new Array<number>(24).fill(0);
+  const active = new Array<number>(24).fill(0);
+  for (let slot = first; slot <= last; slot++) {
+    const hour = slot % 24; // epoch hours start at 00:00 UTC
+    observed[hour] += 1;
+    if (slots.has(slot)) active[hour] += 1;
+  }
+  return observed.map((o, h) => (o > 0 ? active[h] / o : null));
+}
+
+// Pure: how likely the wallet is trading at `now`, 0-1 (null: unknown) —
+// this hour counts fully, the hours either side half.
+export function likelyActive(profile: HourProfile | null | undefined, now: number): number | null {
+  if (!profile) return null;
+  const h = Math.floor(now / HOUR_MS) % 24;
+  let sum = 0;
+  let weight = 0;
+  for (const [offset, w] of [[-1, 0.5], [0, 1], [1, 0.5]] as const) {
+    const share = profile[(h + offset + 24) % 24];
+    if (share === null || share === undefined) continue;
+    sum += share * w;
+    weight += w;
+  }
+  return weight > 0 ? sum / weight : null;
+}
+
+// Pure: its usual hours in YOUR time, e.g. "9pm–2am" (null: not known).
+// `offsetMinutes` is how far local time is ahead of UTC.
+export function describeHours(profile: HourProfile | null | undefined, offsetMinutes: number): string | null {
+  if (!profile || profile.every((s) => s === null)) return null;
+  const busy = new Array<boolean>(24).fill(false);
+  profile.forEach((share, utc) => {
+    if (share !== null && share >= 0.5) busy[(((utc * 60 + offsetMinutes) / 60) % 24 + 24) % 24 | 0] = true;
+  });
+  if (busy.every(Boolean)) return 'around the clock';
+  if (!busy.some(Boolean)) return 'no regular hours yet';
+  const clock = (h: number) => `${h % 12 === 0 ? 12 : h % 12}${h < 12 ? 'am' : 'pm'}`;
+  const runs: string[] = [];
+  const start = busy.findIndex((b, i) => !b && busy[(i + 1) % 24]) + 1; // begin just after a quiet hour
+  for (let i = 0; i < 24; i++) {
+    const h = (start + i) % 24;
+    if (!busy[h] || busy[(h + 23) % 24]) continue; // not the start of a run
+    let end = h;
+    while (busy[(end + 1) % 24]) end = (end + 1) % 24;
+    runs.push(`${clock(h)}–${clock((end + 1) % 24)}`);
+  }
+  return runs.join(', ');
+}
 
 export interface HistoryTrade {
   side: 'buy' | 'sell';
@@ -46,7 +122,7 @@ export interface VetStats {
   transactions: number;
   spanHours: number; // how much time those transactions cover
   buys: number;
-  buysPerHour: number;
+  buysPerActiveHour: number; // buys per clock hour in which it did anything at all
   lastBuyAgeHours: number | null;
   medianBuySol: number | null;
   roundTrips: number;
@@ -55,10 +131,15 @@ export interface VetStats {
   medianHoldMinutes: number | null;
 }
 
+// pass: copy it. asleep: a good record, but not trading right now — kept on
+// the bench until it trades again. fail: turned away.
+export type VetStatus = 'pass' | 'asleep' | 'fail';
+
 export interface VetVerdict {
-  ok: boolean;
-  reason: string; // why not — or, when ok, a one-line summary
+  status: VetStatus;
+  reason: string; // why not — or a one-line summary of its record
   stats: VetStats;
+  hours: HourProfile | null; // its usual hours (vetWallet fills this in)
 }
 
 const median = (xs: number[]): number | null => {
@@ -83,9 +164,10 @@ export function judgeHistory(
 ): VetVerdict {
   const oldest = txTimes.length ? Math.min(...txTimes) : now;
   const newest = txTimes.length ? Math.max(...txTimes) : now;
-  const spanHours = (newest - oldest) / 3_600_000;
+  const spanHours = (newest - oldest) / HOUR_MS;
   // Rates over at least half an hour, so a short burst doesn't read as a huge rate.
   const rateHours = Math.max(spanHours, 0.5);
+  const activeHours = Math.max(1, new Set(txTimes.map((t) => Math.floor(t / HOUR_MS))).size);
   const ordered = [...trades].sort((a, b) => a.at - b.at);
   const buys = ordered.filter((t) => t.side === 'buy');
   const lastBuy = buys.length ? buys[buys.length - 1].at : null;
@@ -124,7 +206,7 @@ export function judgeHistory(
     transactions: txTimes.length,
     spanHours,
     buys: buys.length,
-    buysPerHour: buys.length / rateHours,
+    buysPerActiveHour: buys.length / activeHours,
     lastBuyAgeHours: lastBuy === null ? null : (now - lastBuy) / 3_600_000,
     medianBuySol: median(buys.filter((b) => b.sol !== null).map((b) => b.sol!)),
     roundTrips: trips.length,
@@ -132,19 +214,22 @@ export function judgeHistory(
     netSol: trips.reduce((a, t) => a + t.pnl, 0),
     medianHoldMinutes: median(trips.map((t) => t.holdMs / 60_000)),
   };
-  const no = (reason: string): VetVerdict => ({ ok: false, reason, stats });
+  const no = (reason: string): VetVerdict => ({ status: 'fail', reason, stats, hours: null });
 
+  const quietDays = (now - newest) / (24 * HOUR_MS);
+  if (txTimes.length === 0 || quietDays > rules.maxQuietDays) {
+    return no(txTimes.length === 0 ? 'no transactions at all' : `no activity for ${Math.floor(quietDays)} days — gone, not asleep`);
+  }
   const txPerHour = txTimes.length / rateHours;
   if (txTimes.length >= 10 && txPerHour > rules.maxTxPerHour) {
     return no(`machine speed: ~${Math.round(txPerHour)} transactions an hour`);
   }
-  if (stats.buys < rules.minBuys) return no(`only ${stats.buys} buy(s) in its last ${txTimes.length} transactions`);
-  if (stats.lastBuyAgeHours !== null && stats.lastBuyAgeHours > rules.maxLastBuyAgeHours) {
-    return no(`hasn't bought for ${stats.lastBuyAgeHours.toFixed(1)}h`);
-  }
-  if (stats.buysPerHour < rules.minBuysPerHour) return no(`too quiet: ~${stats.buysPerHour.toFixed(1)} buys an hour`);
+  if (stats.buys < rules.minBuys) return no(`only ${stats.buys} buy(s) in its last ${txTimes.length} transactions — mostly not trading`);
   if (stats.medianBuySol !== null && stats.medianBuySol < minBuySol) {
     return no(`buys are ~${stats.medianBuySol.toFixed(3)} SOL — under MIN_TRACKED_BUY_SOL (${minBuySol}), so they'd all be skipped`);
+  }
+  if (stats.buysPerActiveHour < rules.minBuysPerActiveHour) {
+    return no(`rarely buys: ~${stats.buysPerActiveHour.toFixed(1)} per hour it's active`);
   }
   if (stats.roundTrips < rules.minRoundTrips) return no(`only ${stats.roundTrips} finished trade(s) to judge`);
   if (stats.medianHoldMinutes !== null && stats.medianHoldMinutes < rules.minMedianHoldMinutes) {
@@ -153,20 +238,22 @@ export function judgeHistory(
   if (stats.wins / stats.roundTrips < rules.minWinRate) return no(`won only ${stats.wins} of ${stats.roundTrips} finished trades`);
   if (!(stats.netSol > 0)) return no(`lost ${Math.abs(stats.netSol).toFixed(3)} SOL over ${stats.roundTrips} finished trades`);
 
-  return {
-    ok: true,
-    reason:
-      `${stats.buys} buys in ${stats.spanHours.toFixed(1)}h · ${stats.roundTrips} trades ${stats.wins}W/${stats.roundTrips - stats.wins}L · ` +
-      `net +${stats.netSol.toFixed(3)} SOL · holds ~${minutesText(stats.medianHoldMinutes ?? 0)}`,
-    stats,
-  };
+  const record =
+    `${stats.buys} buys in ${stats.spanHours.toFixed(1)}h · ${stats.roundTrips} trades ${stats.wins}W/${stats.roundTrips - stats.wins}L · ` +
+    `net +${stats.netSol.toFixed(3)} SOL · holds ~${minutesText(stats.medianHoldMinutes ?? 0)}`;
+  if (stats.lastBuyAgeHours !== null && stats.lastBuyAgeHours > rules.maxLastBuyAgeHours) {
+    return { status: 'asleep', reason: `asleep — last bought ${stats.lastBuyAgeHours.toFixed(1)}h ago; record: ${record}`, stats, hours: null };
+  }
+  return { status: 'pass', reason: record, stats, hours: null };
 }
 
 // What vetting needs from the RPC — an interface, so it's tested offline.
 export type VetConnection = Pick<Connection, 'getSignaturesForAddress' | 'getParsedTransaction'>;
 
-// Read a wallet's recent transactions and judge them. About `rules.signatures`
-// + 1 RPC lookups, paced by the same limiter the watcher uses.
+// Read a wallet's recent transactions and judge them. One lookup for up to
+// `rules.historySignatures` timestamps (usual hours, alive or not), then one
+// per transaction for the most recent `rules.signatures` — paced by the same
+// limiter the watcher uses.
 export async function vetWallet(
   connection: VetConnection,
   limiter: RateLimiter,
@@ -176,11 +263,12 @@ export async function vetWallet(
   rules = VET_RULES
 ): Promise<VetVerdict> {
   const signatures = await limiter.schedule('getSignaturesForAddress', () =>
-    connection.getSignaturesForAddress(new PublicKey(wallet), { limit: rules.signatures }, 'confirmed')
+    connection.getSignaturesForAddress(new PublicKey(wallet), { limit: rules.historySignatures }, 'confirmed')
   );
+  const hours = hourProfile(signatures.filter((s) => s.blockTime).map((s) => s.blockTime! * 1000), rules.hoursWindowDays);
   const txTimes: number[] = [];
   const trades: HistoryTrade[] = [];
-  for (const s of signatures) {
+  for (const s of signatures.slice(0, rules.signatures)) { // newest first
     if (!s.blockTime) continue;
     const at = s.blockTime * 1000;
     txTimes.push(at);
@@ -192,5 +280,5 @@ export async function vetWallet(
     const event = await analyzeSwap(tx, s.signature, wallet, true);
     if (event) trades.push({ side: event.side, mint: event.mint, sol: event.quoteSolEquivalent, tokenRaw: event.tokenDeltaRaw, at });
   }
-  return judgeHistory(txTimes, trades, now, minBuySol, rules);
+  return { ...judgeHistory(txTimes, trades, now, minBuySol, rules), hours };
 }

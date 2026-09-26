@@ -13,7 +13,7 @@ import { discoverWallets, printDiscoveryReport } from './discovery';
 import { PositionStore } from './positions';
 import { RateLimiter } from './rateLimiter';
 import { copySlots, printRoster, WalletRoster } from './walletRoster';
-import { vetWallet } from './walletVetting';
+import { VetVerdict, vetWallet } from './walletVetting';
 import { shortAddress } from './watcher';
 
 async function main(): Promise<void> {
@@ -29,21 +29,25 @@ async function main(): Promise<void> {
   // Each nominee is checked against its own recent trades before it's kept.
   const connection = new Connection(config.heliusHttpsUrl, { commitment: 'confirmed' });
   const limiter = new RateLimiter(1000 / config.rpcRequestsPerSecond);
-  const passed = [];
+  const passed: { candidate: (typeof report.candidates)[number]; verdict: VetVerdict }[] = [];
   if (report.candidates.length > 0) console.log(`\n🧪 Checking ${report.candidates.length} nominee(s) against their own recent trades (Helius)…`);
   for (const c of report.candidates) {
     try {
       const verdict = await vetWallet(connection, limiter, c.wallet, config.minTrackedBuySol);
-      console.log(`   ${verdict.ok ? '✅' : '❌'} ${shortAddress(c.wallet)} — ${verdict.reason}`);
-      if (verdict.ok) passed.push(c);
-      else roster.reject(c.wallet, verdict.reason, Date.now());
+      console.log(`   ${{ pass: '✅', asleep: '💤', fail: '❌' }[verdict.status]} ${shortAddress(c.wallet)} — ${verdict.reason}`);
+      if (verdict.status === 'fail') roster.reject(c.wallet, verdict.reason, Date.now());
+      else passed.push({ candidate: c, verdict });
     } catch (error) {
       console.log(`   ⚠️ ${shortAddress(c.wallet)}: couldn't read its trades (${(error as Error).message.slice(0, 80)}) — skipped`);
     }
   }
 
-  const added = roster.addDiscovered(passed, Date.now());
-  for (const w of added) roster.markVetted(w, Date.now());
+  const added = roster.addDiscovered(passed.map((p) => p.candidate), Date.now());
+  for (const w of added) {
+    const verdict = passed.find((p) => p.candidate.wallet === w)!.verdict;
+    roster.markVetted(w, Date.now(), verdict.hours);
+    if (verdict.status === 'asleep') roster.idle(w, Date.now()); // waits on the bench until it trades
+  }
   console.log(added.length ? `\nAdded ${added.length} to the back of the bench.\n` : '\nNothing new to add.\n');
   if (!config.discovery && config.benchWallets.length === 0) {
     console.log('Note: rotation is off (no BENCH_WALLETS and DISCOVERY=false), so the bot will not use these yet.');

@@ -575,9 +575,26 @@ slots are filled from the bench straight away, including wallets that
   (`WALLET_MAX_CONSECUTIVE_LOSSES`), or a net loss once 6 of its copies have
   closed (`WALLET_DROP_AFTER_TRADES`). The next bench wallet takes its slot.
 - **Benches a quiet wallet** after 90 minutes without a buy while you're
-  running (`WALLET_IDLE_MINUTES`). Quiet isn't bad — it may trade while you
-  sleep — so it goes to the back of the bench and gets another turn later. Over
-  a few sessions this favours wallets that trade during *your* hours.
+  running (`WALLET_IDLE_MINUTES`; `npm run recommended` sets 30). Quiet isn't
+  bad — it may trade while you sleep — so it waits on the bench (💤) and gets
+  a slot again when it trades.
+- **Copies whoever trades at this hour.** Each found wallet's usual hours are
+  learned from its last two weeks of transaction times (one cheap lookup, when
+  it's vetted). A free slot goes, in order, to: a benched wallet **seen trading
+  right now**; then one not benched yet (your own, then new finds); then the
+  benched wallet that **usually trades at this hour**
+  (`🔄 Now copying … — it usually trades at this hour`). While a copied wallet
+  is quiet, the bot checks one benched wallet at a time — the likeliest for
+  this hour, each at most every 15 minutes — and when one is trading, it takes
+  the slot of a copied wallet that has done nothing at all on-chain for 15+
+  minutes, instead of waiting out the full half hour. A wallet just benched for
+  being quiet waits an hour before its usual hours count again (unless it's
+  seen trading), so nothing flips back and forth. `npm run summary` shows each
+  wallet's usual hours in your time. In a simulated three days (30 wallets
+  with 6-hour trading days, 10 slots) this copied ~95% of their buys, against
+  ~33% the old way — which got stuck once every waiting wallet was known to
+  be quiet — at about 85 swaps a day. Real wallets are less regular than that
+  simulation; expect less, but the direction is the same.
 - **Puts proven winners first** (⭐): a wallet whose copies have made money
   — at least 2 closed, net profit — gets a slot ahead of untried ones. When
   one goes quiet it's benched like any other, but the bot checks on it every
@@ -596,11 +613,14 @@ slots are filled from the bench straight away, including wallets that
 
 A wallet that loses its slot stops being copied at once, but the bot keeps
 watching it until any position copied from it has closed, so its sells are
-still mirrored. Swaps are announced as they happen (`🔄 Dropped …`,
-`🔄 Now copying …`) — in the terminal and, if set up, on Telegram — the `📊` line shows who's active, and `npm run summary`
-lists the whole roster with the reason for every drop. It's saved in
-`data/wallets.json`; delete that file (with the bot stopped) to give every
-wallet a fresh start.
+still mirrored. Swaps are announced in the terminal as they happen
+(`🔄 Dropped …`, `🔄 Now copying …`); drops, a ⭐ winner coming back and new
+finds also go to Telegram, if set up (routine swaps don't — there are dozens a
+day). The `📊` line shows who's active, and `npm run summary` lists the whole
+roster: the reason for every drop, who's 💤, and each wallet's usual hours.
+It's saved in `data/wallets.json`. Deleting that file (with the bot stopped)
+starts the roster over — but it also forgets every drop, so robots and losing
+wallets come back; it's rarely what you want.
 
 Six copies is a small sample, so rotation will sometimes drop a wallet that
 was just unlucky. It's a trade-off in favour of not spending your limited
@@ -630,23 +650,34 @@ These are deliberately loose — discovery only nominates.
 trip or two on trending tokens can be luck, and live runs showed what it
 missed: most picks hardly bought anything, so their slots sat idle, and some
 flipped coins in and out within a couple of minutes — faster than a copy can
-follow (their +3%, the copy −15%). So the bot reads each nominee's last 40
-transactions from Helius (about 40 lookups each) and keeps it only if it:
+follow (their +3%, the copy −15%). So the bot reads each nominee's history
+from Helius — its last 1,000 transaction times in one lookup, and its last 40
+transactions in full (about 40 lookups) — and keeps it only if it:
 
-- buys **at least once an hour** on average, and has bought in the **last 3 hours**,
+- has done **anything in the last 3 days** (otherwise it's gone, not asleep),
+- makes **at least 4 buys** in those 40 transactions, and **a buy every two hours it's active** — counting only the hours it does anything, so a daytime trader checked at night isn't called quiet,
 - makes buys **at least `MIN_TRACKED_BUY_SOL`** in size (smaller ones are skipped as dust, so the slot would do nothing),
 - **holds for 3+ minutes** typically (quicker flips are over before a copy lands),
 - **won at least half** of 3+ finished trades, and **made money** over them,
 - isn't a machine (60+ transactions an hour).
 
+A wallet that passes all that but **hasn't bought in 3 hours is asleep, not
+bad** (💤): it's kept, waits on the bench, and is copied when it trades again.
+(The first version turned those away for a week — 12 of 33 rejections in a
+live run were wallets checked overnight.)
+
 Each verdict is printed (`✅ … 9 buys in 4.0h · 5 trades 4W/1L · net +0.300 SOL
-· holds ~12 min` or `❌ … flips coins in ~1 min — over before a copy lands`). A
-turned-away wallet isn't suggested again for a week. Wallets found before
-vetting existed are checked the same way, one at a time, copied ones first —
-one that fails leaves the roster and its slot goes to the next wallet
-(`🧪 Removed …`). Passed wallets are re-checked every 3 days. Proven winners
-(⭐) and wallets you listed yourself are never vetted: your own copies of a
-winner are better evidence than its history, and your picks are yours.
+· holds ~12 min`, `💤 … asleep — last bought 6.0h ago; record: …` or
+`❌ … flips coins in ~1 min — over before a copy lands`). A turned-away wallet
+isn't suggested again for a week. Wallets found before vetting existed — or
+before it learned usual hours — are checked the same way, one at a time,
+copied ones first; one that fails leaves the roster and its slot goes to the
+next wallet (`🧪 Removed …`). Passed wallets are re-checked every 3 days.
+Proven winners (⭐) and wallets you listed yourself are never vetted: your own
+copies of a winner are better evidence than its history, and your picks are
+yours. On the first start after updating to v1.13, wallets the first version
+turned away only for being quiet are put back on the bench to be checked
+again.
 
 Past results don't promise future ones; vetting only turns away wallets that
 clearly can't work for a copy bot. What your copies actually earn still

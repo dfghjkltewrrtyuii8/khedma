@@ -201,9 +201,10 @@ async function main(): Promise<void> {
       config,
       (message) => {
         console.log(message);
-        // Wallet swaps and finds go to your phone too; the routine
-        // "looking…" lines stay in the terminal.
-        if (/^🔄|^🔎 Found|^🎓/.test(message)) telegram?.send(message);
+        // Drops, a proven winner coming back, and new finds go to your phone
+        // too. Routine swaps (dozens a day now that wallets are swapped in as
+        // they wake up) and the "looking…" lines stay in the terminal.
+        if (/^🔄 Dropped|⭐ is trading again|^🔎 Found|^🎓/.test(message)) telegram?.send(message);
       },
       config.discovery
         ? {

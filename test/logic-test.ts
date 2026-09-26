@@ -40,7 +40,7 @@ import { copySlots, dropReason, paperHints, PROBATION_TRADES, provenWinners, ROB
 import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, selectPools } from '../src/discovery';
 import { SystemProgram, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import { closeAccounts, selectEmpty, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../src/tokenAccounts';
-import { HistoryTrade, judgeHistory, VetVerdict, vetWallet } from '../src/walletVetting';
+import { describeHours, HistoryTrade, hourProfile, judgeHistory, likelyActive, VetVerdict, vetWallet } from '../src/walletVetting';
 
 const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -2241,11 +2241,11 @@ async function testWinnersFirst(realLog: typeof console.log) {
   const watch = {
     isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); },
     lastActivityOf: (w: string) => onChain.get(w),
-    async probeActivity(w: string) { probed.push(w); if (probeAt !== undefined) onChain.set(w, probeAt); return probeAt; },
+    async probeActivity(w: string) { probed.push(w); if (w !== W) return undefined; if (probeAt !== undefined) onChain.set(w, probeAt); return probeAt; },
   };
   let copying: string[] | null = null;
   const trader = { setActiveWallets(ws: string[] | null) { copying = ws; } };
-  const tick = async (at: number) => { await rotation.tick(at, watch, trader); await rotation.settleWinnerChecks(); };
+  const tick = async (at: number) => { await rotation.tick(at, watch, trader); await rotation.settleChecks(); };
 
   roster.idle(U3, T0 - 60 * MIN); // a quiet non-winner, already waiting on the bench
   rotation.startup(T0).forEach((w) => watching.add(w));
@@ -2275,7 +2275,9 @@ async function testWinnersFirst(realLog: typeof console.log) {
   assert(said.some((l) => l.includes(`${shortAddress(W)} ⭐ is trading again`) && l.includes('2W/1L') && l.includes('+0.0130 SOL')), 'the comeback is announced with its record');
   assert(said.some((l) => l.includes(`${shortAddress(U2)} moved to the bench to make room`)), 'and so is the wallet making room');
   assert(!said.some((l) => l.includes(`Now copying ${shortAddress(W)}`)), 'announced once, not twice');
-  assert(probed.length > 0 && probed.every((w) => w === W), 'only benched winners are checked — never the whole bench');
+  const probedU3 = probed.filter((w) => w === U3).length;
+  assert(probed.filter((w) => w === W).length >= 4 && probedU3 >= 1 && probedU3 <= 2 && probed.every((w) => w === W || w === U3),
+    `winners are checked every 5 minutes; others one at a time, at most every 15 minutes, and only while a copied wallet is quiet (W ${probed.filter((w) => w === W).length}, U3 ${probedU3})`);
   rotation.noteBuy(U1, T0 + 60 * MIN);
   await tick(T0 + 61 * MIN);
   assert(roster.active().includes(W), 'and it keeps its slot for a full quiet period, like any wallet that just got one');
@@ -2312,18 +2314,41 @@ async function testWalletVetting(realLog: typeof console.log) {
 
   const good = [...trip(A, 240, 12, 0.5, 0.3), ...trip(B, 180, 20, 0.5, 0.2), ...trip(C, 120, 8, 0.5, -0.15), ...trip(D, 60, 15, 0.5, 0.25), ...trip(E, 30, 10, 0.5, 0.1)];
   const ok = judge(good);
-  assert(ok.ok && ok.stats.roundTrips === 5 && ok.stats.wins === 4 && Math.abs(ok.stats.netSol - 0.35) < 1e-9 && ok.stats.medianHoldMinutes === 12,
+  assert(ok.status === 'pass' && ok.stats.roundTrips === 5 && ok.stats.wins === 4 && Math.abs(ok.stats.netSol - 0.35) < 1e-9 && ok.stats.medianHoldMinutes === 12,
     `an active, profitable wallet that holds long enough passes (${ok.reason})`);
   assert(/5 buys in 3\.7h · 5 trades 4W\/1L · net \+0\.350 SOL · holds ~12 min/.test(ok.reason), `with a one-line summary (${ok.reason})`);
 
   const flipper = [...trip(A, 200, 1, 2, 0.05), ...trip(B, 150, 2, 2, 0.04), ...trip(C, 100, 1, 2, -0.1), ...trip(D, 50, 2, 2, 0.06)];
   assert(/flips coins in ~1 min/.test(judge(flipper).reason) || /flips coins in ~2 min/.test(judge(flipper).reason), `a wallet that flips in 1–2 minutes is turned away (${judge(flipper).reason})`);
 
-  const quiet = [...trip(A, 20 * 60, 30, 0.5, 0.3), ...trip(B, 15 * 60, 30, 0.5, 0.3), ...trip(C, 8 * 60, 30, 0.5, 0.3), ...trip(D, 90, 30, 0.5, 0.3)];
-  assert(/too quiet: ~0\.2 buys an hour/.test(judge(quiet).reason), `4 buys in 20 hours is too quiet for a slot (${judge(quiet).reason})`);
+  // Quiet is judged by the hours it's active, not the clock: 4 good trades
+  // spread over 20 hours is a slow trader, not a bad one — hour matching
+  // decides when it gets a slot. Buying rarely even while active is a no.
+  const slow = [...trip(A, 20 * 60, 30, 0.5, 0.3), ...trip(B, 15 * 60, 30, 0.5, 0.3), ...trip(C, 8 * 60, 30, 0.5, 0.3), ...trip(D, 90, 30, 0.5, 0.3)];
+  assert(judge(slow).status === 'pass', `a slow trader with a good record is kept (${judge(slow).reason})`);
+  const busyElsewhere = Array.from({ length: 12 }, (_, i) => NOW - (i + 1) * 60 * MIN - 5 * MIN); // 12 other transactions, each in its own hour
+  assert(/rarely buys: ~0\.[0-9] per hour it's active/.test(judge(slow, busyElsewhere).reason), `4 buys among 12 hours of other activity is too rare (${judge(slow, busyElsewhere).reason})`);
 
+  // A good record but no buy for hours: asleep, not bad — kept for later.
   const stale = [...trip(A, 9 * 60, 20, 0.5, 0.3), ...trip(B, 8 * 60, 20, 0.5, 0.3), ...trip(C, 7 * 60, 20, 0.5, 0.3), ...trip(D, 6 * 60, 20, 0.5, 0.3)];
-  assert(/hasn't bought for 6\.0h/.test(judge(stale, [NOW - 5 * MIN]).reason), `a wallet that stopped buying hours ago waits (${judge(stale, [NOW - 5 * MIN]).reason})`);
+  const asleep = judge(stale, [NOW - 5 * MIN]);
+  assert(asleep.status === 'asleep' && /^asleep — last bought 6\.0h ago; record: 4 buys/.test(asleep.reason), `a wallet that stopped buying hours ago is asleep, not rejected (${asleep.reason})`);
+  const gone = good.map((t) => ({ ...t, at: t.at - 4 * 24 * 60 * MIN }));
+  assert(/no activity for 4 days — gone, not asleep/.test(judge(gone).reason) && judge(gone).status === 'fail', `nothing for days: gone (${judge(gone).reason})`);
+
+  // Usual hours, from transaction times: busy 20:00–23:00 UTC three days running.
+  const day = 24 * 60 * MIN;
+  const eveningUtc = Date.parse('2026-09-23T20:10:00Z');
+  const evenings = [0, 1, 2].flatMap((d) => [0, 1, 2].map((h) => eveningUtc + d * day + h * 60 * MIN));
+  const prof = hourProfile(evenings)!;
+  assert(prof[20] === 1 && prof[21] === 1 && prof[22] === 1 && prof[23] === 0 && prof[10] === 0, `busy hours read 1, quiet ones 0 (${prof.join(',')})`);
+  assert(likelyActive(prof, Date.parse('2026-09-26T21:30:00Z')) === 1 && likelyActive(prof, Date.parse('2026-09-26T10:00:00Z')) === 0 &&
+    likelyActive(prof, Date.parse('2026-09-26T20:05:00Z')) === 0.75, 'likely active at its usual hour, not at others; the edge of its hours counts partly');
+  const burst = hourProfile([eveningUtc, eveningUtc + 30 * MIN])!;
+  assert(burst[20] === 1 && burst[5] === null && likelyActive(burst, Date.parse('2026-09-26T05:00:00Z')) === null, 'hours its history never covered are unknown, not "quiet"');
+  assert(describeHours(prof, 0) === '8pm–11pm' && describeHours(prof, -240) === '4pm–7pm', `shown in your own time (${describeHours(prof, 0)}, ${describeHours(prof, -240)})`);
+  const lateNight = hourProfile([0, 1, 2].flatMap((d) => [22, 23, 24, 25].map((h) => Date.parse('2026-09-23T00:10:00Z') + d * day + h * 60 * MIN)))!;
+  assert(describeHours(lateNight, 0) === '10pm–2am', `a stretch across midnight reads as one (${describeHours(lateNight, 0)})`);
 
   const dust = good.map((t) => ({ ...t, sol: t.sol! / 100 }));
   assert(/buys are ~0\.005 SOL — under MIN_TRACKED_BUY_SOL \(0\.05\)/.test(judge(dust).reason), `buys too small to copy are turned away (${judge(dust).reason})`);
@@ -2366,14 +2391,14 @@ async function testWalletVetting(realLog: typeof console.log) {
     async getParsedTransaction(sig: string) { fetched.push(sig); return txs[sig] ?? null; },
   };
   const v = await vetWallet(conn as any, new RateLimiter(0), TRACKED, 0.05, NOW);
-  assert(v.ok && v.stats.roundTrips === 4 && v.stats.wins === 3 && v.stats.buys === 4 && v.stats.transactions === 9, `vetWallet reads and judges real transaction shapes (${v.reason})`);
+  assert(v.status === 'pass' && v.stats.roundTrips === 4 && v.stats.wins === 3 && v.stats.buys === 4 && v.stats.transactions === 9, `vetWallet reads and judges real transaction shapes (${v.reason})`);
   assert(!fetched.includes('failed') && fetched.length === 8, 'a failed transaction is never fetched (it changed nothing)');
 
   // In the rotation: nominees are vetted before they're added…
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-vetting-'));
   const store = new PositionStore(dir);
   const [U, L1, L2, W, G, X] = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
-  const verdict = (ok: boolean, reason: string): VetVerdict => ({ ok, reason, stats: {} as any });
+  const verdict = (ok: boolean, reason: string): VetVerdict => ({ status: ok ? 'pass' : 'fail', reason, stats: {} as any, hours: null });
   const verdicts: Record<string, VetVerdict> = {
     [G]: verdict(true, '9 buys in 4.0h · 5 trades 4W/1L · net +0.300 SOL · holds ~12 min'),
     [X]: verdict(false, 'flips coins in ~1 min — over before a copy lands'),
@@ -2424,6 +2449,158 @@ async function testWalletVetting(realLog: typeof console.log) {
   realLog('✅ wallet vetting: found wallets are judged by their own trades — quiet, flippers, dust, machines and losers are turned away');
 }
 
+// Asleep isn't bad, and "this hour" matters: in a live run 12 of 33
+// rejected wallets were only asleep (checked overnight), and slots went to
+// whoever was next in line rather than whoever trades at that hour.
+async function testHourMatching(realLog: typeof console.log) {
+  const MIN = 60_000;
+  const T0 = Date.parse('2026-09-26T20:00:00Z'); // 8pm UTC
+  const profileFor = (hours: number[]) => Array.from({ length: 24 }, (_, h) => (hours.includes(h) ? 1 : 0));
+  const logs: string[] = [];
+
+  // 1. A nominee that's asleep joins the bench (💤) instead of being turned
+  //    away; an old wallet found asleep by the roster check is kept too.
+  {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-asleep-'));
+    const store = new PositionStore(dir);
+    const [U1, L, Y, Z] = Array.from({ length: 4 }, () => Keypair.generate().publicKey.toBase58());
+    const roster = new WalletRoster([U1], 1, dir);
+    roster.addDiscovered([{ wallet: L, pools: 1, medianReturnPct: 30, evidence: ['x'] }], T0 - 5 * 24 * 60 * MIN); // found before vetting
+    const verdicts: Record<string, VetVerdict> = {
+      [Y]: { status: 'pass', reason: '9 buys in 4.0h · …', stats: {} as any, hours: profileFor([19, 20, 21]) },
+      [Z]: { status: 'asleep', reason: 'asleep — last bought 6.0h ago; record: …', stats: {} as any, hours: profileFor([8, 9]) },
+      [L]: { status: 'asleep', reason: 'asleep — last bought 9.0h ago; record: …', stats: {} as any, hours: profileFor([2, 3]) },
+    };
+    let once = [Y, Z];
+    const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30, probationTrades: 0 }, (m) => logs.push(m), {
+      minBench: 99, cooldownMs: 60 * MIN,
+      run: async () => { const n = once.map((w) => ({ wallet: w, pools: 1, medianReturnPct: 30, evidence: ['x'] })); once = []; return n; },
+      vet: async (w) => verdicts[w],
+    });
+    rotation.startup(T0);
+    await rotation.pendingDiscovery;
+    assert(roster.all().includes(Z) && roster.idledAt(Z) !== undefined && roster.idledAt(Y) === undefined, 'the asleep nominee is kept, waiting on the bench (💤); the awake one is ready');
+    assert(roster.hoursOf(Y)?.[20] === 1 && roster.hoursOf(Z)?.[8] === 1, 'their usual hours are kept');
+    assert(logs.some((l) => l.includes(`💤 ${shortAddress(Z)} — asleep`)) && logs.some((l) => /Found 2 new wallet\(s\) to try: .*\(1 asleep — on the bench until they trade\)\.$/.test(l)), 'said plainly');
+    await rotation.tick(T0 + MIN, { isWatching: () => true, addWallet() {}, async removeWallet() {} }, { setActiveWallets() {} });
+    await rotation.pendingVet;
+    assert(roster.idledAt(L) !== undefined && !roster.needsVetting(L, T0 + 2 * MIN) && logs.some((l) => l.includes(`🧪 Checked ${shortAddress(L)}: 💤 asleep`) && l.includes('kept')), 'an old wallet found asleep is kept too, and waits');
+  }
+
+  // 2–4. Picking who gets a slot.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-hours-'));
+  const store = new PositionStore(dir);
+  const [U1, U2, S1, S2, S3] = Array.from({ length: 5 }, () => Keypair.generate().publicKey.toBase58());
+  const roster = new WalletRoster([U1, U2], 2, dir);
+  roster.addDiscovered([S1, S2, S3].map((w) => ({ wallet: w, pools: 1, medianReturnPct: 30, evidence: ['x'] })), T0 - 5 * 24 * 60 * MIN);
+  roster.markVetted(S1, T0 - 60 * MIN, profileFor([19, 20, 21])); // usually trades now
+  roster.markVetted(S2, T0 - 60 * MIN, profileFor([8, 9, 10])); // mornings
+  roster.markVetted(S3, T0 - 60 * MIN, Array.from({ length: 24 }, () => null)); // hours unknown
+  roster.idle(S2, T0 - 180 * MIN); // waited longest
+  roster.idle(S3, T0 - 120 * MIN);
+  roster.idle(S1, T0 - 90 * MIN);
+  const probeTimes = new Map<string, number>();
+  const onChainNow = new Map<string, number>(); // what the watcher has seen copied wallets do
+  const probed: string[] = [];
+  const watching = new Set<string>();
+  const watch = {
+    isWatching: (w: string) => watching.has(w), addWallet: (w: string) => { watching.add(w); }, async removeWallet(w: string) { watching.delete(w); },
+    lastActivityOf: (w: string) => onChainNow.get(w),
+    async probeActivity(w: string) { probed.push(w); return probeTimes.get(w); },
+  };
+  const probeCount = () => probed.length; // a function, so TypeScript doesn't narrow it between checks
+  let copying: string[] = [];
+  const trader = { setActiveWallets(w: string[] | null) { copying = w ?? []; } };
+  logs.length = 0;
+  const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30, probationTrades: 0 }, (m) => logs.push(m));
+  const tick = async (at: number) => { await rotation.tick(at, watch, trader); await rotation.settleChecks(); };
+  rotation.startup(T0).forEach((w) => watching.add(w));
+  assert(roster.active().join() === [U1, U2].join(), 'your two are copied');
+  assert(roster.bench().join() === [S1, S3, S2].join(), 'next up: the one that usually trades at this hour — then unknown hours — then the morning trader, though it has waited longest');
+
+  rotation.noteBuy(U1, T0 + 5 * MIN); rotation.noteBuy(U2, T0 + 5 * MIN);
+  await tick(T0 + 10 * MIN);
+  assert(roster.active().join() === [U1, U2].join() && probeCount() === 0, 'a better-ranked wallet never pushes out one that is trading; and nothing is checked while nobody is quiet');
+
+  // 2. A slot frees up: it goes to the wallet that usually trades at this hour.
+  rotation.noteBuy(U2, T0 + 25 * MIN);
+  await tick(T0 + 36 * MIN); // U1 quiet 31 min
+  assert(roster.active().join() === [U2, S1].join() && copying.join() === [U2, S1].join() && watching.has(S1), 'U1 is benched; S1 takes its slot');
+  assert(logs.some((l) => l === `🔄 Now copying ${shortAddress(S1)} (from the bench) — it usually trades at this hour.`), 'and why is said');
+
+  // 3. A benched wallet starts trading while a copied one has been quiet 15+ minutes: they swap now.
+  rotation.noteBuy(S1, T0 + 45 * MIN);
+  probeTimes.set(S3, T0 + 50 * MIN);
+  await tick(T0 + 51 * MIN); // U2 quiet 26 min → S3, first due, is checked
+  assert(probed.join() === S3, `one benched wallet is checked — the likeliest at this hour among those due (${probed.map(shortAddress).join()})`);
+  assert(roster.active().includes(U2), 'nothing moves on the check itself');
+  onChainNow.set(U2, T0 + 51.5 * MIN); // U2 isn't buying, but it is doing things on-chain
+  await tick(T0 + 52 * MIN);
+  assert(roster.active().includes(U2), 'a wallet still active on-chain is not swapped out early — it may only be between buys');
+  onChainNow.delete(U2);
+  await tick(T0 + 53 * MIN);
+  assert(roster.active().join() === [S1, S3].join() && !roster.active().includes(U2) && watching.has(S3), 'S3 is trading now, U2 has been quiet 27 min: they swap without waiting out the half hour');
+  assert(logs.some((l) => l.includes(`Benched ${shortAddress(U2)}`) && l.includes(`${shortAddress(S3)} is trading right now, so it takes the slot`)), 'the swap is announced');
+  assert(!logs.some((l) => l.startsWith(`🔄 Now copying ${shortAddress(S3)}`)), 'announced once');
+  assert(roster.idledAt(S3) === undefined && roster.idledAt(U2) !== undefined, 'S3 is no longer marked quiet; U2 now is');
+  await tick(T0 + 54 * MIN);
+  assert(probeCount() === 1, 'no checks while nobody on the list is quiet');
+
+  // 4. The list is written down: a restart copies the same wallets.
+  const reloaded = new WalletRoster([U1, U2], 2, dir);
+  reloaded.load();
+  assert(reloaded.active().join() === [S1, S3].join(), 'the copy list survives a restart');
+  const legacyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-legacy-'));
+  const [Q1, Q2, M1, F1] = Array.from({ length: 4 }, () => Keypair.generate().publicKey.toBase58());
+  const was = new Date(T0 - 24 * 60 * MIN).toISOString();
+  fs.writeFileSync(path.join(legacyDir, 'wallets.json'), JSON.stringify({
+    dropped: {}, idled: { [U1]: new Date(T0).toISOString() }, discovered: [],
+    rejected: {
+      [Q1]: { reason: "hasn't bought for 5.2h", at: was }, [Q2]: { reason: 'too quiet: ~0.4 buys an hour', at: was },
+      [M1]: { reason: 'machine speed: ~96 transactions an hour', at: was }, [F1]: { reason: 'flips coins in ~1 min — over before a copy lands', at: was },
+    },
+    vetted: {},
+  }));
+  const legacy = new WalletRoster([U1, U2, S1], 2, legacyDir);
+  legacy.load();
+  const legacyLogs: string[] = [];
+  new Rotation(legacy, new PositionStore(legacyDir), { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30 }, (m) => legacyLogs.push(m)).startup(T0);
+  const written = JSON.parse(fs.readFileSync(path.join(legacyDir, 'wallets.json'), 'utf8'));
+  assert(legacy.active().join() === [U2, S1].join() && written.active.join() === [U2, S1].join(), 'a file from before keeps its ranking and gets the list written down');
+  assert(legacy.all().includes(Q1) && legacy.all().includes(Q2) && legacy.idledAt(Q1) !== undefined && legacy.needsVetting(Q2, T0),
+    'wallets turned away only for being quiet are back on the bench, waiting (💤), to be vetted again');
+  assert(!legacy.all().includes(M1) && !legacy.all().includes(F1) && legacy.known(T0).has(M1), 'machines and flippers stay turned away');
+  assert(legacyLogs.some((l) => l.startsWith('🧪 2 wallet(s) turned away only for being quiet are back on the bench')), 'and it says so');
+  const again = new WalletRoster([U1, U2, S1], 2, legacyDir);
+  again.load();
+  assert(again.rechecked === 0, 'only once — the first start after the update');
+  assert(rotation.describe().startsWith(`copying ${shortAddress(S1)}, ${shortAddress(S3)} · 3 on the bench`), rotation.describe());
+
+  // 5. A wallet benched for being quiet at its usual hour isn't picked
+  //    straight back (a simulated day did that 245 times to one wallet): it
+  //    waits an hour, unless it's seen trading.
+  {
+    const cdir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-cooldown-'));
+    const [A, B, C] = Array.from({ length: 3 }, () => Keypair.generate().publicKey.toBase58());
+    const r = new WalletRoster([], 1, cdir);
+    r.addDiscovered([A, B, C].map((w) => ({ wallet: w, pools: 1, medianReturnPct: 30, evidence: ['x'] })), T0 - 5 * 24 * 60 * MIN);
+    r.markVetted(A, T0 - 60 * MIN, profileFor([19, 20, 21, 22])); // its usual hours, right now
+    r.markVetted(B, T0 - 60 * MIN, null);
+    r.markVetted(C, T0 - 60 * MIN, null);
+    r.idle(B, T0 - 300 * MIN);
+    r.idle(C, T0 - 240 * MIN);
+    const rot = new Rotation(r, new PositionStore(cdir), { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30, probationTrades: 0 }, () => {});
+    rot.startup(T0);
+    assert(r.active().join() === A, 'A starts copied');
+    const w3 = { isWatching: () => true, addWallet() {}, async removeWallet() {} };
+    await rot.tick(T0 + 31 * MIN, w3, { setActiveWallets() {} });
+    assert(r.active().join() === B && r.bench().join() === [C, A].join(), 'quiet A is benched, and goes behind the others though this is its usual hour');
+    await rot.tick(T0 + 92 * MIN, w3, { setActiveWallets() {} }); // B benched in turn; A's hour is up
+    assert(r.bench()[0] === A || r.active().join() === A, 'an hour later, its usual hours count again');
+  }
+  realLog('✅ hour matching: asleep wallets kept, free slots go to who usually trades now, a waking wallet replaces a quiet one, no churn');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2437,6 +2614,7 @@ async function main() {
   await testRentReclaim(console.log);
   await testWinnersFirst(console.log);
   await testWalletVetting(console.log);
+  await testHourMatching(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);
