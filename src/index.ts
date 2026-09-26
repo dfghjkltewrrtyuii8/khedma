@@ -219,6 +219,13 @@ async function main(): Promise<void> {
           }
         : null
     );
+    // Pick the copy list fresh: start with the wallets trading right now.
+    await rotation.pickAtStart(Date.now(), async (wallet) => {
+      const latest = await rpcLimiter.schedule('getSignaturesForAddress', () =>
+        connection.getSignaturesForAddress(new PublicKey(wallet), { limit: 1 }, 'confirmed')
+      );
+      return latest[0]?.blockTime ? latest[0].blockTime * 1000 : undefined;
+    });
     toWatch = rotation.startup(Date.now());
     if (!config.dryRun) {
       // Say up front whether real money can move at all: wallets the scanner

@@ -2638,6 +2638,60 @@ async function testHourMatching(realLog: typeof console.log) {
   realLog('✅ hour matching: asleep wallets kept, free slots go to who usually trades now, a waking wallet replaces a quiet one, no churn');
 }
 
+// At startup the copy list is picked fresh from what every wallet did last,
+// instead of carrying over whoever was copied when the bot stopped (a list
+// picked at night was swapped out in the first minute of an afternoon start).
+async function testStartupPick(realLog: typeof console.log) {
+  const MIN = 60_000;
+  const NOW = Date.parse('2026-09-26T21:00:00Z');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-startpick-'));
+  const store = new PositionStore(dir);
+  const [U, W2, R1, R2, Q1, Q2, W1, H] = Array.from({ length: 8 }, () => Keypair.generate().publicKey.toBase58());
+  const win = (w: string) => { for (const back of [0.06, 0.057]) { const p = store.openPosition({ mint: Keypair.generate().publicKey.toBase58(), decimals: 6, sourceWallet: w, dryRun: false, spentSol: 0.05, tokenAmountRaw: '1' }); store.recordSell(p, 1n, back); } };
+  win(W2); win(W1); // two proven winners
+  const roster = new WalletRoster([U], 4, dir);
+  roster.addDiscovered([W2, R1, R2, Q1, Q2, W1, H].map((w) => ({ wallet: w, pools: 1, medianReturnPct: 30, evidence: ['x'] })), NOW - 5 * 24 * 60 * MIN);
+  roster.setCopyList([Q2, W1, H, U]); // what it was copying when it last stopped
+  const lastActive = new Map<string, number | undefined>([
+    [U, NOW - 50 * MIN], [W2, NOW - 25 * MIN], [R1, NOW - 3 * MIN], [R2, NOW - 20 * MIN],
+    [Q1, NOW - 120 * MIN], [Q2, NOW - 300 * MIN], [W1, NOW - 660 * MIN], [H, undefined], // H: no transactions at all
+  ]);
+  const checked: string[] = [];
+  const logs: string[] = [];
+  const rotation = new Rotation(roster, store, { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30, probationTrades: 0 }, (m) => logs.push(m));
+  await rotation.pickAtStart(NOW, async (w) => { checked.push(w); return lastActive.get(w); });
+  assert(checked.length === 8, 'every wallet is checked once');
+  const chosen = new Set(roster.active());
+  assert(chosen.size === 4 && [W2, R1, R2, U].every((w) => chosen.has(w)),
+    `the three trading now (the proven winner first) and the next most recent (${roster.active().map(shortAddress).join(', ')})`);
+  assert(!chosen.has(W1), 'a proven winner asleep for 11 hours is not forced in — it is checked every 5 minutes and brought back when it trades');
+  assert(roster.idledAt(Q2) !== undefined && roster.idledAt(W1) !== undefined && roster.idledAt(H) !== undefined && roster.idledAt(Q1) === undefined,
+    "last time's quiet picks wait as benched-for-quiet; others are left as they were");
+  const line = logs.find((l) => l.startsWith('▶ Starting with 4 wallet(s), 3 of them trading now:')) ?? '';
+  assert(line.includes(`${shortAddress(W2)}⭐ (active 25 min ago)`) && line.includes(`${shortAddress(R1)} (active 3 min ago)`) && line.includes(`${shortAddress(U)} (last active 50 min ago)`),
+    `why each was picked is said (${line})`);
+  assert(line.indexOf(shortAddress(W2)) < line.indexOf(shortAddress(R1)) && line.indexOf(shortAddress(R1)) < line.indexOf(shortAddress(R2)), 'in pick order: winner first among the active, then most recent');
+
+  const watched = rotation.startup(NOW);
+  assert([W2, R1, R2, U].every((w) => watched.includes(w)) && watched.length === 4, 'exactly those are watched from the start');
+  const w = new Set(watched);
+  const watch = { isWatching: (x: string) => w.has(x), addWallet: (x: string) => { w.add(x); }, async removeWallet(x: string) { w.delete(x); } };
+  const before = logs.length;
+  for (const at of [1, 2, 3, 4, 31, 32, 45]) await rotation.tick(NOW + at * MIN, watch, { setActiveWallets() {} });
+  assert(!logs.slice(before).some((l) => l.startsWith('🔄')),
+    'no swapping after start, even once the picks have been quiet a while — what the startup check learned is remembered, and nothing waiting is more active');
+
+  // A check that fails: that wallet is judged on its usual hours alone, and it's said.
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-startpick2-'));
+  const [A, B] = Array.from({ length: 2 }, () => Keypair.generate().publicKey.toBase58());
+  const r2 = new WalletRoster([A, B], 1, dir2);
+  const logs2: string[] = [];
+  const rot2 = new Rotation(r2, new PositionStore(dir2), { walletMaxConsecutiveLosses: 3, walletDropAfterTrades: 6, walletIdleMinutes: 30 }, (m) => logs2.push(m));
+  await rot2.pickAtStart(NOW, async (x) => { if (x === A) throw new Error('429'); return NOW - 10 * MIN; });
+  assert(r2.active().join() === B && logs2.some((l) => l.includes("1 couldn't be checked just now")), 'a wallet that could not be checked does not take the place of one known to be trading');
+  realLog('✅ startup pick: the copy list starts with the wallets trading now, says why, and does not swap after start');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2652,6 +2706,7 @@ async function main() {
   await testWinnersFirst(console.log);
   await testWalletVetting(console.log);
   await testHourMatching(console.log);
+  await testStartupPick(console.log);
   await testProbationInRealMode(console.log);
   await testPositionCapsAndSweepYield(console.log);
   await testTelegram(console.log);

@@ -93,6 +93,9 @@ const AWAKE_MS = 2 * WINNER_CHECK_MS;
 // Other benched wallets are checked less often, one at a time, and only while
 // a copied wallet has gone quiet (see Rotation.checkBench).
 const OTHER_CHECK_MS = 15 * 60_000;
+// At startup, at most this many wallets are checked for what they did last
+// (the best-ranked first) — one cheap lookup each, a few seconds in all.
+const START_CHECKS = 40;
 
 // Pure: the proven winners and their net SOL — paper and real copies both count.
 export function provenWinners(positions: readonly Position[]): Map<string, number> {
@@ -367,6 +370,12 @@ export class WalletRoster {
     this.save();
   }
 
+  // Replace the copy list (startup: picked fresh from what every wallet did last).
+  setCopyList(wallets: string[]): void {
+    this.state.active = wallets.slice(0, this.activeCount);
+    this.save();
+  }
+
   // Write the copy list down (a file from before v1.13 had none).
   settle(): void {
     if (this.state.active === undefined) {
@@ -466,6 +475,9 @@ export class Rotation {
   private readonly announced = new Set<string>(); // new on the copy list this tick, announced already
   private readonly whyNew = new Map<string, string>(); // why a wallet got a free slot this tick
   private readonly benchedNow = new Set<string>(); // benched this tick — never refilled into the slot it just left
+  // Latest on-chain activity learned outside the watcher: the startup check,
+  // and checks on benched wallets. The watcher only knows wallets it watches.
+  private readonly knownActivity = new Map<string, number>();
   private clock = 0; // the last startup/tick — what "this hour" means for the ranking
 
   constructor(
@@ -497,12 +509,21 @@ export class Rotation {
     await Promise.all([...this.checks]);
   }
 
+  // A wallet's latest known on-chain activity: from the watcher, or from a
+  // check the rotation made itself — whichever is newer.
+  private lastSeen(wallet: string, watch?: WatchControl): number | undefined {
+    const watched = watch?.lastActivityOf?.(wallet);
+    const checked = this.knownActivity.get(wallet);
+    if (watched === undefined) return checked;
+    return checked === undefined ? watched : Math.max(watched, checked);
+  }
+
   // The last sign of life that counts for a copied wallet: its last buy, or
   // when it got its slot — or its last on-chain activity, if that was
   // earlier (a wallet that hasn't done anything for hours is quiet at once).
   private lastSign(wallet: string, now: number, watch: WatchControl): number {
     const since = this.activeSince.get(wallet) ?? now;
-    const onChain = watch.lastActivityOf?.(wallet);
+    const onChain = this.lastSeen(wallet, watch);
     const quietSince = onChain !== undefined ? Math.min(since, onChain) : since;
     return Math.max(this.lastBuy.get(wallet) ?? 0, quietSince);
   }
@@ -514,7 +535,7 @@ export class Rotation {
   // those pauses is churn (a simulated day did it 400 times).
   private quietActives(now: number, watch: WatchControl, ms: number): string[] {
     const winners = provenWinners(this.store.all());
-    const last = (w: string) => Math.max(this.lastSign(w, now, watch), watch.lastActivityOf?.(w) ?? 0);
+    const last = (w: string) => Math.max(this.lastSign(w, now, watch), this.lastSeen(w, watch) ?? 0);
     return this.roster
       .active()
       .filter((w) => !winners.has(w) && !this.announced.has(w) && now - last(w) >= ms)
@@ -542,7 +563,9 @@ export class Rotation {
       const check: Promise<void> = watch
         .probeActivity(w)
         .then((at) => {
-          if (at !== undefined && at > (this.seenAt.get(w) ?? 0)) this.seenAt.set(w, at);
+          if (at === undefined) return;
+          if (at > (this.seenAt.get(w) ?? 0)) this.seenAt.set(w, at);
+          if (at > (this.knownActivity.get(w) ?? 0)) this.knownActivity.set(w, at);
         })
         .catch(() => {})
         .finally(() => {
@@ -671,7 +694,7 @@ export class Rotation {
     if (!this.discovery || this.pendingDiscovery) return;
     const idleMs = this.cfg.walletIdleMinutes * 60_000;
     const usable = this.roster.bench().filter((w) => {
-      const at = watch?.lastActivityOf?.(w);
+      const at = this.lastSeen(w, watch);
       return at === undefined || idleMs <= 0 || now - at < idleMs;
     }).length;
     if (usable >= this.discovery.minBench) return;
@@ -813,6 +836,83 @@ export class Rotation {
     }
   }
 
+  // At startup nobody is mid-trade, so the copy list is picked fresh rather
+  // than carried over from whenever the bot last stopped (a list picked at
+  // night is mostly asleep by the afternoon, and the first minutes were spent
+  // swapping it out). Every wallet's latest on-chain activity is checked —
+  // one cheap lookup each — and the slots go, in order, to:
+  //   1. wallets active in the last WALLET_IDLE_MINUTES: proven winners
+  //      first, then the most recently active
+  //   2. everyone else, most recently active first
+  // The same rule the quiet-wallet check uses once running (a quiet wallet
+  // gives way only to one known to be more active), so nothing picked here
+  // is swapped straight out. A proven winner that's asleep isn't forced in:
+  // it's checked every 5 minutes and brought back the moment it trades.
+  // Wallets that couldn't be checked come last, ranked on their usual hours.
+  // Call before startup().
+  async pickAtStart(now: number, check: (wallet: string) => Promise<number | undefined>): Promise<void> {
+    this.clock = now;
+    this.applyDrops(now);
+    const pool = [...this.roster.active(), ...this.roster.bench()].filter((w) => dropReason(this.store.all(), w, this.cfg) === null);
+    if (pool.length === 0) return;
+    const toCheck = pool.slice(0, START_CHECKS);
+    this.log(`🔎 Checking what your ${toCheck.length} wallet(s) did last, to start with the ones trading now…`);
+    let failed = 0;
+    for (const w of toCheck) {
+      try {
+        // No transactions at all is an answer too: known to be inactive (0),
+        // not "unknown" — an unknown wallet would be tried once, for nothing.
+        const at = (await check(w)) ?? 0;
+        if (at > (this.knownActivity.get(w) ?? -1)) this.knownActivity.set(w, at);
+      } catch {
+        failed += 1; // unknown: judged on its usual hours, and worth one try later
+      }
+    }
+    const idleMs = (this.cfg.walletIdleMinutes > 0 ? this.cfg.walletIdleMinutes : 30) * 60_000;
+    const winners = provenWinners(this.store.all());
+    const index = new Map(pool.map((w, i) => [w, i]));
+    const seen = (w: string) => this.knownActivity.get(w);
+    const recent = (w: string) => {
+      const at = seen(w);
+      return at !== undefined && now - at < idleMs;
+    };
+    const hour = (w: string) => likelyActive(this.roster.hoursOf(w), now) ?? UNKNOWN_HOUR_SCORE;
+    const winnings = (w: string) => winners.get(w) ?? 0;
+    const order = [...toCheck].sort((a, b) => {
+      const byNow = Number(recent(b)) - Number(recent(a));
+      if (byNow !== 0) return byNow;
+      if (recent(a) && winnings(b) !== winnings(a)) return winnings(b) - winnings(a);
+      const bySeen = (seen(b) ?? 0) - (seen(a) ?? 0);
+      if (bySeen !== 0) return bySeen;
+      return winnings(b) - winnings(a) || hour(b) - hour(a) || index.get(a)! - index.get(b)!;
+    });
+    const slots = this.roster.freeSlots() + this.roster.active().length;
+    const chosen = order.slice(0, slots);
+    const previous = this.roster.active();
+    this.roster.setCopyList(chosen);
+    for (const w of chosen) this.roster.release(w);
+    // Last time's picks that are left out because they're quiet wait as
+    // benched-for-quiet; ones left out only for lack of room stay first in line.
+    for (const w of previous) if (!chosen.includes(w) && !recent(w)) this.roster.idle(w, now);
+
+    const ago = (at: number) => {
+      const min = Math.round((now - at) / 60_000);
+      return min < 90 ? `${min} min ago` : `${Math.round(min / 60)}h ago`;
+    };
+    const why = (w: string) => {
+      const at = seen(w);
+      if (at === 0) return 'no activity found';
+      if (at !== undefined) return `${recent(w) ? 'active' : 'last active'} ${ago(at)}`;
+      return hour(w) >= 0.5 ? 'not checked; usually trades at this hour' : 'not checked';
+    };
+    const trading = chosen.filter(recent).length;
+    this.log(
+      `▶ Starting with ${chosen.length} wallet(s), ${trading} of them trading now: ` +
+        chosen.map((w) => `${shortAddress(w)}${winners.has(w) ? '⭐' : ''} (${why(w)})`).join(', ')
+    );
+    if (failed > 0) this.log(`   (${failed} couldn't be checked just now — judged on their usual hours instead)`);
+  }
+
   // Before anything is watched: apply drops earned in earlier sessions, fill
   // the slots, and return every wallet that must be watched — the active
   // ones, plus any off the list that we still hold a position from (their
@@ -875,7 +975,7 @@ export class Rotation {
         const last = lastOf(w);
         const next = waiting.find((x) => {
           if (taken.has(x) || dropReason(this.store.all(), x, this.cfg) !== null) return false;
-          const seen = watch.lastActivityOf?.(x);
+          const seen = this.lastSeen(x, watch);
           return seen === undefined || seen > last;
         });
         if (!next) continue; // nobody waiting would do better

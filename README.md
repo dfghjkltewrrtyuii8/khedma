@@ -578,6 +578,14 @@ slots are filled from the bench straight away, including wallets that
   running (`WALLET_IDLE_MINUTES`; `npm run recommended` sets 30). Quiet isn't
   bad — it may trade while you sleep — so it waits on the bench (💤) and gets
   a slot again when it trades.
+- **Starts with whoever is trading now.** At startup it doesn't carry over
+  the list from when you last stopped (a list picked at night is mostly
+  asleep by the afternoon). It checks what every wallet did last — one cheap
+  lookup each, a few seconds — and starts with the ones active in the last
+  30 minutes (proven winners first), then the most recently active, and says
+  why: `▶ Starting with 10 wallet(s), 6 of them trading now: 8WQi…moJJ⭐
+  (active 4 min ago), …`. In 24 simulated restarts this cut the swapping right
+  after start from ~25 swaps to ~1, with the same share of trades copied.
 - **Copies whoever trades at this hour.** Each found wallet's usual hours are
   learned from its last two weeks of transaction times (one cheap lookup, when
   it's vetted). A free slot goes, in order, to: a benched wallet **seen trading
