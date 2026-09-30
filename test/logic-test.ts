@@ -2436,7 +2436,10 @@ async function testWalletVetting(realLog: typeof console.log) {
   assert(roster.all().includes(G) && !roster.all().includes(X) && roster.known(NOW).has(X), 'the one that passed is on the bench; the one that failed is remembered, not added');
   assert(logs.some((l) => l.includes(`✅ ${shortAddress(G)} — 9 buys`)) && logs.some((l) => l.includes(`❌ ${shortAddress(X)} — flips coins`)), 'each verdict is shown');
   assert(logs.some((l) => /🔎 Found 1 new wallet\(s\) to try: .*\.$/.test(l) && !l.includes('paper-tested')), 'no "paper-tested first" when there is no trial');
-  assert(!roster.known(NOW + 8 * 24 * 60 * MIN).has(X), 'a turned-away wallet is forgotten after a week — it may be worth another look by then');
+  // Rejections are stamped with the real clock when the check finishes, so the week counts from then.
+  const rejectedAt = Date.now();
+  assert(roster.known(rejectedAt + 6 * 24 * 60 * MIN).has(X), 'a turned-away wallet is still remembered six days later');
+  assert(!roster.known(rejectedAt + 8 * 24 * 60 * MIN).has(X), 'a turned-away wallet is forgotten after a week — it may be worth another look by then');
 
   // …and wallets found before vetting existed are checked one at a time, copied ones first.
   vetted.length = 0;
@@ -2448,7 +2451,8 @@ async function testWalletVetting(realLog: typeof console.log) {
   assert(vetted.join() === [L1, L2].join() && logs.some((l) => l.includes(`🧪 Checked ${shortAddress(L2)}: ✅ 6 buys`)), 'then L2 is checked, and passes');
   await rotation.tick(NOW + 3 * MIN, watch, trader); await rotation.pendingVet;
   assert(vetted.join() === [L1, L2].join(), 'nothing is checked twice (G was vetted when found)');
-  assert(!roster.needsVetting(L2, NOW + 2 * 24 * 60 * MIN) && roster.needsVetting(L2, NOW + 4 * 24 * 60 * MIN), 'a passed wallet is checked again after 3 days');
+  const vettedAt = Date.now(); // like rejections, a check is stamped with the real clock when it finishes
+  assert(!roster.needsVetting(L2, vettedAt + 2 * 24 * 60 * MIN) && roster.needsVetting(L2, vettedAt + 4 * 24 * 60 * MIN), 'a passed wallet is checked again after 3 days');
   assert(!logs.some((l) => l.startsWith('🎓')), 'with no trial, nobody "passes a trial of 0 paper copies"');
 
   const reloaded = new WalletRoster([U], 3, dir);
