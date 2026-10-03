@@ -14,6 +14,7 @@ import { JupiterClient, JupiterError } from './jupiter';
 import { soundFor, speechFor, speechArgs, windowsSoundFor } from './notify';
 import { RateLimiter, sleep } from './rateLimiter';
 import { describeExitRules, exitRulesEnabled } from './exitRules';
+import { describeLossLimit } from './lossLimit';
 import { findPlaceholders, paperModeWithFundsHint } from './setupChecks';
 import { getSolPriceUsd } from './solPrice';
 import { fetchDexscreenerMarket } from './tokenMarket';
@@ -276,6 +277,9 @@ async function main(): Promise<void> {
     }
   } else {
     warn('all exit rules are off — positions are only sold when the tracked wallet sells');
+  }
+  if (config.sessionMaxLossUsd > 0) {
+    ok(`session loss limit — ${describeLossLimit(config.sessionMaxLossUsd)} (open trades are still sold)`);
   }
   if (process.platform === 'win32') {
     const missing = (['buy', 'sell', 'fail'] as const)

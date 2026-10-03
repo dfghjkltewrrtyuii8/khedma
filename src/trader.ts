@@ -11,6 +11,7 @@ import { notify } from './notify';
 import { PositionStore } from './positions';
 import { sleep } from './rateLimiter';
 import { decideExit, exitRulesEnabled } from './exitRules';
+import { LossLimit } from './lossLimit';
 import { evaluateToken, fetchDexscreenerMarket, MarketSource, tokenGateEnabled } from './tokenMarket';
 import { Position, SwapEvent } from './types';
 import { walletMute } from './walletGate';
@@ -61,6 +62,8 @@ export class Trader {
   // Wallets whose copies must stay on paper even when DRY_RUN=false: ones the
   // bot discovered itself that haven't proven themselves yet.
   private paperOnly: (wallet: string) => boolean = () => false;
+  // SESSION_MAX_LOSS_USD: once reached, no new buys this session (sells carry on).
+  private lossLimit: LossLimit | null = null;
 
   constructor(
     private readonly config: Config,
@@ -80,6 +83,10 @@ export class Trader {
 
   setPaperOnly(check: (wallet: string) => boolean): void {
     this.paperOnly = check;
+  }
+
+  setLossLimit(limit: LossLimit | null): void {
+    this.lossLimit = limit;
   }
 
   setActiveWallets(wallets: string[] | null): void {
@@ -264,6 +271,16 @@ export class Trader {
     // discovered wallet on probation.
     const simulate = this.config.dryRun || this.paperOnly(event.sourceWallet);
     const onProbation = simulate && !this.config.dryRun;
+    // The loss limit guards the mode the bot runs in: real money, or paper in
+    // a practice run. A probation copy is paper during a real run, so it
+    // risks nothing and isn't stopped.
+    if (this.lossLimit && simulate === this.config.dryRun) {
+      const blocked = await this.lossLimit.blockReason();
+      if (blocked) {
+        console.log(`   ↳ skip: ${blocked}`);
+        return;
+      }
+    }
     const existing = this.store.findOpenByMint(event.mint);
     if (existing) {
       console.log(`   ↳ skip: we already hold a position in ${shortAddress(event.mint)} (${existing.status})`);
@@ -511,7 +528,7 @@ export class Trader {
         if (position.dryRun) {
           const receivedSol = quotedSol;
           this.store.recordSell(position, sellRaw, receivedSol);
-          this.announceMuteIfTriggered(position);
+          this.afterSell(position);
           console.log(
             `   ✅ [DRY RUN] SIMULATED sell: received ~${receivedSol.toFixed(4)} SOL` +
               (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open')
@@ -525,7 +542,7 @@ export class Trader {
         const signature = await this.signAndExecute(order.transactionBase64, order.requestId);
         const receivedSol = await this.settledSolReceived(solBefore, quotedSol);
         this.store.recordSell(position, sellRaw, receivedSol, signature);
-        this.announceMuteIfTriggered(position);
+        this.afterSell(position);
         console.log(
           `   ✅ REAL sell confirmed: ${receivedSol.toFixed(4)} SOL received (quoted ${quotedSol.toFixed(4)})` +
             (position.status === 'closed' ? ' — position CLOSED' : ' — position still partially open') +
@@ -563,6 +580,14 @@ export class Trader {
             '      or sell manually in Phantom/Jupiter.\n')
     );
     return false;
+  }
+
+  // After every recorded sell: the wallet mute, then the session loss limit.
+  private afterSell(position: Position): void {
+    this.announceMuteIfTriggered(position);
+    // Not awaited: the very first check may wait on the price feed, and the
+    // next trade shouldn't. Not at shutdown either — no buys follow then.
+    if (position.status === 'closed' && this.lossLimit && !this.shuttingDown) void this.lossLimit.afterClose();
   }
 
   // After a position closes at a loss: if that loss completed a losing streak,

@@ -171,6 +171,7 @@ the bot). To change the wallet or a key, run `npm run setup` again.
 | `MIN_LIQUIDITY_USD` | Don't copy a token with less than this much liquidity in its deepest pool. Default `20000`. |
 | `WALLET_MAX_CONSECUTIVE_LOSSES` | Mute a tracked wallet after this many copied losses in a row. Default `3`; `0` = never mute. |
 | `WALLET_MUTE_HOURS` | How long a muted wallet stays muted. Default `24`; `0` = until you remove it. |
+| `SESSION_MAX_LOSS_USD` | [Session loss limit](#session-loss-limit): no new buys once this session's closed trades are down this many dollars; open trades are still sold. Default `0` = off. |
 | `MAX_TRACKED_WALLETS` | The most wallets copied at once; the bot refuses to start with more tracked wallets than this. Default `10`. |
 | `BENCH_WALLETS` | Substitute wallets for [rotation](#wallet-rotation). Empty = a fixed list. |
 | `ACTIVE_WALLETS` | Rotation: how many wallets to copy at once; empty slots fill from the bench and discovery. Default `4`. |
@@ -390,8 +391,9 @@ it's on. `npm run doctor` sends a test message to check it any time.
 | A report | Every `TELEGRAM_REPORT_HOURS` (default 3) and a final one when the bot stops |
 | A message per sell | With the result, e.g. `✅ Sold WIF… +42% (+0.0042 SOL) · paper · trailing stop` |
 
-Everything arrives **silently** (no buzz at night). Only two things make the
-phone ring: a **real-money** sell that failed, and the bot crashing.
+Everything arrives **silently** (no buzz at night). Only three things make the
+phone ring: a **real-money** sell that failed, the bot crashing, and the
+[session loss limit](#session-loss-limit) stopping new buys.
 
 **Safety.** It's read-only: there is no command that buys, sells or changes a
 setting, so someone holding your phone can look but never trade. It only
@@ -552,9 +554,24 @@ moves:
   `WALLET_MUTE_HOURS`: its new buys are skipped, its open positions are still
   mirrored on sell. Muted wallets show as 🔇 in the summary's per-wallet
   table — which is also where you see which wallets actually make money.
-
 Both gates make the bot slower and pickier. That is the point: the trades
 they refuse are the ones that lost.
+
+### Session loss limit
+
+With `SESSION_MAX_LOSS_USD=45`, once the trades closed this session are down
+$45 net (losses minus wins — the same "Realized P&L" the summary shows), the
+bot takes **no new buys** until you restart it. Open trades are still sold as
+usual (take-profit, stop-loss, trailing stop, or when the wallet sells), so
+nothing is left unwatched. Telegram tells you the moment it happens (this one
+buzzes), and `/status` shows how far down the session is.
+
+- It stays stopped even if a later sell wins some of it back.
+- The final loss can go past the limit by what the trades still open at that
+  moment lose before they're sold.
+- It counts real trades — or paper ones in a practice run, so you can watch it
+  work before money is involved.
+- `0` (the default) turns it off.
 
 ## Wallet rotation
 

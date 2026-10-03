@@ -9,7 +9,8 @@
 // Read-only on purpose: no command buys, sells or changes a setting, so
 // someone holding your phone can look but not trade. Messages from anyone
 // else are ignored without a reply. Everything arrives silently (no buzz)
-// except a real-money sell that failed. The bot token lives in .env only and
+// except a real-money sell that failed, a crash, and the session loss limit
+// stopping new buys. The bot token lives in .env only and
 // is scrubbed from every error message, so it never lands in a log.
 //
 // Set up with `npm run telegram`. Everything that isn't a network call is a
@@ -362,6 +363,7 @@ export interface StatusInput {
   nextReportAt: number | null;
   activity: WalletActivity[];
   rotating: boolean;
+  lossLimitLine?: string | null; // SESSION_MAX_LOSS_USD: how far down the session is, or that it was hit
 }
 
 export function formatStatus(s: StatusInput): string {
@@ -372,6 +374,7 @@ export function formatStatus(s: StatusInput): string {
       ? `Last trade seen ${duration(s.now - s.lastSwap.at)} ago (${shortAddress(s.lastSwap.wallet)})`
       : 'No trades seen yet from the wallets it copies',
   ];
+  if (s.lossLimitLine) lines.push(s.lossLimitLine);
   if (s.activity.length > 0) {
     lines.push(`Last on-chain activity: ${describeActivity(s.activity, s.now)}`);
     if (allQuiet(s.activity, s.now)) lines.push(quietHint(s.rotating));

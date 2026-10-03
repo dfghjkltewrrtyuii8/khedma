@@ -16,7 +16,7 @@ import bs58 from 'bs58';
 import { Keypair, ParsedTransactionWithMeta, PublicKey } from '@solana/web3.js';
 
 import { analyzeSwap, installedWeb3Version, MAX_TX_VERSION, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from '../src/watcher';
-import { RateLimiter } from '../src/rateLimiter';
+import { RateLimiter, sleep } from '../src/rateLimiter';
 import { inRun, PositionStore } from '../src/positions';
 import { Trader } from '../src/trader';
 import { loadConfig, SOL_MINT } from '../src/config';
@@ -41,6 +41,7 @@ import { discoverWallets, findCandidates, parsePoolTrades, parseTrendingPools, s
 import { SystemProgram, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import { closeAccounts, selectEmpty, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../src/tokenAccounts';
 import { describeHours, HistoryTrade, hourProfile, judgeHistory, likelyActive, VetVerdict, vetWallet } from '../src/walletVetting';
+import { describeLossLimit, LossLimit, lossLimitReached, sessionResultSol } from '../src/lossLimit';
 
 const TRACKED = TEST_WALLET;
 const MEME_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'; // BONK mint (any valid pubkey works)
@@ -2696,6 +2697,162 @@ async function testStartupPick(realLog: typeof console.log) {
   realLog('✅ startup pick: the copy list starts with the wallets trading now, says why, and does not swap after start');
 }
 
+// SESSION_MAX_LOSS_USD: once this session's closed trades are down that many
+// dollars, no new buys until restart — but open trades are still sold, the
+// limit stays hit even if a later sell wins some back, and it's announced once.
+async function testSessionLossLimit(realLog: typeof console.log) {
+  const MIN = 60_000;
+  const START = Date.parse('2026-10-03T18:00:00Z');
+  const iso = (t: number) => new Date(t).toISOString();
+  let n = 0;
+  const pos = (o: { dryRun: boolean; spent: number; got: number; opened: number; closed?: number }): Position => ({
+    id: `p${n++}`, mint: MEME_MINT, decimals: 5, sourceWallet: TRACKED, dryRun: o.dryRun,
+    status: o.closed === undefined ? 'open' : 'closed', openedAt: iso(o.opened), closedAt: o.closed === undefined ? undefined : iso(o.closed),
+    spentSol: o.spent, receivedSol: o.got, tokenAmountRaw: o.closed === undefined ? '1' : '0', initialTokenAmountRaw: '1', sellTxs: [],
+  });
+
+  // 1. What counts: trades CLOSED this session, in the mode the bot runs in.
+  const history = [
+    pos({ dryRun: false, spent: 0.5, got: 0.3, opened: START + MIN, closed: START + 2 * MIN }), // -0.2
+    pos({ dryRun: false, spent: 0.5, got: 0.55, opened: START + 3 * MIN, closed: START + 4 * MIN }), // +0.05
+    pos({ dryRun: false, spent: 0.5, got: 0.4, opened: START - 60 * MIN, closed: START + 5 * MIN }), // -0.1: opened last session, closed in this one
+    pos({ dryRun: false, spent: 1, got: 0, opened: START - 90 * MIN, closed: START - 30 * MIN }), // last session's loss
+    pos({ dryRun: true, spent: 5, got: 0, opened: START + MIN, closed: START + 2 * MIN }), // paper
+    pos({ dryRun: false, spent: 0.5, got: 0, opened: START + 6 * MIN }), // still open
+  ];
+  assert(Math.abs(sessionResultSol(history, START, false) - -0.25) < 1e-9, 'real mode: this session\'s closed real trades only (-0.2 +0.05 -0.1)');
+  assert(Math.abs(sessionResultSol(history, START, true) - -5) < 1e-9, 'practice mode: its paper trades');
+  assert(lossLimitReached(-0.375, 120, 45).reached && !lossLimitReached(-0.3749, 120, 45).reached, '$45.00 down reaches a $45 limit; $44.99 does not');
+  assert(lossLimitReached(0.5, 120, 45).lossUsd === 0 && !lossLimitReached(-10, 120, 0).reached, 'a session in profit is $0 down; a 0 limit is off');
+  assert(/\$45/.test(describeLossLimit(45)) && describeLossLimit(0) === 'no session loss limit', 'the startup line names the limit');
+
+  // 2. The limit itself.
+  const positions: Position[] = [];
+  let priceCalls = 0;
+  let price: number | null = 120;
+  const hits: string[] = [];
+  const hitCount = () => hits.length; // read fresh: assert() would otherwise pin the length for the type checker
+  const logs: string[] = [];
+  const make = (limit = 45) =>
+    new LossLimit(limit, START, false, () => positions, async () => { priceCalls++; return price; }, (m) => hits.push(m), (m) => logs.push(m), () => START + 60 * MIN);
+  const limit = make();
+  assert((await limit.blockReason()) === null && priceCalls === 0, 'no losses yet: buys go ahead without asking the price feed');
+  positions.push(pos({ dryRun: false, spent: 0.5, got: 0.3, opened: START + MIN, closed: START + 2 * MIN })); // -$24
+  await limit.afterClose();
+  assert(!limit.isHit() && hitCount() === 0 && (await limit.blockReason()) === null, '$24 down: still buying');
+  assert((await limit.statusLine()) === 'Loss limit: down $24.00 of $45 this session', '/status shows how far down the session is');
+  positions.push(pos({ dryRun: false, spent: 0.5, got: 0.3, opened: START + 3 * MIN, closed: START + 4 * MIN })); // -$48 total
+  await limit.afterClose();
+  assert(limit.isHit() && hitCount() === 1 && hits[0].includes('down $48.00 (limit $45)') && hits[0].includes('still sold'), 'reaching it is announced once, saying sells carry on');
+  const why = await limit.blockReason();
+  assert(why !== null && why.includes('session loss limit reached') && why.includes('$48.00'), 'after that, buys are refused with the reason');
+  positions.push(pos({ dryRun: false, spent: 0.5, got: 1.5, opened: START + 5 * MIN, closed: START + 6 * MIN })); // a +$120 win
+  await limit.afterClose();
+  assert(limit.isHit() && (await limit.blockReason()) !== null && hitCount() === 1, 'it stays hit for the session even after a winning sell — and is not announced again');
+  assert((await limit.statusLine())!.startsWith('⛔ Loss limit hit at'), '/status says it was hit');
+
+  // Several checks at the same moment announce it once.
+  positions.length = 0;
+  positions.push(pos({ dryRun: false, spent: 1, got: 0.5, opened: START + MIN, closed: START + 2 * MIN })); // -$60
+  hits.length = 0;
+  const racing = make();
+  await Promise.all([racing.afterClose(), racing.blockReason(), racing.afterClose(), racing.statusLine()]);
+  assert(hitCount() === 1, `checks at the same moment announce it once (got ${hitCount()})`);
+
+  // No price ever known: trading isn't stopped over a price-feed hiccup, and that's said once.
+  price = null;
+  hits.length = 0;
+  const blind = make();
+  assert((await blind.blockReason()) === null && (await blind.blockReason()) === null, 'without any SOL price, buys are not blocked');
+  assert(logs.filter((l) => l.includes('SOL/USD price is unavailable')).length === 1 && hitCount() === 0, '…and that is said once');
+
+  // Once a price is known, a hanging price feed never holds up a buy.
+  price = 120;
+  positions.length = 0;
+  positions.push(pos({ dryRun: false, spent: 0.5, got: 0.4, opened: START + MIN, closed: START + 2 * MIN })); // -$12
+  let hang = false;
+  const slow = new LossLimit(45, START, false, () => positions, () => (hang ? new Promise<number | null>(() => {}) : Promise.resolve(120)), () => {}, () => {});
+  await slow.blockReason();
+  hang = true;
+  const quick = await Promise.race([slow.blockReason().then(() => 'done'), sleep(500).then(() => 'stuck')]);
+  assert(quick === 'done', 'a buy does not wait on a hanging price feed once a price is known');
+
+  const off = make(0);
+  assert(!off.enabled && (await off.blockReason()) === null && (await off.statusLine()) === null, 'SESSION_MAX_LOSS_USD=0 is off');
+
+  // 3. In the trader (a practice run: paper trades count).
+  const config = loadConfig();
+  config.maxOpenPositions = 10;
+  config.walletMaxConsecutiveLosses = 0; // only the loss limit stops buys here
+  config.copyBuyAmountSol = 0.1;
+  const store = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-losslimit-')));
+  let orders = 0;
+  const fakeJupiter = {
+    async getOrder(params: OrderParams): Promise<JupiterOrder> {
+      orders++;
+      const isBuy = params.inputMint === SOL_MINT;
+      // every 0.1 SOL buy sells back for 0.05 SOL: -0.05 SOL = -$5 at $100
+      return { requestId: 'req', transactionBase64: null, inAmountRaw: params.amountRaw, outAmountRaw: isBuy ? 5_000n : 50_000_000n };
+    },
+    async execute() { throw new Error('must not execute in dry run'); },
+  };
+  const trader = new Trader(config, { async getBalance() { return 10e9; } } as any, Keypair.generate(), fakeJupiter as any, store, okMarket);
+  const traderHits: string[] = [];
+  const sessionStart = Date.now() - 1000;
+  const guard = new LossLimit(12, sessionStart, config.dryRun, () => store.all(), async () => 100, (m) => traderHits.push(m), () => {});
+  trader.setLossLimit(guard);
+  const mints = Array.from({ length: 6 }, () => Keypair.generate().publicKey.toBase58());
+  const buy = (mint: string, signature: string) =>
+    trader.handleSwapEvent({ signature, sourceWallet: TRACKED, side: 'buy', mint, decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+  const sellAll = (mint: string, signature: string) =>
+    trader.handleSwapEvent({ signature, sourceWallet: TRACKED, side: 'sell', mint, decimals: 5, tokenDeltaRaw: 100n, ownerPreTokenRaw: 100n, quoteSolEquivalent: 0.2 });
+  const loud = console.log;
+  const printed: string[] = [];
+  console.log = (...a: unknown[]) => { printed.push(a.join(' ')); };
+  try {
+    await buy(mints[5], 'open-before'); // still open when the limit is hit
+    for (let i = 0; i < 3; i++) {
+      await buy(mints[i], `b${i}`);
+      await sellAll(mints[i], `s${i}`);
+    }
+    await sleep(20); // the after-sell check runs in the background
+    assert(store.byStatus('closed').length === 3 && guard.isHit() && traderHits.length === 1, 'the sell that reaches the limit announces it (three -$5 trades, $12 limit), once');
+    const before = orders;
+    await buy(mints[3], 'after-limit');
+    assert(!store.all().some((p) => p.mint === mints[3]) && orders === before, 'after the limit a buy is refused before any Jupiter call');
+    assert(printed.some((l) => l.includes('↳ skip: session loss limit reached')), 'the skip says why');
+    await sellAll(mints[5], 'sell-after-limit');
+    assert(store.all().find((p) => p.mint === mints[5])!.status === 'closed', 'an open trade is still sold after the limit');
+  } finally {
+    console.log = loud;
+  }
+
+  // A real run: a probation copy is paper, risks nothing, and isn't stopped.
+  const realStore = new PositionStore(fs.mkdtempSync(path.join(os.tmpdir(), 'copybot-losslimit-real-')));
+  const realStart = Date.now() - 1000;
+  const lost = realStore.openPosition({ mint: mints[0], decimals: 5, sourceWallet: TRACKED, dryRun: false, spentSol: 1, tokenAmountRaw: '1' });
+  realStore.recordSell(lost, 1n, 0.2); // -0.8 SOL = -$80, real
+  const realTrader = new Trader({ ...config, dryRun: false }, { async getBalance() { return 10e9; } } as any, Keypair.generate(), fakeJupiter as any, realStore, okMarket);
+  const realGuard = new LossLimit(45, realStart, false, () => realStore.all(), async () => 100, () => {}, () => {});
+  realTrader.setLossLimit(realGuard);
+  realTrader.setPaperOnly(() => true);
+  console.log = () => {};
+  try {
+    await realTrader.handleSwapEvent({ signature: 'probation', sourceWallet: TRACKED, side: 'buy', mint: mints[4], decimals: 5, tokenDeltaRaw: 1n, ownerPreTokenRaw: 0n, quoteSolEquivalent: 0.5 });
+  } finally {
+    console.log = loud;
+  }
+  assert(realStore.all().some((p) => p.mint === mints[4] && p.dryRun), 'a paper probation copy in a real run is not stopped by the real-money limit');
+  assert((await realGuard.blockReason()) !== null, '…while real buys are');
+
+  // 4. Settings and /status.
+  assert(/^SESSION_MAX_LOSS_USD=0$/m.test(renderEnv({ privateKeyBase58: 'k', walletMnemonic: '', heliusHttpsUrl: 'https://x', heliusWssUrl: 'wss://x', jupiterApiKey: 'j', trackedWallets: [TRACKED], settings: {} })), 'setup writes SESSION_MAX_LOSS_USD (off by default)');
+  const status = formatStatus({ now: START + MIN, startedAt: START, dryRun: false, watching: 1, processed: 0, missedUnreadable: 0, lastSwap: null, sleeps: [], nextReportAt: null, activity: [], rotating: false, lossLimitLine: 'Loss limit: down $5.00 of $45 this session' });
+  assert(status.includes('Loss limit: down $5.00 of $45'), '/status includes the loss-limit line');
+
+  realLog('✅ session loss limit: closed trades this session counted like the P&L sheet; at the limit no new buys (once announced), sells carry on, stays hit, never waits on the price feed');
+}
+
 async function main() {
   testEnvIsolation();
   await testDiscovery(console.log);
@@ -2728,6 +2885,7 @@ async function main() {
   testWalletGate();
   testTokenGate();
   await testGatesInTrader(console.log);
+  await testSessionLossLimit(console.log);
   testNotifySounds();
   testShutdownDebounce();
   await testBalanceCheckRetriesTransientFailure(console.log);

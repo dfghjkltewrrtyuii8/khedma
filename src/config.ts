@@ -34,6 +34,8 @@ export interface Config {
   minLiquidityUsd: number;
   walletMaxConsecutiveLosses: number;
   walletMuteHours: number;
+  // Session loss limit in USD — see lossLimit.ts. 0 = off.
+  sessionMaxLossUsd: number;
   maxTrackedWallets: number;
   // Exits on our own terms — see exitRules.ts.
   takeProfitPercent: number;
@@ -166,6 +168,7 @@ export function loadConfig(purpose: 'trade' | 'report' = 'trade'): Config {
     minLiquidityUsd: numberEnv('MIN_LIQUIDITY_USD', 20_000),
     walletMaxConsecutiveLosses: numberEnv('WALLET_MAX_CONSECUTIVE_LOSSES', 3),
     walletMuteHours: numberEnv('WALLET_MUTE_HOURS', 24),
+    sessionMaxLossUsd: numberEnv('SESSION_MAX_LOSS_USD', 0),
     maxTrackedWallets: numberEnv('MAX_TRACKED_WALLETS', 10),
     takeProfitPercent: numberEnv('TAKE_PROFIT_PERCENT', 0),
     stopLossPercent: numberEnv('STOP_LOSS_PERCENT', 30),

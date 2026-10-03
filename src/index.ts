@@ -22,6 +22,7 @@ import { vetWallet } from './walletVetting';
 import { copySlots, paperHints, Rotation, rotationOn, WalletRoster } from './walletRoster';
 import { installedWeb3Version, MIN_WEB3_VERSION, shortAddress, versionAtLeast, WalletWatcher } from './watcher';
 import { getSolPriceUsd } from './solPrice';
+import { describeLossLimit, LossLimit } from './lossLimit';
 import {
   allQuiet,
   describeActivity,
@@ -119,7 +120,7 @@ async function main(): Promise<void> {
       ? `wallet muted after ${config.walletMaxConsecutiveLosses} straight copied losses` +
         (config.walletMuteHours > 0 ? ` (for ${config.walletMuteHours}h)` : ' (until removed)')
       : 'wallet muting OFF';
-  console.log(`Filters: ${tokenGate}; ${walletGate}.`);
+  console.log(`Filters: ${tokenGate}; ${walletGate}; ${describeLossLimit(config.sessionMaxLossUsd)}.`);
   console.log(`Exits:   ${describeExitRules(config)}.`);
   console.log(
     rotationOn(config)
@@ -252,6 +253,19 @@ async function main(): Promise<void> {
   // This run's P&L sheet starts empty; earlier runs stay in the history.
   const startedAt = Date.now();
   store.startRun(startedAt);
+  // SESSION_MAX_LOSS_USD: once this session is down that much, no new buys.
+  const lossLimit = new LossLimit(
+    config.sessionMaxLossUsd,
+    startedAt,
+    config.dryRun,
+    () => store.all(),
+    getSolPriceUsd,
+    (message) => {
+      console.log(`\n${message}\n`);
+      telegram?.send(message, false); // worth a buzz: trading has stopped for the session
+    }
+  );
+  if (lossLimit.enabled) trader.setLossLimit(lossLimit);
   const runLabel = `this run (started ${new Date(startedAt).toTimeString().slice(0, 5)})`;
   let lastSwap: { at: number; wallet: string } | null = null;
   const watcher = new WalletWatcher(
@@ -314,6 +328,7 @@ async function main(): Promise<void> {
             nextReportAt: reportMs > 0 ? lastReportAt + reportMs : null,
             activity: activity(),
             rotating,
+            lossLimitLine: await lossLimit.statusLine(),
           }),
       },
       config.telegramReportHours
