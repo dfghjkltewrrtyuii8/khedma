@@ -1,14 +1,19 @@
 {
+  "0": "trader.ts",
   "1": "WalletRoster",
-  "2": "setupChecks.ts",
-  "3": "discovery.ts",
+  "2": "setup.ts",
+  "3": "testSessionLossLimit",
   "4": "PositionStore",
   "5": "pnl.ts",
   "6": "logic-test.ts",
   "7": "compilerOptions",
   "8": "Solana Copy-Trading Bot",
-  "9": "index.ts",
-  "10": "main",
-  "11": "telegram.ts",
-  "12": "package.json"
+  "9": "walletRoster.ts",
+  "10": "WalletWatcher",
+  "11": "main",
+  "12": "scripts",
+  "13": "package.json",
+  "14": "setupChecks.ts",
+  "15": "dependencies",
+  "16": "devDependencies"
 }
